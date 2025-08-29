@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<title>Enigma – Tappa 2 (Anelli con Rune)</title>
+<title>Enigma – Tappa 2 (Anelli numerati)</title>
 <style>
   :root{ --bg-url: url('assets/jolly_bay.jpg'); }
   html,body{margin:0;padding:0;height:100%;overflow:hidden}
@@ -27,111 +27,120 @@
 <body>
   <main class="wrap">
     <section class="card">
-      <h3 class="title">Allinea gli Anelli Runici</h3>
+      <h3 class="title">Allinea gli Anelli Numerati</h3>
       <div class="puzzle" id="puzzle">
-        <!-- ANELLO 1 -->
-        <svg class="ring" viewBox="0 0 100 100" data-index="0">
+
+        <!-- ANELLO A -->
+        <svg class="ring" viewBox="0 0 100 100" data-index="0" aria-label="Anello A">
           <defs>
-            <linearGradient id="gold1" x1="0" x2="1"><stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#c9a85b"/></linearGradient>
+            <linearGradient id="goldA" x1="0" x2="1"><stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#c9a85b"/></linearGradient>
           </defs>
           <!-- Bordo -->
-          <circle cx="50" cy="50" r="48" fill="none" stroke="url(#gold1)" stroke-width="3"/>
+          <circle cx="50" cy="50" r="48" fill="none" stroke="url(#goldA)" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
-          <!-- TACCHETTA DI RIFERIMENTO (ore 12) -->
-          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <!-- TACCA in alto -->
+          <polygon points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
           <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
-          <!-- Contenuto ruotabile -->
+          <!-- NUMERI ruotabili -->
           <g class="rotor">
-            <g font-size="7" font-family="serif" fill="#24180b">
-              <text x="50" y="8" text-anchor="middle">ᚠ</text>
-              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">ᚢ</text>
-              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">ᚦ</text>
-              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">ᚨ</text>
-              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">ᚱ</text>
-              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">ᚲ</text>
-              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">ᚷ</text>
-              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">ᚹ</text>
-              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">ᛉ</text>
-              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">ᛇ</text>
-              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">ᛒ</text>
-              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">ᛞ</text>
+            <g font-size="8" font-family="serif" fill="#24180b">
+              <!-- 1..12 distribuiti ogni 30°; 1 parte in alto -->
+              <text x="50" y="10" text-anchor="middle">1</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(30 50 50)">2</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(60 50 50)">3</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(90 50 50)">4</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(120 50 50)">5</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(150 50 50)">6</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(180 50 50)">7</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(210 50 50)">8</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(240 50 50)">9</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(270 50 50)">10</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(300 50 50)">11</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(330 50 50)">12</text>
             </g>
           </g>
+          <!-- lettera centrale (non ruota) -->
+          <text x="50" y="56" text-anchor="middle" font-size="18" fill="#5b4636" font-weight="bold">A</text>
         </svg>
 
-        <!-- ANELLO 2 -->
-        <svg class="ring" viewBox="0 0 100 100" data-index="1">
+        <!-- ANELLO B -->
+        <svg class="ring" viewBox="0 0 100 100" data-index="1" aria-label="Anello B">
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
-          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <polygon points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
           <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
-            <g font-size="7" font-family="serif" fill="#24180b">
-              <text x="50" y="8" text-anchor="middle">✧</text>
-              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">✶</text>
-              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">✦</text>
-              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">✷</text>
-              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">✪</text>
-              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">✹</text>
-              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">✵</text>
-              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">✧</text>
-              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">✶</text>
-              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">✦</text>
-              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">✷</text>
-              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">✪</text>
+            <g font-size="8" font-family="serif" fill="#24180b">
+              <text x="50" y="10" text-anchor="middle">1</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(30 50 50)">2</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(60 50 50)">3</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(90 50 50)">4</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(120 50 50)">5</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(150 50 50)">6</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(180 50 50)">7</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(210 50 50)">8</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(240 50 50)">9</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(270 50 50)">10</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(300 50 50)">11</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(330 50 50)">12</text>
             </g>
           </g>
+          <text x="50" y="56" text-anchor="middle" font-size="18" fill="#5b4636" font-weight="bold">B</text>
         </svg>
 
-        <!-- ANELLO 3 -->
-        <svg class="ring" viewBox="0 0 100 100" data-index="2">
+        <!-- ANELLO C -->
+        <svg class="ring" viewBox="0 0 100 100" data-index="2" aria-label="Anello C">
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
-          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <polygon points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
           <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
-            <g font-size="7" font-family="serif" fill="#24180b">
-              <text x="50" y="8" text-anchor="middle">♆</text>
-              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">♁</text>
-              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">♄</text>
-              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">☉</text>
-              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">☾</text>
-              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">☿</text>
-              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">♀</text>
-              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">♂</text>
-              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">♃</text>
-              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">♆</text>
-              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">♁</text>
-              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">♄</text>
+            <g font-size="8" font-family="serif" fill="#24180b">
+              <text x="50" y="10" text-anchor="middle">1</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(30 50 50)">2</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(60 50 50)">3</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(90 50 50)">4</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(120 50 50)">5</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(150 50 50)">6</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(180 50 50)">7</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(210 50 50)">8</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(240 50 50)">9</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(270 50 50)">10</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(300 50 50)">11</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(330 50 50)">12</text>
             </g>
           </g>
+          <text x="50" y="56" text-anchor="middle" font-size="18" fill="#5b4636" font-weight="bold">C</text>
         </svg>
 
-        <!-- ANELLO 4 -->
-        <svg class="ring" viewBox="0 0 100 100" data-index="3">
+        <!-- ANELLO D -->
+        <svg class="ring" viewBox="0 0 100 100" data-index="3" aria-label="Anello D">
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
-          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <polygon points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
           <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
-            <g font-size="7" font-family="serif" fill="#24180b">
-              <text x="50" y="8" text-anchor="middle">ᛗ</text>
-              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">ᛝ</text>
-              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">ᛟ</text>
-              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">ᛋ</text>
-              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">ᛟ</text>
-              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">ᛉ</text>
-              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">ᛇ</text>
-              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">ᛃ</text>
-              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">ᛚ</text>
-              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">ᚻ</text>
-              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">ᚫ</text>
-              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">ᛜ</text>
+            <g font-size="8" font-family="serif" fill="#24180b">
+              <text x="50" y="10" text-anchor="middle">1</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(30 50 50)">2</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(60 50 50)">3</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(90 50 50)">4</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(120 50 50)">5</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(150 50 50)">6</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(180 50 50)">7</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(210 50 50)">8</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(240 50 50)">9</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(270 50 50)">10</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(300 50 50)">11</text>
+              <text x="50" y="10" text-anchor="middle" transform="rotate(330 50 50)">12</text>
             </g>
           </g>
+          <text x="50" y="56" text-anchor="middle" font-size="18" fill="#5b4636" font-weight="bold">D</text>
         </svg>
+
       </div>
-      <p class="hint">Allinea la <strong>runa</strong> sotto la <strong>tacca dorata</strong> (in alto) per ciascun anello.</p>
+      <p class="hint">Allinea i 4 anelli: porta il <strong>numero giusto</strong> sotto la <strong>tacca dorata</strong>.</p>
+      <p class="hint">Soluzione corretta: A→1, B→2, C→3, D→4.</p>
       <p id="fb" class="feedback"></p>
       <button id="next" class="btn-next" type="button">Continua</button>
     </section>
@@ -139,9 +148,10 @@
 
 <script>
   // === CONFIG ===
-  // Angoli obiettivo (0° = TACCA IN ALTO). Cambia a piacere.
-  const TARGETS = [ 15, 195, 90, 300 ];
-  const TOL = 6;                 // tolleranza in gradi
+  // 0° = numero "1" in alto. Per avere A→1, B→2, C→3, D→4:
+  // Servono rotazioni rispettivamente: 0°, -30°, -60°, -90° (mod 360)
+  const TARGETS = [ 0, 330, 300, 270 ];
+  const TOL = 6;                 // tolleranza in gradi (aumenta per facilitare)
   const SUCCESS_URL = "step3.html";
 
   // === LOGICA ===
