@@ -6,7 +6,7 @@
   <title>Enigma – Caccia al Tesoro</title>
   <style>
     :root {
-      --bg-url: url('assets/jolly_bay.jpeg');
+      --bg-url: url('/assets/jolly_bay.jpg');
       --muted:#cbd5e1; --ok:#10b981; --err:#ef4444; --accent:#22d3ee;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,7 +29,7 @@
     body::before {
       content: "";
       position: fixed; inset: 0;
-      background: var("/assets/jolly_bay.jpg") center / cover no-repeat;
+      background: var(--bg-url) center / cover no-repeat;
       z-index: -2;
     }
     body::after {
