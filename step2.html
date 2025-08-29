@@ -1,168 +1,243 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Enigma – Tappa 2</title>
-  <style>
-    :root {
-      /* Cambia lo sfondo se vuoi, altrimenti tieni lo stesso */
-      --bg-url: url('assets/jolly_bay.jpg');
-      --ok:#10b981; --err:#ef4444;
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      color:#2e2e2e;
-      min-height: 100svh;
-      background:#000;
-      position: relative;
-    }
-    /* Sfondo nitido + overlay leggero */
-    body::before{
-      content:"";
-      position:fixed; inset:0;
-      background: var(--bg-url) center / cover no-repeat;
-      z-index:-2;
-    }
-    body::after{
-      content:"";
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.25);
-      z-index:-1;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>Enigma – Tappa 2 (Anelli con Rune)</title>
+<style>
+  :root{
+    --bg-url: url('assets/jolly_bay.jpg');
+  }
+  html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{
+    font-family: 'Georgia','Times New Roman',serif;
+    background:#000; color:#e5e7eb; position:relative; min-height:100svh;
+  }
+  body::before{content:"";position:fixed;inset:0;background:var(--bg-url) center/cover no-repeat;z-index:-2}
+  body::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:-1}
 
-    /* CARD FISSA */
-    .wrap {
-      position: fixed;
-      left: 50%;
-      top: 65svh;                    /* alza/abbassa qui */
-      transform: translate(-50%, -50%);
-      width: min(560px, 92vw);
-      padding: 16px;
-    }
-    .card{
-      width:100%;
-      background: #fdf6e3;          /* pergamena */
-      border: 2px solid #d6c29e;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-      font-family: 'Georgia', serif;
-      background-image:
-        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
-        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-    }
-
-    .riddle{
-      background: rgba(255,255,255,.65);
-      border:1px dashed #b2926d;
-      border-radius:8px;
-      padding:14px 16px;
-      margin: 0 0 16px;
-      line-height:1.5;
-      font-size:16px;
-      color:#3b2c20;
-    }
-
-    .field{ display:flex; gap:10px; }
-    input[type="text"]{
-      flex:1; background:#fff8e1;
-      border:1px solid #b2926d; color:#2e2e2e;
-      border-radius:8px; padding:12px 14px;
-      outline:none; font-size:16px; height:46px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-    }
-    input[type="text"]:focus{ border-color: #c9a85b; box-shadow: 0 0 6px rgba(201,168,91,.6); }
-
-    /* Bottone giallo antichizzato */
-    button{
-      cursor:pointer;
-      border:1px solid #8b6b1b;
-      border-radius:8px;
-      padding:0 16px;
-      font-weight:700;
-      height:46px;
-      background: linear-gradient(180deg, #f5d76e, #d4a017);
-      color:#3b2c20;
-      font-family: 'Georgia', serif;
-      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-    button:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
-    }
-
-    .tip { font-size:12px; color: #6b5b4b; margin:6px 2px 0; font-style:italic; }
-    .feedback { margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok { color: var(--ok); }
-    .err { color: var(--err); }
-  </style>
+  .wrap{ position:fixed; left:50%; top:60svh; transform:translate(-50%,-50%); width:min(560px, 94vw); padding:16px;}
+  .card{
+    background:#fdf6e3; color:#2e2e2e; border:2px solid #d6c29e; border-radius:12px; padding:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+  }
+  .title{margin:0 0 8px; text-align:center; color:#5b4636; font-weight:bold;}
+  .puzzle{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; place-items:center; margin:10px 0 6px;
+  }
+  .ring{
+    width:42vw; max-width:240px; aspect-ratio:1/1; touch-action:none;
+  }
+  .hint, .feedback{ font-size:13px; color:#6b5b4b; text-align:center; margin:6px 0 0;}
+  .ok{ color:#0baa72; font-weight:700;}
+  .btn-next{
+    display:none; margin:10px auto 0; height:44px; padding:0 16px; border-radius:8px; border:1px solid #8b6b1b;
+    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-weight:700; box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+  }
+</style>
 </head>
 <body>
   <main class="wrap">
     <section class="card">
-      <div class="riddle" id="riddle">
-        <!-- TODO: metti qui il tuo secondo indovinello -->
-        Guida i pirati verso nord di due punti, poi verso est di tre. Cosa indicano davvero i loro passi? (Esempio)
-      </div>
+      <h3 class="title">Allinea gli Anelli Runici</h3>
+      <div class="puzzle" id="puzzle">
+        <!-- 4 anelli SVG. Ogni anello ha un gruppo <g> ruotabile. Le rune qui sono solo segni demo -->
+        <svg class="ring" viewBox="0 0 100 100" data-index="0">
+          <defs>
+            <linearGradient id="gold" x1="0" x2="1">
+              <stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#c9a85b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="48" fill="none" stroke="url(#gold)" stroke-width="3"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <g class="rotor">
+            <!-- 12 rune distribuite (demo: caratteri) -->
+            <g font-size="7" font-family="serif" fill="#24180b">
+              <text x="50" y="8" text-anchor="middle">ᚠ</text>
+              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">ᚢ</text>
+              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">ᚦ</text>
+              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">ᚨ</text>
+              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">ᚱ</text>
+              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">ᚲ</text>
+              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">ᚷ</text>
+              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">ᚹ</text>
+              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">ᛉ</text>
+              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">ᛇ</text>
+              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">ᛒ</text>
+              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">ᛞ</text>
+            </g>
+          </g>
+        </svg>
 
-      <form id="solveForm" autocomplete="off">
-        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
-        <div class="field">
-          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
-          <button id="btnCheck" type="submit">Verifica</button>
-        </div>
-        <div id="feedback" class="feedback" aria-live="polite"></div>
-      </form>
+        <svg class="ring" viewBox="0 0 100 100" data-index="1">
+          <use href="#golddef"></use>
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <g class="rotor">
+            <g font-size="7" font-family="serif" fill="#24180b">
+              <text x="50" y="8" text-anchor="middle">✧</text>
+              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">✶</text>
+              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">✦</text>
+              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">✷</text>
+              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">✪</text>
+              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">✹</text>
+              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">✵</text>
+              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">✧</text>
+              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">✶</text>
+              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">✦</text>
+              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">✷</text>
+              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">✪</text>
+            </g>
+          </g>
+        </svg>
+
+        <svg class="ring" viewBox="0 0 100 100" data-index="2">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <g class="rotor">
+            <g font-size="7" font-family="serif" fill="#24180b">
+              <!-- usa simboli diversi per varietà -->
+              <text x="50" y="8" text-anchor="middle">♆</text>
+              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">♁</text>
+              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">♄</text>
+              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">☉</text>
+              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">☾</text>
+              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">☿</text>
+              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">♀</text>
+              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">♂</text>
+              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">♃</text>
+              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">♆</text>
+              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">♁</text>
+              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">♄</text>
+            </g>
+          </g>
+        </svg>
+
+        <svg class="ring" viewBox="0 0 100 100" data-index="3">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <g class="rotor">
+            <g font-size="7" font-family="serif" fill="#24180b">
+              <text x="50" y="8" text-anchor="middle">ᛗ</text>
+              <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">ᛝ</text>
+              <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">ᛟ</text>
+              <text x="94" y="62" text-anchor="middle" transform="rotate(90,94,62)">ᛋ</text>
+              <text x="84" y="84" text-anchor="middle" transform="rotate(120,84,84)">ᛟ</text>
+              <text x="62" y="94" text-anchor="middle" transform="rotate(150,62,94)">ᛉ</text>
+              <text x="38" y="94" text-anchor="middle" transform="rotate(180,38,94)">ᛇ</text>
+              <text x="16" y="84" text-anchor="middle" transform="rotate(210,16,84)">ᛃ</text>
+              <text x="6"  y="62" text-anchor="middle" transform="rotate(240,6,62)">ᛚ</text>
+              <text x="10" y="36" text-anchor="middle" transform="rotate(270,10,36)">ᚻ</text>
+              <text x="26" y="16" text-anchor="middle" transform="rotate(300,26,16)">ᚫ</text>
+              <text x="50" y="8"  text-anchor="middle" transform="rotate(330,50,8)">ᛜ</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <p class="hint">Ruota i 4 anelli per trovare l’allineamento corretto.</p>
+      <p id="fb" class="feedback"></p>
+      <button id="next" class="btn-next" type="button">Continua</button>
     </section>
   </main>
 
-  <script>
-    // ====== CONFIGURA QUI (TAPPA 2) ======
-    // Sostituisci con l'hash SHA-256 della nuova soluzione (normalizzata)
-    // Di default: hash della parola "bussola"
-    const HASH_EXPECTED = "c9ddc7da98b8e314ebd7839b54fd17b1bd40dfcb59a79e82e3fa05829d25e4b3";
+<script>
+  // === CONFIG ===
+  // Angoli obiettivo per ciascun anello (in gradi 0-359). Cambiali come vuoi.
+  const TARGETS = [ 15, 195, 90, 300 ];
+  // Tolleranza ammessa per considerare "allineato"
+  const TOL = 6; // gradi
+  // URL prossima tappa
+  const SUCCESS_URL = "step3.html";
 
-    // Se vuoi proseguire a una terza pagina:
-    const SUCCESS_URL = "step3.html"
-    // =====================================
+  // === LOGICA ===
+  const rings = [...document.querySelectorAll('.ring')];
+  const state = rings.map(()=> ({angle: Math.floor(Math.random()*360)})); // angoli iniziali casuali
+  const fb = document.getElementById('fb');
+  const nextBtn = document.getElementById('next');
 
-    function normalize(str) {
-      return str.trim().toLowerCase().normalize('NFKD')
-        .replace(/\p{Diacritic}/gu, '')
-        .replace(/[^\p{L}\p{N}]+/gu, '');
-    }
+  // Applica gli angoli iniziali
+  rings.forEach((svg,i)=> applyAngle(svg, state[i].angle));
 
-    async function sha256Hex(input) {
-      const enc = new TextEncoder().encode(input);
-      const digest = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
-    }
+  rings.forEach((svg, i) => {
+    const rotor = svg.querySelector('.rotor');
+    let dragging = false, startAngle = 0, baseAngle = 0;
 
-    const form = document.getElementById('solveForm');
-    const input = document.getElementById('answer');
-    const feedback = document.getElementById('feedback');
+    const center = () => {
+      const rect = svg.getBoundingClientRect();
+      return { cx: rect.left + rect.width/2, cy: rect.top + rect.height/2 };
+    };
 
-    form.addEventListener('submit', async (e) => {
+    const angleFromEvent = (e) => {
+      const p = ('touches' in e && e.touches.length) ? e.touches[0] : e;
+      const {cx, cy} = center();
+      const dx = p.clientX - cx, dy = p.clientY - cy;
+      let a = Math.atan2(dy, dx) * 180/Math.PI;
+      return (a + 90 + 360) % 360; // 0° in alto
+    };
+
+    const onDown = (e) => {
       e.preventDefault();
-      feedback.textContent = '';
-      const value = normalize(input.value);
-      if (!value) return;
-      const hash = await sha256Hex(value);
-      if (hash === HASH_EXPECTED) {
-        feedback.textContent = '✅ Corretto!';
-        feedback.className = 'feedback ok';
-        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
-      } else {
-        feedback.textContent = '❌ Errato. Riprova!';
-        feedback.className = 'feedback err';
-      }
-    });
+      dragging = true;
+      startAngle = angleFromEvent(e);
+      baseAngle = state[i].angle;
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp, {once:true});
+      window.addEventListener('touchmove', onMove, {passive:false});
+      window.addEventListener('touchend', onUp, {once:true});
+    };
 
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
-  </script>
+    const onMove = (e) => {
+      if (!dragging) return;
+      e.preventDefault();
+      const a = angleFromEvent(e);
+      const delta = a - startAngle;
+      const ang = (baseAngle + delta + 360) % 360;
+      state[i].angle = ang;
+      applyAngle(svg, ang);
+      checkAll();
+    };
+
+    const onUp = (_) => {
+      dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      // Snap facoltativo a 5°
+      state[i].angle = Math.round(state[i].angle/5)*5 % 360;
+      applyAngle(svg, state[i].angle);
+      checkAll();
+    };
+
+    // Supporto pointer + touch
+    svg.addEventListener('pointerdown', onDown);
+    svg.addEventListener('touchstart', onDown, {passive:false});
+  });
+
+  function applyAngle(svg, ang){
+    const rotor = svg.querySelector('.rotor');
+    rotor.setAttribute('transform', `rotate(${ang} 50 50)`);
+  }
+
+  function within(a,b,t){ // è a vicino a b con tolleranza t?
+    let d = Math.abs(a - b) % 360;
+    d = d > 180 ? 360 - d : d;
+    return d <= t;
+  }
+
+  function checkAll(){
+    const ok = state.every((s,i)=> within(s.angle, TARGETS[i], TOL));
+    if (ok){
+      fb.textContent = "✅ Combinazione corretta!";
+      fb.className = "feedback ok";
+      nextBtn.style.display = "block";
+    } else {
+      fb.textContent = "";
+      nextBtn.style.display = "none";
+    }
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if (SUCCESS_URL) window.location.assign(SUCCESS_URL);
+  });
+</script>
 </body>
 </html>
