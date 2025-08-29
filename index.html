@@ -34,8 +34,11 @@
     }
 
     .wrap {
+      position: fixed;
+      top: 50vh;             /* distanza dall’alto in % dello schermo */
+      left: 50%;
+      transform: translate(-50%, -50%); /* la centra rispetto a top/left */
       width: min(560px, 92vw);
-      margin: 60vh auto 4vh; /* spinge la card verso il basso */
       padding: 16px;
     }
     .card{
