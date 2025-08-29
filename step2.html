@@ -5,35 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <title>Enigma – Tappa 2 (Anelli con Rune)</title>
 <style>
-  :root{
-    --bg-url: url('assets/jolly_bay.jpg');
-  }
+  :root{ --bg-url: url('assets/jolly_bay.jpg'); }
   html,body{margin:0;padding:0;height:100%;overflow:hidden}
-  body{
-    font-family: 'Georgia','Times New Roman',serif;
-    background:#000; color:#e5e7eb; position:relative; min-height:100svh;
-  }
+  body{ font-family:'Georgia','Times New Roman',serif; background:#000; color:#e5e7eb; position:relative; min-height:100svh; }
   body::before{content:"";position:fixed;inset:0;background:var(--bg-url) center/cover no-repeat;z-index:-2}
   body::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:-1}
 
-  .wrap{ position:fixed; left:50%; top:60svh; transform:translate(-50%,-50%); width:min(560px, 94vw); padding:16px;}
-  .card{
-    background:#fdf6e3; color:#2e2e2e; border:2px solid #d6c29e; border-radius:12px; padding:16px;
-    box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-  }
+  .wrap{ position:fixed; left:50%; top:60svh; transform:translate(-50%,-50%); width:min(560px,94vw); padding:16px;}
+  .card{ background:#fdf6e3; color:#2e2e2e; border:2px solid #d6c29e; border-radius:12px; padding:16px;
+         box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25); }
   .title{margin:0 0 8px; text-align:center; color:#5b4636; font-weight:bold;}
-  .puzzle{
-    display:grid; grid-template-columns:1fr 1fr; gap:12px; place-items:center; margin:10px 0 6px;
-  }
-  .ring{
-    width:42vw; max-width:240px; aspect-ratio:1/1; touch-action:none;
-  }
+  .puzzle{ display:grid; grid-template-columns:1fr 1fr; gap:12px; place-items:center; margin:10px 0 6px; }
+  .ring{ width:42vw; max-width:240px; aspect-ratio:1/1; touch-action:none; }
   .hint, .feedback{ font-size:13px; color:#6b5b4b; text-align:center; margin:6px 0 0;}
   .ok{ color:#0baa72; font-weight:700;}
-  .btn-next{
-    display:none; margin:10px auto 0; height:44px; padding:0 16px; border-radius:8px; border:1px solid #8b6b1b;
-    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-weight:700; box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-  }
+  .btn-next{ display:none; margin:10px auto 0; height:44px; padding:0 16px; border-radius:8px; border:1px solid #8b6b1b;
+             background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-weight:700;
+             box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4); }
 </style>
 </head>
 <body>
@@ -41,17 +29,19 @@
     <section class="card">
       <h3 class="title">Allinea gli Anelli Runici</h3>
       <div class="puzzle" id="puzzle">
-        <!-- 4 anelli SVG. Ogni anello ha un gruppo <g> ruotabile. Le rune qui sono solo segni demo -->
+        <!-- ANELLO 1 -->
         <svg class="ring" viewBox="0 0 100 100" data-index="0">
           <defs>
-            <linearGradient id="gold" x1="0" x2="1">
-              <stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#c9a85b"/>
-            </linearGradient>
+            <linearGradient id="gold1" x1="0" x2="1"><stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#c9a85b"/></linearGradient>
           </defs>
-          <circle cx="50" cy="50" r="48" fill="none" stroke="url(#gold)" stroke-width="3"/>
+          <!-- Bordo -->
+          <circle cx="50" cy="50" r="48" fill="none" stroke="url(#gold1)" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <!-- TACCHETTA DI RIFERIMENTO (ore 12) -->
+          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
+          <!-- Contenuto ruotabile -->
           <g class="rotor">
-            <!-- 12 rune distribuite (demo: caratteri) -->
             <g font-size="7" font-family="serif" fill="#24180b">
               <text x="50" y="8" text-anchor="middle">ᚠ</text>
               <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">ᚢ</text>
@@ -69,10 +59,12 @@
           </g>
         </svg>
 
+        <!-- ANELLO 2 -->
         <svg class="ring" viewBox="0 0 100 100" data-index="1">
-          <use href="#golddef"></use>
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
             <g font-size="7" font-family="serif" fill="#24180b">
               <text x="50" y="8" text-anchor="middle">✧</text>
@@ -91,12 +83,14 @@
           </g>
         </svg>
 
+        <!-- ANELLO 3 -->
         <svg class="ring" viewBox="0 0 100 100" data-index="2">
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
             <g font-size="7" font-family="serif" fill="#24180b">
-              <!-- usa simboli diversi per varietà -->
               <text x="50" y="8" text-anchor="middle">♆</text>
               <text x="74" y="16" text-anchor="middle" transform="rotate(30,74,16)">♁</text>
               <text x="90" y="36" text-anchor="middle" transform="rotate(60,90,36)">♄</text>
@@ -113,9 +107,12 @@
           </g>
         </svg>
 
+        <!-- ANELLO 4 -->
         <svg class="ring" viewBox="0 0 100 100" data-index="3">
           <circle cx="50" cy="50" r="48" fill="none" stroke="#c9a85b" stroke-width="3"/>
           <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="8"/>
+          <polygon class="tick" points="50,3 46.5,9.5 53.5,9.5" fill="#c9a85b" stroke="#7a5a2e" stroke-width="0.6"/>
+          <line x1="50" y1="12" x2="50" y2="20" stroke="#c9a85b" stroke-width="0.8" />
           <g class="rotor">
             <g font-size="7" font-family="serif" fill="#24180b">
               <text x="50" y="8" text-anchor="middle">ᛗ</text>
@@ -134,7 +131,7 @@
           </g>
         </svg>
       </div>
-      <p class="hint">Ruota i 4 anelli per trovare l’allineamento corretto.</p>
+      <p class="hint">Allinea la <strong>runa</strong> sotto la <strong>tacca dorata</strong> (in alto) per ciascun anello.</p>
       <p id="fb" class="feedback"></p>
       <button id="next" class="btn-next" type="button">Continua</button>
     </section>
@@ -142,72 +139,56 @@
 
 <script>
   // === CONFIG ===
-  // Angoli obiettivo per ciascun anello (in gradi 0-359). Cambiali come vuoi.
+  // Angoli obiettivo (0° = TACCA IN ALTO). Cambia a piacere.
   const TARGETS = [ 15, 195, 90, 300 ];
-  // Tolleranza ammessa per considerare "allineato"
-  const TOL = 6; // gradi
-  // URL prossima tappa
+  const TOL = 6;                 // tolleranza in gradi
   const SUCCESS_URL = "step3.html";
 
   // === LOGICA ===
   const rings = [...document.querySelectorAll('.ring')];
-  const state = rings.map(()=> ({angle: Math.floor(Math.random()*360)})); // angoli iniziali casuali
+  const state = rings.map(()=> ({angle: Math.floor(Math.random()*360)}));
   const fb = document.getElementById('fb');
   const nextBtn = document.getElementById('next');
 
-  // Applica gli angoli iniziali
   rings.forEach((svg,i)=> applyAngle(svg, state[i].angle));
-
   rings.forEach((svg, i) => {
-    const rotor = svg.querySelector('.rotor');
-    let dragging = false, startAngle = 0, baseAngle = 0;
+    let dragging=false, startAngle=0, baseAngle=0;
 
     const center = () => {
-      const rect = svg.getBoundingClientRect();
-      return { cx: rect.left + rect.width/2, cy: rect.top + rect.height/2 };
+      const r = svg.getBoundingClientRect();
+      return { cx: r.left + r.width/2, cy: r.top + r.height/2 };
     };
-
     const angleFromEvent = (e) => {
       const p = ('touches' in e && e.touches.length) ? e.touches[0] : e;
       const {cx, cy} = center();
       const dx = p.clientX - cx, dy = p.clientY - cy;
       let a = Math.atan2(dy, dx) * 180/Math.PI;
-      return (a + 90 + 360) % 360; // 0° in alto
+      return (a + 90 + 360) % 360;   // 0° = alto (sotto la tacca)
     };
 
     const onDown = (e) => {
-      e.preventDefault();
-      dragging = true;
-      startAngle = angleFromEvent(e);
-      baseAngle = state[i].angle;
+      e.preventDefault(); dragging = true;
+      startAngle = angleFromEvent(e); baseAngle = state[i].angle;
       window.addEventListener('pointermove', onMove);
       window.addEventListener('pointerup', onUp, {once:true});
       window.addEventListener('touchmove', onMove, {passive:false});
       window.addEventListener('touchend', onUp, {once:true});
     };
-
     const onMove = (e) => {
-      if (!dragging) return;
-      e.preventDefault();
+      if(!dragging) return; e.preventDefault();
       const a = angleFromEvent(e);
       const delta = a - startAngle;
-      const ang = (baseAngle + delta + 360) % 360;
-      state[i].angle = ang;
-      applyAngle(svg, ang);
-      checkAll();
+      state[i].angle = (baseAngle + delta + 360) % 360;
+      applyAngle(svg, state[i].angle); checkAll();
     };
-
-    const onUp = (_) => {
+    const onUp = () => {
       dragging = false;
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('touchmove', onMove);
-      // Snap facoltativo a 5°
-      state[i].angle = Math.round(state[i].angle/5)*5 % 360;
-      applyAngle(svg, state[i].angle);
-      checkAll();
+      state[i].angle = Math.round(state[i].angle/5)*5 % 360; // snap facoltativo a 5°
+      applyAngle(svg, state[i].angle); checkAll();
     };
 
-    // Supporto pointer + touch
     svg.addEventListener('pointerdown', onDown);
     svg.addEventListener('touchstart', onDown, {passive:false});
   });
@@ -216,28 +197,13 @@
     const rotor = svg.querySelector('.rotor');
     rotor.setAttribute('transform', `rotate(${ang} 50 50)`);
   }
-
-  function within(a,b,t){ // è a vicino a b con tolleranza t?
-    let d = Math.abs(a - b) % 360;
-    d = d > 180 ? 360 - d : d;
-    return d <= t;
-  }
-
+  function within(a,b,t){ let d=Math.abs(a-b)%360; d = d>180 ? 360-d : d; return d<=t; }
   function checkAll(){
     const ok = state.every((s,i)=> within(s.angle, TARGETS[i], TOL));
-    if (ok){
-      fb.textContent = "✅ Combinazione corretta!";
-      fb.className = "feedback ok";
-      nextBtn.style.display = "block";
-    } else {
-      fb.textContent = "";
-      nextBtn.style.display = "none";
-    }
+    if(ok){ fb.textContent="✅ Combinazione corretta!"; fb.className="feedback ok"; nextBtn.style.display="block"; }
+    else{ fb.textContent=""; nextBtn.style.display="none"; }
   }
-
-  nextBtn.addEventListener('click', ()=>{
-    if (SUCCESS_URL) window.location.assign(SUCCESS_URL);
-  });
+  nextBtn.addEventListener('click', ()=>{ if(SUCCESS_URL) window.location.assign(SUCCESS_URL); });
 </script>
 </body>
 </html>
