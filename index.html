@@ -6,67 +6,87 @@
   <title>Enigma – Caccia al Tesoro</title>
   <style>
     :root {
-      /* Usa ESATTAMENTE il nome del file come sta nel repo */
-      --bg-url: url('assets/jolly_bay.jpg');
-      --muted:#cbd5e1; --ok:#10b981; --err:#ef4444; --accent:#22d3ee;
+      --bg-url: url('assets/jolly_bay.jpg'); /* percorso corretto */
+      --ok:#10b981; --err:#ef4444;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; margin:0; padding:0; }
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
-      color:#e5e7eb;
-      min-height: 100svh;             /* migliore su mobile */
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color:#2e2e2e;
+      min-height: 100svh;
       display:flex; align-items:center; justify-content:center;
-      background:#000;                 /* fallback */
+      background:#000;
       position: relative;
       overflow-x: hidden;
     }
-    /* Sfondo come pseudo-elemento (più affidabile su iOS di background-attachment: fixed) */
+    /* Sfondo nitido con overlay leggero scuro */
     body::before{
       content:"";
       position:fixed; inset:0;
       background: var(--bg-url) center / cover no-repeat;
       z-index:-2;
     }
-    /* Overlay scuro per leggibilità */
     body::after{
       content:"";
       position:fixed; inset:0;
-      background: rgba(0,0,0,.45);
-      backdrop-filter: blur(1.5px);
+      background: rgba(0,0,0,.25); /* solo scurisce leggermente */
       z-index:-1;
     }
 
     .wrap { width: min(560px, 92vw); padding:16px; }
     .card{
       width:100%;
-      background: rgba(15, 23, 42, 0.82);
-      border:1px solid rgba(255,255,255,0.10);
-      border-radius:18px;
-      padding:18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
+      background: #fdf6e3; /* pergamena chiara */
+      border: 2px solid #d6c29e;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      font-family: 'Georgia', serif;
+      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%), 
+                        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
     }
 
-    p.lead { color: var(--muted); margin:0 0 12px; font-size:16px; text-align:center; }
+    p.lead { color: #5b4636; margin:0 0 12px; font-size:16px; text-align:center; font-weight:bold; }
     .riddle{
-      background:#0b1222; border:1px solid rgba(255,255,255,.10);
-      border-radius:14px; padding:14px 16px; margin: 10px 0 16px;
-      line-height:1.5; font-size:16px;
+      background: rgba(255,255,255,.65);
+      border:1px dashed #b2926d;
+      border-radius:8px;
+      padding:14px 16px;
+      margin: 10px 0 16px;
+      line-height:1.5;
+      font-size:16px;
+      color:#3b2c20;
     }
 
     .field{ display:flex; gap:10px; }
     input[type="text"]{
-      flex:1; background:#0b1222; border:1px solid rgba(255,255,255,.18); color:#e5e7eb;
-      border-radius:12px; padding:12px 14px; outline:none; font-size:16px; height:46px;
+      flex:1; background:#fff8e1;
+      border:1px solid #b2926d; color:#2e2e2e;
+      border-radius:8px; padding:12px 14px;
+      outline:none; font-size:16px; height:46px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
     }
-    input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,211,238,.18); }
+    input[type="text"]:focus{ border-color: #c9a85b; box-shadow: 0 0 6px rgba(201,168,91,.6); }
     button{
-      cursor:pointer; border:0; border-radius:12px; padding:0 16px; font-weight:700; height:46px;
-      background: linear-gradient(135deg, #06b6d4, #3b82f6); color:white; flex:0 0 auto;
+      cursor:pointer;
+      border:1px solid #8b6b1b;
+      border-radius:8px;
+      padding:0 16px;
+      font-weight:700;
+      height:46px;
+      background: linear-gradient(180deg, #f5d76e, #d4a017);
+      color:#3b2c20;
+      font-family: 'Georgia', serif;
+      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    button:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
     }
 
-    .tip { font-size:12px; color: var(--muted); margin:6px 2px 0; }
+    .tip { font-size:12px; color: #6b5b4b; margin:6px 2px 0; font-style:italic; }
     .feedback { margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
     .ok { color: var(--ok); }
     .err { color: var(--err); }
@@ -93,21 +113,19 @@
   </main>
 
   <script>
-    // ================== CONFIGURA QUI ==================
     const HASH_EXPECTED = "2f886f22a19006e4f7e47c0b03242536fec344e326181ac311117f7f8a988cad"; // hash della soluzione
     const SUCCESS_URL = ""; // es. "step2.html"
-    // ===================================================
 
     function normalize(str) {
       return str.trim().toLowerCase().normalize('NFKD')
-        .replace(/\p{Diacritic}/gu, '')
-        .replace(/[^\p{L}\p{N}]+/gu, '');
+        .replace(/\\p{Diacritic}/gu, '')
+        .replace(/[^\\p{L}\\p{N}]+/gu, '');
     }
 
     async function sha256Hex(input) {
       const enc = new TextEncoder().encode(input);
       const digest = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
     }
 
     const form = document.getElementById('solveForm');
