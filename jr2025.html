@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enigma — Benvenuto</title>
+  <meta name="description" content="Pagina introduttiva con tasto per iniziare l'enigma" />
+  <!-- ⚠️ Nessuno stile personalizzato: si appoggia allo STESSO foglio di stile delle altre schermate -->
+  <!-- Se le altre pagine importano un CSS globale, assicurati che anche questa lo importi allo stesso modo. -->
+  <!-- Esempio: <link rel="stylesheet" href="assets/styles.css">  (lascia o sostituisci in base al tuo progetto) -->
+
+  <style>
+    /* Unica cosa impostata qui: il background immagine come nelle altre pagine. */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background-image:url('assets/jolly_bay.jpg');
+      background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed;
+    }
+    /* Centramento semplice senza imporre stili di card/bottoni (ereditano dal tuo CSS). */
+    .page{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px}
+    /* Spaziatura minima per non interferire con gli stili esistenti */
+    .intro{max-width: 960px; width:100%;}
+    .actions{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:16px}
+    @media (max-width:560px){ .actions{flex-direction:column; align-items:stretch} }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Usa le STESSE classi che già adoperi altrove: .card, .btn, .btn-primary, .btn-outline, ecc. -->
+    <main class="card intro" role="main" aria-labelledby="titolo">
+      <header class="card-header">
+        <h1 id="titolo" class="card-title">Enigma — Prologo</h1>
+        <p class="card-subtitle">Una breve introduzione prima di iniziare la sfida</p>
+      </header>
+
+      <section class="card-body">
+        <p class="lead">Benvenuto/a! Stai per entrare in una caccia agli indizi fatta di simboli, connessioni e piccoli colpi di scena. Leggi con attenzione ogni dettaglio: nulla è messo a caso.</p>
+        <p class="muted">Avrai bisogno di osservare, ragionare e talvolta tornare sui tuoi passi. Alcune pagine potrebbero nascondere suggerimenti invisibili a uno sguardo frettoloso.</p>
+
+        <div class="actions">
+          <!-- Modifica l'href con la PRIMA pagina dell'enigma, se diverso -->
+          <a class="btn btn-primary" href="index.html" id="startBtn">Inizia ora</a>
+          <button class="btn btn-outline" id="howBtn" type="button" aria-controls="how" aria-expanded="false">Come funziona?</button>
+        </div>
+
+        <details id="how" class="mt-2">
+          <summary>Regole e suggerimenti</summary>
+          <ul>
+            <li>Ogni enigma conduce al successivo: non servono conoscenze esterne.</li>
+            <li>Se incontri un vicolo cieco, rileggi il testo e osserva i dettagli grafici.</li>
+            <li>Puoi usare carta e penna; a volte aiuta disegnare le relazioni.</li>
+          </ul>
+        </details>
+      </section>
+
+      <footer class="card-footer">
+        <small>Premi Invio per iniziare • © <span id="year"></span> Enigma</small>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Anno automatico
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Toggle del riquadro "Come funziona?" con lo stesso bottone
+    const howBtn = document.getElementById('howBtn');
+    const how = document.getElementById('how');
+    howBtn?.addEventListener('click', () => {
+      how.open = !how.open;
+      howBtn.setAttribute('aria-expanded', String(how.open));
+    });
+
+    // Avvio con Invio (accessibilità)
+    const start = document.getElementById('startBtn');
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && start){ start.click(); }
+    });
+  </script>
+</body>
+</html>
