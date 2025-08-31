@@ -2,81 +2,131 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Enigma — Benvenuto</title>
-  <meta name="description" content="Pagina introduttiva con tasto per iniziare l'enigma" />
-  <!-- ⚠️ Nessuno stile personalizzato: si appoggia allo STESSO foglio di stile delle altre schermate -->
-  <!-- Se le altre pagine importano un CSS globale, assicurati che anche questa lo importi allo stesso modo. -->
-  <!-- Esempio: <link rel="stylesheet" href="assets/styles.css">  (lascia o sostituisci in base al tuo progetto) -->
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Enigma – Caccia al Tesoro</title>
   <style>
-    /* Unica cosa impostata qui: il background immagine come nelle altre pagine. */
-    html,body{height:100%;}
-    body{
-      margin:0;
-      background-image:url('assets/jolly_bay.jpg');
-      background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed;
+    :root {
+      --bg-url: url('assets/jolly_bay.jpg'); /* usa il .jpg come nel repo */
+      --ok:#10b981; --err:#ef4444;
     }
-    /* Centramento semplice senza imporre stili di card/bottoni (ereditano dal tuo CSS). */
-    .page{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px}
-    /* Spaziatura minima per non interferire con gli stili esistenti */
-    .intro{max-width: 960px; width:100%;}
-    .actions{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:16px}
-    @media (max-width:560px){ .actions{flex-direction:column; align-items:stretch} }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    /* Blocca lo scroll della pagina */
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color:#2e2e2e;
+      min-height: 100svh;                 /* stabile su mobile */
+      background:#000;
+      position: relative;
+    }
+
+    /* Sfondo nitido + overlay leggero (STESSO DELLE ALTRE PAGINE) */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background: var(--bg-url) center / cover no-repeat;
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.25);
+      z-index:-1;
+    }
+
+    /* CARD FISSA: coerente con le altre schermate */
+    .wrap {
+      position: fixed;
+      left: 50%;
+      top: 65svh;                         /* stessa quota della card enigmi */
+      transform: translate(-50%, -50%);
+      width: min(560px, 92vw);
+      padding: 16px;
+    }
+
+    .card{
+      width:100%;
+      background: #fdf6e3;                /* pergamena */
+      border: 2px solid #d6c29e;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      font-family: 'Georgia', serif;
+      background-image:
+        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+    }
+
+    .intro-text{
+      background: rgba(255,255,255,.65);
+      border:1px dashed #b2926d;
+      border-radius:8px;
+      padding:14px 16px;
+      margin: 0 0 16px;
+      line-height:1.55;
+      font-size:16px;
+      color:#3b2c20;
+    }
+
+    .actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+
+    /* Bottone giallo antichizzato (stesso stile) */
+    .btn{
+      cursor:pointer;
+      border:1px solid #8b6b1b;
+      border-radius:8px;
+      padding:0 16px;
+      font-weight:700;
+      height:46px;
+      background: linear-gradient(180deg, #f5d76e, #d4a017);
+      color:#3b2c20;
+      font-family: 'Georgia', serif;
+      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition: transform .15s ease, box-shadow .15s ease;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+    .tip { font-size:12px; color: #6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; background:#efe7d3; border:1px solid #d6c29e; padding:2px 6px; border-radius:6px }
   </style>
 </head>
 <body>
-  <div class="page">
-    <!-- Usa le STESSE classi che già adoperi altrove: .card, .btn, .btn-primary, .btn-outline, ecc. -->
-    <main class="card intro" role="main" aria-labelledby="titolo">
-      <header class="card-header">
-        <h1 id="titolo" class="card-title">Enigma — Prologo</h1>
-        <p class="card-subtitle">Una breve introduzione prima di iniziare la sfida</p>
+  <main class="wrap">
+    <section class="card" aria-labelledby="titolo">
+      <header>
+        <h1 id="titolo" style="margin:0 0 6px;">Enigma — Prologo</h1>
+        <p class="tip" style="margin-top:0">Premi <span class="kbd">Invio</span> per iniziare quando sei pronto.</p>
       </header>
 
-      <section class="card-body">
-        <p class="lead">Benvenuto/a! Stai per entrare in una caccia agli indizi fatta di simboli, connessioni e piccoli colpi di scena. Leggi con attenzione ogni dettaglio: nulla è messo a caso.</p>
-        <p class="muted">Avrai bisogno di osservare, ragionare e talvolta tornare sui tuoi passi. Alcune pagine potrebbero nascondere suggerimenti invisibili a uno sguardo frettoloso.</p>
+      <div class="intro-text">
+        <p>
+          Benvenuto/a! Stai per entrare in una caccia agli indizi fatta di simboli, connessioni e piccoli colpi di scena.
+          Leggi con attenzione ogni dettaglio: nulla è messo a caso. Talvolta servirà tornare sui tuoi passi.
+        </p>
+        <p class="tip" style="margin:0">Suggerimento: annota ciò che noti. Spesso due dettagli lontani si parlano.</p>
+      </div>
 
-        <div class="actions">
-          <!-- Modifica l'href con la PRIMA pagina dell'enigma, se diverso -->
-          <a class="btn btn-primary" href="jr2025.html" id="startBtn">Inizia ora</a>
-          <button class="btn btn-outline" id="howBtn" type="button" aria-controls="how" aria-expanded="false">Come funziona?</button>
-        </div>
-
-        <details id="how" class="mt-2">
-          <summary>Regole e suggerimenti</summary>
-          <ul>
-            <li>Ogni enigma conduce al successivo: non servono conoscenze esterne.</li>
-            <li>Se incontri un vicolo cieco, rileggi il testo e osserva i dettagli grafici.</li>
-            <li>Puoi usare carta e penna; a volte aiuta disegnare le relazioni.</li>
+      <div class="actions">
+        <!-- 🔗 Modifica l'href se la prima pagina cambia -->
+        <a class="btn" id="startBtn" href="jr2025.html">Inizia ora</a>
+        <details>
+          <summary class="tip" style="cursor:pointer">Come funziona?</summary>
+          <ul style="margin:8px 0 0; padding-left:18px">
+            <li>Ogni enigma conduce al successivo, senza conoscenze esterne.</li>
+            <li>I dettagli grafici possono contenere indizi non ovvi.</li>
+            <li>Spazi, accenti e maiuscole spesso non contano nella soluzione.</li>
           </ul>
         </details>
-      </section>
-
-      <footer class="card-footer">
-        <small>Premi Invio per iniziare • © <span id="year"></span> Enigma</small>
-      </footer>
-    </main>
-  </div>
+      </div>
+    </section>
+  </main>
 
   <script>
-    // Anno automatico
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Toggle del riquadro "Come funziona?" con lo stesso bottone
-    const howBtn = document.getElementById('howBtn');
-    const how = document.getElementById('how');
-    howBtn?.addEventListener('click', () => {
-      how.open = !how.open;
-      howBtn.setAttribute('aria-expanded', String(how.open));
-    });
-
-    // Avvio con Invio (accessibilità)
+    // Accessibilità: Enter per iniziare
     const start = document.getElementById('startBtn');
-    window.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter' && start){ start.click(); }
-    });
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && start){ start.click(); } });
   </script>
 </body>
 </html>
