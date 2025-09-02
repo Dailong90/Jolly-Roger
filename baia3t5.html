@@ -419,11 +419,11 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       }
     });
 
-    // Reset totale: fine partita
-    btnResetAll.addEventListener('click', resetAll);
-
-    // Reset totale: bottone sempre visibile in toolbar
     btnResetNow.addEventListener('click', () => {
+      if (confirm('Resettare la partita?')) resetAll();
+    });
+    
+    btnResetAll.addEventListener('click', () => {
       if (confirm('Resettare la partita?')) resetAll();
     });
 
