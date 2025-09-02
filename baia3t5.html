@@ -156,8 +156,6 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       </div>
 
       <div class="modal__toolbar">
-        <button class="toolbar__btn" id="btnCenter"><i class="bi bi-crosshair2"></i> Centra pedina</button>
-        <button class="toolbar__btn" id="btnReset"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
         <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
       </div>
     </div>
@@ -252,15 +250,15 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
     // Bottoni toolbar
     document.getElementById('btnSave').addEventListener('click', saveState);
-    document.getElementById('btnReset').addEventListener('click', () => {
-      state = JSON.parse(JSON.stringify(defaultPos));
-      applyPositions(); saveState();
-    });
-    document.getElementById('btnCenter').addEventListener('click', () => {
-      // centra visivamente lungo il bordo inferiore
-      state.JR.y = 80;
-      applyPositions(); saveState();
-    });
+    // document.getElementById('btnReset').addEventListener('click', () => {
+    //   state = JSON.parse(JSON.stringify(defaultPos));
+    //   applyPositions(); saveState();
+    // });
+    // // document.getElementById('btnCenter').addEventListener('click', () => {
+    // //   // centra visivamente lungo il bordo inferiore
+    // //   state.JR.y = 80;
+    //   applyPositions(); saveState();
+    // });
 
     // Aggiorna posizioni dopo che l’immagine ha calcolato le dimensioni
     boardImg.addEventListener('load', applyPositions);
