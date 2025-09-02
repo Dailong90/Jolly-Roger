@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Enigma – Regole finali</title>
-  <!-- Bootstrap Icons (caret) -->
+  <!-- Bootstrap Icons (per il caret) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
     :root { --bg-url: url('assets/jolly_bay.jpg'); }
@@ -12,8 +12,8 @@
 
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
     body{
-      font-family:'Georgia','Times New Roman',serif;
-      color:#2e2e2e; min-height:100svh; background:#000; position:relative;
+      font-family:'Georgia','Times New Roman',serif; color:#2e2e2e;
+      background:#000; min-height:100svh; position:relative;
     }
     body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
     body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
@@ -22,6 +22,7 @@
       position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
       width:min(560px,92vw); padding:16px;
     }
+
     .card{
       display:flex; flex-direction:column; gap:10px;
       background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
@@ -29,51 +30,55 @@
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height:60svh; /* card più stretta */
+      max-height:58svh; /* leggermente più stretta in verticale */
     }
 
-    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+    .card__head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0;
+    }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
-    /* Box scorrevole */
+    /* BOX SCORREVOLE con overlay fisse */
     .riddle{
-      position:relative; flex:1 1 auto;
+      position:relative; border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
-      border:1px dashed #b2926d; border-radius:8px; padding:0;
-      overflow:hidden; /* maschera le overlay */
+      /* Grid per sovrapporre overlay allo scroller */
+      display:grid;
     }
-    .riddle__inner{
-      padding:14px 16px 28px; /* spazio extra per non coprire l’ultimo rigo */
+    /* area scorrevole vera e propria */
+    .riddle__scroller{
+      grid-area:1 / 1; /* sotto alle overlay */
+      overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px; /* spazio extra in basso per non coprire l’ultimo rigo */
       line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-      height:100%; overflow:auto; -webkit-overflow-scrolling:touch;
+      max-height:40svh; /* determina quanto si può scorrere dentro la card */
     }
 
-    /* Sfumatura fissa in basso */
+    /* SFUMATURA FISSA IN BASSO */
     .riddle__fade{
-      position:absolute; left:0; right:0; bottom:0; height:72px; /* un po’ più grande */
+      grid-area:1 / 1; align-self:end;
+      height:84px; /* più grande */
       background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
-      border-radius:0 0 8px 8px; z-index:2;
-      pointer-events:none; /* <-- non blocca lo scroll */
-      opacity:1; transition:opacity .2s ease;
+      border-radius:0 0 8px 8px;
+      pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
     }
 
-    /* Caret fisso in basso */
+    /* CARET FISSO IN BASSO */
     .riddle__indicator{
-      position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
-      font-size:24px; color:#6b5b4b; z-index:3;
+      grid-area:1 / 1; justify-self:center; align-self:end;
+      transform:translateY(-10px);
+      font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none;
       animation:bounce 1.2s infinite;
-      pointer-events:none; /* <-- non blocca lo scroll */
       opacity:1; transition:opacity .2s ease;
     }
-    @keyframes bounce { 0%,100%{ transform:translate(-50%,0); } 50%{ transform:translate(-50%,6px); } }
+    @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
 
-    /* Stati */
-    .riddle.--at-bottom .riddle__fade,
-    .riddle.--at-bottom .riddle__indicator{ opacity:0; }
+    /* Stati: niente scroll o fine scroll => nasconde overlay */
     .riddle.--no-scroll .riddle__fade,
-    .riddle.--no-scroll .riddle__indicator{ opacity:0; }
+    .riddle.--no-scroll .riddle__indicator,
+    .riddle.--at-bottom .riddle__fade,
+    .riddle.--at-bottom .riddle__indicator { opacity:0; }
 
-    /* Bottone */
     .btn{
       cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
       background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
@@ -101,7 +106,7 @@
 
       <!-- Testo scorrevole + overlay fisse -->
       <div class="riddle" id="riddleBox">
-        <div class="riddle__inner" id="riddleInner">
+        <div class="riddle__scroller" id="riddleScroll">
 Regole moviemnto Roger
 
 Roger parte del covo dei Jolly, indicato con la bandiera pirata.
@@ -125,7 +130,7 @@ Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, 
 Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
         </div>
 
-        <!-- Overlay fisse (non bloccano lo scroll) -->
+        <!-- overlay fisse -->
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
@@ -141,11 +146,10 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
   </div>
 
   <script>
-    const btnMap     = document.getElementById('btnMap');
-    const modal      = document.getElementById('modalMap');
-    const btnClose   = document.getElementById('btnClose');
-    const riddleBox  = document.getElementById('riddleBox');
-    const riddleInner= document.getElementById('riddleInner');
+    // Modale
+    const btnMap  = document.getElementById('btnMap');
+    const modal   = document.getElementById('modalMap');
+    const btnClose= document.getElementById('btnClose');
 
     function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); }
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
@@ -154,20 +158,20 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
+    // Overlay scroll
+    const riddleBox = document.getElementById('riddleBox');
+    const scroller  = document.getElementById('riddleScroll');
+
     function updateOverlay(){
-      // Se non c'è scroll disponibile, nasconde overlay
-      const canScroll = riddleInner.scrollHeight > riddleInner.clientHeight + 1;
+      const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
       riddleBox.classList.toggle('--no-scroll', !canScroll);
 
-      // Mostra/nasconde quando arrivi in fondo
-      const atBottom = riddleInner.scrollTop + riddleInner.clientHeight >= riddleInner.scrollHeight - 1;
+      const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
       riddleBox.classList.toggle('--at-bottom', atBottom);
     }
 
-    // Aggiorna su scroll
-    riddleInner.addEventListener('scroll', updateOverlay);
-
-    // Aggiorna dopo il layout iniziale e su resize/orientamento
+    scroller.addEventListener('scroll', updateOverlay);
+    // inizializza dopo layout e su resize/orientamento
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
     window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
   </script>
