@@ -83,16 +83,20 @@
     .board__img{
       display:block; width:100%; height:auto; user-select:none; pointer-events:none; /* l’immagine non cattura eventi */
     }
+
+    /* === Pedina singola JR (verde, 60px) === */
     .pawn{
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:38px; height:38px; border-radius:50%;
-      background:linear-gradient(180deg,#f5d76e,#d4a017);
-      border:2px solid #8b6b1b; color:#3b2c20; font-weight:800; font-family:'Georgia',serif;
+      width:60px; height:60px; border-radius:50%;
+      background:linear-gradient(180deg,#34d399,#10b981);
+      border:2px solid #0e8f6f; color:#063; font-weight:800; font-family:'Georgia',serif;
       display:flex; align-items:center; justify-content:center;
+      font-size:20px; letter-spacing:1px;
       box-shadow:0 4px 10px rgba(0,0,0,.45), inset 0 2px 4px rgba(255,255,255,.45);
       cursor:grab; touch-action:none; user-select:none;
     }
     .pawn:active{ cursor:grabbing; }
+
     .modal__toolbar{
       display:flex; gap:8px; padding:10px; justify-content:flex-end; background:#0f0f0f; border-top:1px solid #222;
     }
@@ -140,21 +144,19 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     </section>
   </main>
 
-  <!-- MODALE: tabellone + pedine -->
+  <!-- MODALE: tabellone + pedina singola -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
 
       <div class="board" id="board">
         <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
-        <!-- Tre pedine -->
-        <div class="pawn" data-id="A" title="Pedina A">A</div>
-        <div class="pawn" data-id="B" title="Pedina B">B</div>
-        <div class="pawn" data-id="C" title="Pedina C">C</div>
+        <!-- Una sola pedina -->
+        <div class="pawn" data-id="JR" title="Pedina JR">JR</div>
       </div>
 
       <div class="modal__toolbar">
-        <button class="toolbar__btn" id="btnCenter"><i class="bi bi-crosshair2"></i> Centra pedine</button>
+        <button class="toolbar__btn" id="btnCenter"><i class="bi bi-crosshair2"></i> Centra pedina</button>
         <button class="toolbar__btn" id="btnReset"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
         <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
       </div>
@@ -187,15 +189,15 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     window.addEventListener('load', () => requestAnimationFrame(updateOverlay));
     window.addEventListener('resize', () => requestAnimationFrame(updateOverlay));
 
-    /* ===== Board con pedine trascinabili ===== */
+    /* ===== Board con pedina trascinabile (singola JR) ===== */
     const board = document.getElementById('board');
     const boardImg = document.getElementById('boardImg');
     const pawns = Array.from(board.querySelectorAll('.pawn'));
 
-    const STORAGE_KEY = 'enigma_board_pawns_v1';
+    const STORAGE_KEY = 'enigma_board_pawnJR_v1';
 
-    // posizioni in percentuale {A:{x,y},B:{x,y},C:{x,y}}
-    const defaultPos = { A:{x:20,y:80}, B:{x:50,y:80}, C:{x:80,y:80} };
+    // posizione in percentuale {JR:{x,y}}
+    const defaultPos = { JR:{x:50,y:80} };
     let state = loadState() || defaultPos;
 
     function loadState(){
@@ -207,7 +209,7 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
     function applyPositions(){
       pawns.forEach(p => {
-        const id = p.dataset.id;
+        const id = p.dataset.id; // 'JR'
         const pos = state[id] || defaultPos[id];
         p.style.left = pos.x + '%';
         p.style.top  = pos.y + '%';
@@ -256,15 +258,13 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     });
     document.getElementById('btnCenter').addEventListener('click', () => {
       // centra visivamente lungo il bordo inferiore
-      state.A.y = state.B.y = state.C.y = 80;
+      state.JR.y = 80;
       applyPositions(); saveState();
     });
 
     // Aggiorna posizioni dopo che l’immagine ha calcolato le dimensioni
     boardImg.addEventListener('load', applyPositions);
-    // fallback se la cache l’ha già caricata
-    if (boardImg.complete) applyPositions();
-    // riposiziona in caso di resize (percentuali non servirebbe, ma utile se cambi layout)
+    if (boardImg.complete) applyPositions(); // fallback se già in cache
     window.addEventListener('resize', applyPositions);
   </script>
 </body>
