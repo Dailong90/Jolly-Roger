@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Enigma – Partite (Rossa / Blu / Verde)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root { --bg-url: url('assets/jolly_bay.jpg'); }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin:0; padding:0; height:100%; }
+    body{
+      font-family:'Georgia','Times New Roman',serif; color:#eaeaea;
+      background:#000; min-height:100svh; position:relative;
+    }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:-1; }
+
+    /* Layout pagina gioco */
+    .game-wrap{
+      position:fixed; inset:0; display:flex; flex-direction:column;
+      max-width:1200px; margin:auto;
+    }
+    .game-head{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:12px 14px; background:rgba(17,17,17,.9); border-bottom:1px solid #222;
+    }
+    .game-title{ margin:0; font-size:18px; color:#f5d76e; letter-spacing:.3px; }
+    .game-controls{ display:flex; gap:8px; align-items:center; }
+    .sel, .btn{
+      border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px;
+      padding:8px 10px; font-size:14px;
+    }
+    .sel{ cursor:pointer; }
+    .btn{ cursor:pointer; }
+    .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+    .btn:hover:not([disabled]){ background:#2a2a2a; }
+    .turns{
+      color:#ddd; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.95rem; padding:6px 10px; background:#151515; border:1px solid #2a2a2a; border-radius:8px;
+    }
+
+    /* Board */
+    .board{
+      position:relative; flex:1 1 auto; min-height:240px;
+      display:block; overflow:hidden; background:#000;
+    }
+    .board__img{
+      display:block; width:100%; height:100%; object-fit:contain;
+      user-select:none; pointer-events:none;
+    }
+    .pawn{
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:9px; height:9px; border-radius:50%;
+      border:1px solid; color:#063; font-weight:100; font-family:'Georgia',serif;
+      display:flex; align-items:center; justify-content:center;
+      font-size:4px; letter-spacing:0px;
+      box-shadow:0 4px 10px rgba(0,0,0,.45), inset 0 2px 4px rgba(255,255,255,.45);
+      cursor:grab; touch-action:none; user-select:none;
+    }
+    .pawn:active{ cursor:grabbing; }
+    /* Colori fissi per partita */
+    .pawn.red  { background:linear-gradient(180deg,#f87171,#ef4444); border-color:#991b1b; }
+    .pawn.blue { background:linear-gradient(180deg,#60a5fa,#3b82f6); border-color:#1e3a8a; }
+    .pawn.green{ background:linear-gradient(180deg,#34d399,#10b981); border-color:#0e8f6f; }
+
+    .game-foot{
+      display:flex; justify-content:flex-end; gap:8px;
+      padding:10px 14px; background:rgba(17,17,17,.9); border-top:1px solid #222;
+    }
+
+    /* Modale fine partita */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
+    .modal.open{ display:flex; }
+    .end__inner{
+      position:relative; max-width:92vw; width:min(520px,92vw); background:#1a1a1a; color:#eee;
+      border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6);
+    }
+    .end__header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#111; }
+    .end__body{ padding:16px; line-height:1.5; }
+    .modal__close{ border:none; padding:8px 12px; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
+    .modal__close:hover{ background:#2f2f2f; }
+  </style>
+</head>
+<body>
+  <div class="game-wrap">
+    <header class="game-head">
+      <h1 class="game-title">Partite – Rossa / Blu / Verde</h1>
+      <div class="game-controls">
+        <span class="turns" id="turnsInfo">Turno: 0 / 15</span>
+        <label for="gameSelect" style="color:#ddd; font-size:.9rem; margin-left:6px;">Partita:</label>
+        <select id="gameSelect" class="sel">
+          <option value="red">Rossa</option>
+          <option value="blue">Blu</option>
+          <option value="green" selected>Verde</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="board" id="board">
+      <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
+      <div class="pawn green" data-id="JR" title="Pedina JR">JR</div>
+    </main>
+
+    <footer class="game-foot">
+      <button class="btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+    </footer>
+  </div>
+
+  <!-- MODALE FINE PARTITA -->
+  <div id="modalEnd" class="modal" role="dialog" aria-modal="true" aria-label="Fine partita" aria-hidden="true">
+    <div class="end__inner">
+      <div class="end__header">
+        <strong>Fine partita</strong>
+        <button class="modal__close" type="button" id="btnCloseEnd" aria-label="Chiudi">✕</button>
+      </div>
+      <div class="end__body">
+        <p>Hai raggiunto il <strong>15° turno</strong> per questa partita.</p>
+        <p>Puoi resettare per ricominciare dall’inizio con la stessa partita.</p>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button class="btn" id="btnResetAll"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Elementi base ===== */
+    const board    = document.getElementById('board');
+    const boardImg = document.getElementById('boardImg');
+    const pawn     = board.querySelector('.pawn');
+    const btnSave  = document.getElementById('btnSave');
+    const turnsInfo= document.getElementById('turnsInfo');
+    const gameSelect = document.getElementById('gameSelect');
+
+    /* ===== Modale fine partita ===== */
+    const modalEnd    = document.getElementById('modalEnd');
+    const btnCloseEnd = document.getElementById('btnCloseEnd');
+    const btnResetAll = document.getElementById('btnResetAll');
+    function openEnd(){ modalEnd.classList.add('open'); modalEnd.setAttribute('aria-hidden','false'); }
+    function closeEnd(){ modalEnd.classList.remove('open'); modalEnd.setAttribute('aria-hidden','true'); }
+    btnCloseEnd?.addEventListener('click', closeEnd);
+    modalEnd.addEventListener('click', e => { if (e.target === modalEnd) closeEnd(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modalEnd.classList.contains('open')) closeEnd(); });
+
+    /* ===== Costanti e stato ===== */
+    const TURN_LIMIT = 15;
+    const DEFAULT_POS = { JR: { x: 9.3, y: 42.2 } }; // <- cambia qui se vuoi un altro start per tutte
+
+    const VALID_GAMES = ['red','blue','green'];
+    let currentGame = gameSelect.value; // 'red' | 'blue' | 'green'
+
+    let state     = loadState(currentGame) || clone(DEFAULT_POS);
+    let lastSaved = clone(state);
+    let turns     = loadTurns(currentGame); // 0..15
+
+    /* ===== Utils storage per partita ===== */
+    function keysFor(game){
+      return {
+        state: `enigma_game_${game}_state_v1`,
+        turns: `enigma_game_${game}_turns_v1`
+      };
+    }
+    function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+    function loadState(game){
+      try{
+        const raw = localStorage.getItem(keysFor(game).state);
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){ return null; }
+    }
+    function saveState(game, st){
+      localStorage.setItem(keysFor(game).state, JSON.stringify(st));
+    }
+    function loadTurns(game){
+      const n = parseInt(localStorage.getItem(keysFor(game).turns), 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+    function saveTurns(game, n){
+      localStorage.setItem(keysFor(game).turns, String(n));
+    }
+
+    /* ===== Applicazioni UI ===== */
+    function applyColor(game){
+      pawn.classList.remove('red','blue','green');
+      pawn.classList.add(game);
+    }
+    function applyPositions(){
+      const pos = (state.JR || DEFAULT_POS.JR);
+      pawn.style.left = pos.x + '%';
+      pawn.style.top  = pos.y + '%';
+    }
+    function updateUI(){
+      turnsInfo.textContent = `Turno: ${turns} / ${TURN_LIMIT}`;
+      btnSave.disabled = (turns >= TURN_LIMIT);
+      gameSelect.value = currentGame;
+    }
+
+    /* ===== Drag & drop ===== */
+    pawn.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      pawn.setPointerCapture(ev.pointerId);
+
+      const onMove = (e) => {
+        const rect = board.getBoundingClientRect();
+        const cx = (e.clientX - rect.left) / rect.width * 100;
+        const cy = (e.clientY - rect.top)  / rect.height * 100;
+        const x = Math.min(98, Math.max(2, cx));
+        const y = Math.min(98, Math.max(2, cy));
+        pawn.style.left = x + '%';
+        pawn.style.top  = y + '%';
+        state.JR = { x, y };
+      };
+
+      const onUp = (e) => {
+        pawn.releasePointerCapture(e.pointerId);
+        pawn.removeEventListener('pointermove', onMove);
+        pawn.removeEventListener('pointerup', onUp);
+        pawn.removeEventListener('pointercancel', onUp);
+      };
+
+      pawn.addEventListener('pointermove', onMove);
+      pawn.addEventListener('pointerup', onUp);
+      pawn.addEventListener('pointercancel', onUp);
+    });
+
+    /* ===== Salvataggio turno ===== */
+    btnSave.addEventListener('click', () => {
+      if (turns >= TURN_LIMIT) {
+        updateUI();
+        openEnd();
+        return;
+      }
+      const changed = JSON.stringify(state) !== JSON.stringify(lastSaved);
+      saveState(currentGame, state);
+      if (changed) {
+        turns = Math.min(TURN_LIMIT, turns + 1);
+        saveTurns(currentGame, turns);
+        lastSaved = clone(state);
+      }
+      updateUI();
+      if (turns >= TURN_LIMIT) openEnd();
+    });
+
+    /* ===== Reset solo della partita corrente ===== */
+    btnResetAll.addEventListener('click', () => {
+      state = clone(DEFAULT_POS);
+      applyPositions();
+      saveState(currentGame, state);
+      lastSaved = clone(state);
+
+      turns = 0;
+      saveTurns(currentGame, turns);
+      updateUI();
+
+      closeEnd();
+    });
+
+    /* ===== Cambio partita ===== */
+    gameSelect.addEventListener('change', () => {
+      const next = gameSelect.value;
+      if (!VALID_GAMES.includes(next)) return;
+      // salva al volo eventuali modifiche in corso della partita corrente
+      saveState(currentGame, state);
+      saveTurns(currentGame, turns);
+
+      currentGame = next;
+      applyColor(currentGame);
+
+      // carica stato/turni della nuova partita (o default)
+      state = loadState(currentGame) || clone(DEFAULT_POS);
+      lastSaved = clone(state);
+      turns = loadTurns(currentGame);
+
+      applyPositions();
+      updateUI();
+    });
+
+    /* ===== Avvio ===== */
+    boardImg.addEventListener('load', () => {
+      applyColor(currentGame);
+      applyPositions();
+      updateUI();
+    });
+    if (boardImg.complete) {
+      applyColor(currentGame);
+      applyPositions();
+      updateUI();
+    }
+    window.addEventListener('resize', applyPositions);
+  </script>
+</body>
+</html>
