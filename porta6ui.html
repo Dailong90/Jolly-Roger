@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Enigma – Regole finali</title>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
   <style>
     :root {
       --bg-url: url('assets/jolly_bay.jpg');
@@ -52,7 +55,7 @@
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height: 60svh;          /* più stretta in verticale */
+      max-height: 60svh;
       gap: 10px;
     }
 
@@ -86,16 +89,28 @@
       white-space:pre-wrap;
     }
 
-    /* Freccia scroll indicator */
+    /* sfumatura */
+    .riddle::after{
+      content:"";
+      position:absolute;
+      bottom:0; left:0; right:0;
+      height:40px;
+      background: linear-gradient(to top, rgba(253,246,227,0.9), rgba(253,246,227,0));
+      pointer-events:none;
+      border-radius:0 0 8px 8px;
+    }
+
+    /* Indicatore caret */
     .scroll-indicator {
       position: absolute;
       bottom: 6px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 20px;
+      font-size: 22px;
       color: #6b5b4b;
       animation: bounce 1.2s infinite;
       pointer-events: none;
+      z-index: 2;
     }
     @keyframes bounce {
       0%, 100% { transform: translate(-50%, 0); }
@@ -199,7 +214,7 @@ Il cacciatore può continuare la sua ricerca per un totale di 15 turni.
 Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, si procederà uno alla volta.
 Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
 
-        <div class="scroll-indicator">⬇️</div>
+        <div class="scroll-indicator"><i class="bi bi-caret-down-fill"></i></div>
       </div>
 
     </section>
