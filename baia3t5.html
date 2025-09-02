@@ -84,18 +84,22 @@
       display:block; width:100%; height:auto; user-select:none; pointer-events:none;
     }
 
-    /* Pedina singola JR – 9x9 px verde */
+    /* Pedina singola JR – 9x9 px (colore controllato via classe) */
     .pawn{
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
       width:9px; height:9px; border-radius:50%;
-      background:linear-gradient(180deg,#34d399,#10b981);
-      border:1px solid #0e8f6f; color:#063; font-weight:100; font-family:'Georgia',serif;
+      border:1px solid; color:#063; font-weight:100; font-family:'Georgia',serif;
       display:flex; align-items:center; justify-content:center;
       font-size:4px; letter-spacing:0px;
       box-shadow:0 4px 10px rgba(0,0,0,.45), inset 0 2px 4px rgba(255,255,255,.45);
       cursor:grab; touch-action:none; user-select:none;
     }
     .pawn:active{ cursor:grabbing; }
+
+    /* varianti colore */
+    .pawn.green{ background:linear-gradient(180deg,#34d399,#10b981); border-color:#0e8f6f; }
+    .pawn.red  { background:linear-gradient(180deg,#f87171,#ef4444); border-color:#991b1b; }
+    .pawn.blue { background:linear-gradient(180deg,#60a5fa,#3b82f6); border-color:#1e3a8a; }
 
     .modal__toolbar{
       display:flex; gap:8px; padding:10px; justify-content:space-between; align-items:center;
@@ -165,13 +169,21 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
       <div class="board" id="board">
         <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
-        <!-- Una sola pedina -->
-        <div class="pawn" data-id="JR" title="Pedina JR">JR</div>
+        <!-- Una sola pedina: verde di default -->
+        <div class="pawn green" data-id="JR" title="Pedina JR">JR</div>
       </div>
 
       <div class="modal__toolbar">
         <div class="turns" id="turnsInfo">Turno: 0 / 15</div>
-        <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+        <div>
+          <label for="pawnColor" style="color:#ddd; font-size:.9rem; margin-right:4px;">Colore:</label>
+          <select id="pawnColor" class="toolbar__btn">
+            <option value="green">Verde</option>
+            <option value="red">Rosso</option>
+            <option value="blue">Blu</option>
+          </select>
+          <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+        </div>
       </div>
     </div>
   </div>
@@ -243,6 +255,7 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
     const STORAGE_KEY = 'enigma_board_pawnJR_v1';
     const TURNS_KEY   = 'enigma_board_turns_v1';
+    const COLOR_KEY   = 'enigma_board_pawnColor_v1';
     const TURN_LIMIT  = 15;
 
     // posizione in percentuale {JR:{x,y}} – punto iniziale richiesto
@@ -251,8 +264,12 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     let lastSaved = clone(state);
     let turns = loadTurns(); // 0 ... 15
 
-    const turnsInfo = document.getElementById('turnsInfo');
-    const btnSave   = document.getElementById('btnSave');
+    // colore
+    let currentColor = loadColor();
+
+    const turnsInfo   = document.getElementById('turnsInfo');
+    const btnSave     = document.getElementById('btnSave');
+    const colorSelect = document.getElementById('pawnColor');
 
     function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
@@ -270,6 +287,20 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       localStorage.setItem(TURNS_KEY, String(turns));
     }
 
+    function loadColor(){
+      const c = localStorage.getItem(COLOR_KEY);
+      return (c === 'red' || c === 'blue' || c === 'green') ? c : 'green';
+    }
+    function saveColor(){
+      localStorage.setItem(COLOR_KEY, currentColor);
+    }
+    function applyColor(){
+      pawns.forEach(p => {
+        p.classList.remove('green','red','blue');
+        p.classList.add(currentColor);
+      });
+    }
+
     function applyPositions(){
       pawns.forEach(p => {
         const id = p.dataset.id; // 'JR'
@@ -277,11 +308,13 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
         p.style.left = pos.x + '%';
         p.style.top  = pos.y + '%';
       });
+      applyColor();
     }
 
     function updateUI(){
       turnsInfo.textContent = `Turno: ${turns} / ${TURN_LIMIT}`;
       btnSave.disabled = (turns >= TURN_LIMIT);
+      colorSelect.value = currentColor;
     }
 
     // Drag & drop con Pointer Events (mouse + touch)
@@ -315,6 +348,13 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       });
     });
 
+    // Cambio colore
+    colorSelect.addEventListener('change', () => {
+      currentColor = colorSelect.value;
+      applyColor();
+      saveColor();
+    });
+
     // Bottone SALVA: salva posizione e, se diversa dall'ultima salvata, incrementa il turno
     btnSave.addEventListener('click', () => {
       if (turns >= TURN_LIMIT) {
@@ -323,7 +363,6 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
         return;
       }
 
-      // confronto “prima vs adesso”
       const changed = JSON.stringify(state) !== JSON.stringify(lastSaved);
       saveState(); // salviamo comunque la posizione corrente
 
@@ -341,6 +380,9 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     });
 
     // Reset totale dalla modale di fine partita
+    const btnResetAll = document.getElementById('btnResetAll');
+    function openEnd(){ modalEnd.classList.add('open'); modalEnd.setAttribute('aria-hidden','false'); }
+    function closeEnd(){ modalEnd.classList.remove('open'); modalEnd.setAttribute('aria-hidden','true'); }
     btnResetAll.addEventListener('click', () => {
       // reset posizione
       state = clone(defaultPos);
@@ -356,7 +398,8 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       closeEnd();
     });
 
-    // Aggiorna posizioni/turni all'avvio
+    // Aggiorna posizioni/turni/colore all'avvio
+    const boardImg = document.getElementById('boardImg');
     boardImg.addEventListener('load', () => { applyPositions(); updateUI(); });
     if (boardImg.complete) { applyPositions(); updateUI(); }
     window.addEventListener('resize', applyPositions);
