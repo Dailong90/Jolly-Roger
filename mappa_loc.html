@@ -85,7 +85,7 @@
 <body>
   <div class="game-wrap">
     <header class="game-head">
-      <h1 class="game-title">Partite – Rossa / Blu / Verde</h1>
+      <h1 class="game-title">Partite Generale</h1>
       <div class="game-controls">
         <span class="turns" id="turnsInfo">Turno: 0 / 15</span>
         <label for="gameSelect" style="color:#ddd; font-size:.9rem; margin-left:6px;">Partita:</label>
@@ -103,8 +103,10 @@
     </main>
 
     <footer class="game-foot">
+      <button class="btn" id="btnResetNow"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
       <button class="btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
     </footer>
+
   </div>
 
   <!-- MODALE FINE PARTITA -->
@@ -130,6 +132,8 @@
     const boardImg = document.getElementById('boardImg');
     const pawn     = board.querySelector('.pawn');
     const btnSave  = document.getElementById('btnSave');
+    const btnResetNow = document.getElementById('btnResetNow');
+    btnResetNow.addEventListener('click', doResetCurrentGame);
     const turnsInfo= document.getElementById('turnsInfo');
     const gameSelect = document.getElementById('gameSelect');
 
@@ -196,6 +200,23 @@
       gameSelect.value = currentGame;
     }
 
+    function doResetCurrentGame(){
+      // reset posizione
+      state = clone(DEFAULT_POS);
+      applyPositions();
+      saveState(currentGame, state);
+      lastSaved = clone(state);
+    
+      // reset turni
+      turns = 0;
+      saveTurns(currentGame, turns);
+      updateUI();
+    
+      // se la modale di fine partita è aperta, chiudila
+      closeEnd();
+    }
+
+    
     /* ===== Drag & drop ===== */
     pawn.addEventListener('pointerdown', (ev) => {
       ev.preventDefault();
@@ -243,18 +264,8 @@
     });
 
     /* ===== Reset solo della partita corrente ===== */
-    btnResetAll.addEventListener('click', () => {
-      state = clone(DEFAULT_POS);
-      applyPositions();
-      saveState(currentGame, state);
-      lastSaved = clone(state);
+    btnResetAll.addEventListener('click', doResetCurrentGame);
 
-      turns = 0;
-      saveTurns(currentGame, turns);
-      updateUI();
-
-      closeEnd();
-    });
 
     /* ===== Cambio partita ===== */
     gameSelect.addEventListener('change', () => {
