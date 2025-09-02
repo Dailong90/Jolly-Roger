@@ -381,28 +381,24 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
     // Reset totale dalla modale di fine partita
     const btnResetAll = document.getElementById('btnResetAll');
-    function openEnd(){ modalEnd.classList.add('open'); modalEnd.setAttribute('aria-hidden','false'); }
-    function closeEnd(){ modalEnd.classList.remove('open'); modalEnd.setAttribute('aria-hidden','true'); }
     btnResetAll.addEventListener('click', () => {
-      // reset posizione
       state = clone(defaultPos);
       applyPositions();
       saveState();
       lastSaved = clone(state);
-
-      // reset turni
+    
       turns = 0;
       saveTurns();
       updateUI();
-
+    
       closeEnd();
     });
-
+    
     // Aggiorna posizioni/turni/colore all'avvio
-    const boardImg = document.getElementById('boardImg');
     boardImg.addEventListener('load', () => { applyPositions(); updateUI(); });
     if (boardImg.complete) { applyPositions(); updateUI(); }
     window.addEventListener('resize', applyPositions);
+
   </script>
 </body>
 </html>
