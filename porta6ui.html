@@ -11,7 +11,7 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* Blocca lo scroll della pagina */
+    /* Pagina bloccata, sfondo fisso */
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -33,7 +33,7 @@
       z-index:-1;
     }
 
-    /* CARD FISSA */
+    /* CARD FISSA + CONTENUTO SCORRIBILE */
     .wrap {
       position: fixed;
       left: 50%;
@@ -41,33 +41,49 @@
       transform: translate(-50%, -50%);
       width: min(560px, 92vw);
       padding: 16px;
+      /* altezza massima utile per attivare lo scroll interno */
+      height: auto;
     }
     .card{
+      display:flex;
+      flex-direction:column;
       width:100%;
       background: #fdf6e3; /* pergamena */
       border: 2px solid #d6c29e;
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
       font-family: 'Georgia', serif;
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height: 70svh;            /* limite visivo */
+      overflow: auto;                /* <-- SCROLL INTERNO */
+      -webkit-overflow-scrolling: touch;
+      gap: 12px;
     }
+
     .riddle{
       background: rgba(255,255,255,.65);
       border:1px dashed #b2926d;
       border-radius:8px;
       padding:14px 16px;
-      margin: 0 0 16px;
       line-height:1.5;
-      font-size:8px;
+      font-size:16px;
       color:#3b2c20;
       white-space:pre-wrap; /* preserva a capo e spazi */
+      /* Lascia che questo blocco occupi lo spazio e abilita lo scroll principale della card */
+      flex: 1 1 auto;
     }
 
     /* Bottone giallo antichizzato */
-    .actions { display:flex; justify-content:center; }
+    .actions {
+      display:flex; justify-content:center;
+      position: sticky; bottom: -1px;    /* resta visibile in fondo */
+      padding-top: 8px;
+      background: linear-gradient(180deg, transparent, rgba(253,246,227,.85) 40%, rgba(253,246,227,1));
+      margin-top: 4px;
+    }
     button{
       cursor:pointer;
       border:1px solid #8b6b1b;
@@ -103,7 +119,7 @@
       position: relative;
       max-width: 92vw;
       max-height: 92vh;
-      width: 1200px;          /* limite superiore desktop */
+      width: 1200px;
       background: #111;
       border-radius: 12px;
       overflow: hidden;
@@ -136,7 +152,7 @@
 <body>
   <main class="wrap">
     <section class="card" aria-labelledby="titolo-regole">
-      <h2 id="titolo-regole" style="margin:0 0 10px; font-size:18px;">Regole</h2>
+      <h2 id="titolo-regole" style="margin:0; font-size:18px;">Regole</h2>
 
       <div class="riddle" id="regole-testo">
 Regole moviemnto Roger
@@ -184,7 +200,6 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     function openModal(){
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
-      // Disabilita l'interazione con lo sfondo via tastiera
       btnClose.focus();
     }
     function closeModal(){
@@ -196,7 +211,6 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     btnMap.addEventListener('click', openModal);
     btnClose.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
-      // chiude se si clicca fuori dal contenitore
       if (e.target === modal) closeModal();
     });
     window.addEventListener('keydown', (e) => {
