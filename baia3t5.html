@@ -81,10 +81,10 @@
       display:block; overflow:hidden; background:#000;
     }
     .board__img{
-      display:block; width:100%; height:auto; user-select:none; pointer-events:none; /* l’immagine non cattura eventi */
+      display:block; width:100%; height:auto; user-select:none; pointer-events:none;
     }
 
-    /* === Pedina singola JR (verde, 60px) === */
+    /* Pedina singola JR – 9x9 px verde */
     .pawn{
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
       width:9px; height:9px; border-radius:50%;
@@ -104,6 +104,16 @@
       border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px; padding:8px 10px; cursor:pointer;
     }
     .toolbar__btn:hover{ background:#2a2a2a; }
+
+    /* Seconda modale per coordinate */
+    .coords-modal__inner{
+      position:relative; max-width:92vw; width:min(480px,92vw); background:#1a1a1a; color:#eee;
+      border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6);
+    }
+    .coords-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#111; }
+    .coords-body{ padding:14px; }
+    .coords-row{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .coords-val{ flex:1; background:#0f0f0f; border:1px solid #333; border-radius:8px; padding:10px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 <body>
@@ -157,6 +167,28 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
       <div class="modal__toolbar">
         <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+        <button class="toolbar__btn" id="btnShowCoords"><i class="bi bi-geo-alt"></i> Coordinate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECONDA MODALE: mostra coordinate -->
+  <div id="modalCoords" class="modal" role="dialog" aria-modal="true" aria-label="Coordinate correnti" aria-hidden="true">
+    <div class="coords-modal__inner">
+      <div class="coords-header">
+        <strong>Coordinate pedina</strong>
+        <button class="modal__close" type="button" id="btnCloseCoords" aria-label="Chiudi (Esc)">Chiudi ✕</button>
+      </div>
+      <div class="coords-body">
+        <div class="coords-row">
+          <div class="coords-val" id="coordText">x: ---% | y: ---%</div>
+          <button class="toolbar__btn" id="btnCopyCoords"><i class="bi bi-clipboard"></i> Copia</button>
+        </div>
+        <div class="coords-row">
+          <div class="coords-val" id="jsonText">{ "JR": { "x": 0, "y": 0 } }</div>
+          <button class="toolbar__btn" id="btnCopyJson"><i class="bi bi-clipboard"></i> Copia JSON</button>
+        </div>
+        <p style="opacity:.8; font-size:.9rem; margin-top:8px;">Mandami questi valori e li fisso come punto di partenza nel codice.</p>
       </div>
     </div>
   </div>
@@ -172,7 +204,23 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    /* ===== Seconda modale (coordinate) ===== */
+    const modalCoords = document.getElementById('modalCoords');
+    const btnCloseCoords = document.getElementById('btnCloseCoords');
+
+    function openCoords(){ modalCoords.classList.add('open'); modalCoords.setAttribute('aria-hidden','false'); }
+    function closeCoords(){ modalCoords.classList.remove('open'); modalCoords.setAttribute('aria-hidden','true'); }
+    btnCloseCoords?.addEventListener('click', closeCoords);
+    modalCoords.addEventListener('click', e => { if (e.target === modalCoords) closeCoords(); });
+
+    // Esc chiude qualunque modale aperta
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (modal.classList.contains('open')) closeModal();
+        if (modalCoords.classList.contains('open')) closeCoords();
+      }
+    });
 
     /* ===== Overlay scroll riddle ===== */
     const riddleBox = document.getElementById('riddleBox');
@@ -224,13 +272,10 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
           const rect = board.getBoundingClientRect();
           const cx = (e.clientX - rect.left) / rect.width * 100;
           const cy = (e.clientY - rect.top)  / rect.height * 100;
-          // vincoli per restare dentro (margine 2% per non tagliare il bordo)
           const x = Math.min(98, Math.max(2, cx));
           const y = Math.min(98, Math.max(2, cy));
-
           pawn.style.left = x + '%';
           pawn.style.top  = y + '%';
-
           state[pawn.dataset.id] = {x, y};
         };
 
@@ -248,21 +293,39 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       });
     });
 
-    // Bottoni toolbar
+    // Toolbar: Salva + Coordinate
     document.getElementById('btnSave').addEventListener('click', saveState);
-    // document.getElementById('btnReset').addEventListener('click', () => {
-    //   state = JSON.parse(JSON.stringify(defaultPos));
-    //   applyPositions(); saveState();
-    // });
-    // // document.getElementById('btnCenter').addEventListener('click', () => {
-    // //   // centra visivamente lungo il bordo inferiore
-    // //   state.JR.y = 80;
-    //   applyPositions(); saveState();
-    // });
+
+    document.getElementById('btnShowCoords').addEventListener('click', async () => {
+      // 1) salva posizione corrente
+      saveState();
+
+      // 2) calcola/arrotonda e mostra nella seconda modale
+      const pos = state.JR || defaultPos.JR;
+      const x = Math.round(pos.x * 10) / 10; // una cifra decimale
+      const y = Math.round(pos.y * 10) / 10;
+
+      const coordText = document.getElementById('coordText');
+      const jsonText  = document.getElementById('jsonText');
+      coordText.textContent = `x: ${x}% | y: ${y}%`;
+      jsonText.textContent  = `{ "JR": { "x": ${x}, "y": ${y} } }`;
+
+      openCoords();
+    });
+
+    // Copia negli appunti
+    document.getElementById('btnCopyCoords').addEventListener('click', async () => {
+      const t = document.getElementById('coordText').textContent;
+      try{ await navigator.clipboard.writeText(t); } catch {}
+    });
+    document.getElementById('btnCopyJson').addEventListener('click', async () => {
+      const t = document.getElementById('jsonText').textContent;
+      try{ await navigator.clipboard.writeText(t); } catch {}
+    });
 
     // Aggiorna posizioni dopo che l’immagine ha calcolato le dimensioni
     boardImg.addEventListener('load', applyPositions);
-    if (boardImg.complete) applyPositions(); // fallback se già in cache
+    if (boardImg.complete) applyPositions();
     window.addEventListener('resize', applyPositions);
   </script>
 </body>
