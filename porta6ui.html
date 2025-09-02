@@ -6,8 +6,7 @@
   <title>Enigma – Regole finali</title>
   <style>
     :root {
-      --bg-url: url('assets/jolly_bay.jpg'); /* usa il .jpg come nel repo */
-      --ok:#10b981; --err:#ef4444;
+      --bg-url: url('assets/jolly_bay.jpg');
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -33,7 +32,7 @@
       z-index:-1;
     }
 
-    /* CARD FISSA + CONTENUTO SCORRIBILE */
+    /* Wrapper card */
     .wrap {
       position: fixed;
       left: 50%;
@@ -41,29 +40,45 @@
       transform: translate(-50%, -50%);
       width: min(560px, 92vw);
       padding: 16px;
-      /* altezza massima utile per attivare lo scroll interno */
-      height: auto;
     }
+
     .card{
       display:flex;
       flex-direction:column;
       width:100%;
-      background: #fdf6e3; /* pergamena */
+      background:#fdf6e3; /* pergamena */
       border: 2px solid #d6c29e;
       border-radius: 12px;
-      padding: 16px;
+      padding: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-      font-family: 'Georgia', serif;
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height: 70svh;            /* limite visivo */
-      overflow: auto;                /* <-- SCROLL INTERNO */
-      -webkit-overflow-scrolling: touch;
-      gap: 12px;
+      max-height: 70svh;          /* la card non scorre */
+      gap: 10px;
     }
 
+    /* Testata con titolo + bottone sempre visibile */
+    .card__head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 2px 4px 0;
+      flex: 0 0 auto;
+    }
+    .card__title{
+      margin:0;
+      font-size:18px;
+      line-height:1.2;
+      color:#3b2c20;
+    }
+
+    /* Testo scorrevole */
     .riddle{
+      flex: 1 1 auto;                 /* occupa spazio rimanente */
+      overflow: auto;                 /* <-- scorre SOLO il testo */
+      -webkit-overflow-scrolling: touch;
       background: rgba(255,255,255,.65);
       border:1px dashed #b2926d;
       border-radius:8px;
@@ -71,33 +86,25 @@
       line-height:1.5;
       font-size:16px;
       color:#3b2c20;
-      white-space:pre-wrap; /* preserva a capo e spazi */
-      /* Lascia che questo blocco occupi lo spazio e abilita lo scroll principale della card */
-      flex: 1 1 auto;
+      white-space:pre-wrap;           /* preserva a capo e spazi */
     }
 
     /* Bottone giallo antichizzato */
-    .actions {
-      display:flex; justify-content:center;
-      position: sticky; bottom: -1px;    /* resta visibile in fondo */
-      padding-top: 8px;
-      background: linear-gradient(180deg, transparent, rgba(253,246,227,.85) 40%, rgba(253,246,227,1));
-      margin-top: 4px;
-    }
-    button{
+    .btn{
       cursor:pointer;
       border:1px solid #8b6b1b;
       border-radius:8px;
-      padding:0 16px;
+      padding:10px 14px;
       font-weight:700;
-      height:46px;
       background: linear-gradient(180deg, #f5d76e, #d4a017);
       color:#3b2c20;
       font-family: 'Georgia', serif;
       box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
       transition: transform .15s ease, box-shadow .15s ease;
+      white-space:nowrap;
+      height:auto;
     }
-    button:hover{
+    .btn:hover{
       transform: translateY(-1px);
       box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
     }
@@ -137,7 +144,6 @@
       position:absolute;
       top:8px; right:8px;
       border:none;
-      height:auto;
       padding:8px 12px;
       line-height:1;
       background:#222;
@@ -145,15 +151,22 @@
       font-weight:700;
       border-radius:8px;
       box-shadow:none;
+      cursor:pointer;
     }
-    .modal__close:hover{ transform:none; box-shadow:none; background:#2f2f2f; }
+    .modal__close:hover{ background:#2f2f2f; }
   </style>
 </head>
 <body>
   <main class="wrap">
     <section class="card" aria-labelledby="titolo-regole">
-      <h2 id="titolo-regole" style="margin:0; font-size:18px;">Regole</h2>
 
+      <!-- Testata fissa: titolo + bottone -->
+      <div class="card__head">
+        <h2 id="titolo-regole" class="card__title">Regole</h2>
+        <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
+      </div>
+
+      <!-- Testo scorrevole -->
       <div class="riddle" id="regole-testo">
 Regole moviemnto Roger
 
@@ -178,14 +191,11 @@ Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, 
 Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
       </div>
 
-      <div class="actions">
-        <button id="btnMap" type="button" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
-      </div>
     </section>
   </main>
 
   <!-- Modale mappa -->
-  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
       <img class="modal__img" src="assets/lucmap25.png" alt="Mappa della caccia al tesoro" />
@@ -193,29 +203,24 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
   </div>
 
   <script>
-    const btnMap = document.getElementById('btnMap');
-    const modal = document.getElementById('modalMap');
-    const btnClose = document.getElementById('btnClose');
+    const btnMap  = document.getElementById('btnMap');
+    const modal   = document.getElementById('modalMap');
+    const btnClose= document.getElementById('btnClose');
 
     function openModal(){
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
-      btnClose.focus();
+      btnClose && btnClose.focus();
     }
     function closeModal(){
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden', 'true');
-      btnMap.focus();
+      btnMap && btnMap.focus();
     }
-
     btnMap.addEventListener('click', openModal);
     btnClose.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
   </script>
 </body>
 </html>
