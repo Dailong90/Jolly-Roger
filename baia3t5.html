@@ -3,83 +3,269 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Enigma – Tappa 3</title>
+  <title>Enigma – Regole finali</title>
+  <!-- Bootstrap Icons (per il caret e le icone dei pulsanti) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
-    :root {
-      --bg-url: url('assets/jolly_bay.jpg'); /* cambia se vuoi */
-      --ok:#10b981; --err:#ef4444;
-    }
+    :root { --bg-url: url('assets/jolly_bay.jpg'); }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      color:#2e2e2e;
-      min-height: 100svh;
-      background:#000;
-      position: relative;
+    body{
+      font-family:'Georgia','Times New Roman',serif; color:#2e2e2e;
+      background:#000; min-height:100svh; position:relative;
     }
-    body::before{ content:""; position:fixed; inset:0; background: var(--bg-url) center/cover no-repeat; z-index:-2; }
-    body::after{ content:""; position:fixed; inset:0; background: rgba(0,0,0,.25); z-index:-1; }
-    .wrap { position: fixed; left:50%; top:65svh; transform:translate(-50%,-50%); width:min(560px,92vw); padding:16px; }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
+
+    .wrap{
+      position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
+      width:min(560px,92vw); padding:16px;
+    }
     .card{
-      width:100%; background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:20px;
+      display:flex; flex-direction:column; gap:10px;
+      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
       box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-      font-family:'Georgia', serif;
-      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
-                       radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      background-image:
+        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height:58svh;
     }
-    .riddle{ background:rgba(255,255,255,.65); border:1px dashed #b2926d; border-radius:8px; padding:14px 16px; margin:0 0 16px; line-height:1.5; font-size:16px; color:#3b2c20; }
-    .field{ display:flex; gap:10px; }
-    input[type="text"]{ flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e; border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px; box-shadow: inset 0 1px 3px rgba(0,0,0,.2); }
-    input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
-    button{
-      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px; font-weight:700; height:46px;
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+    .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
+
+    /* Box scorrevole con overlay fisse */
+    .riddle{
+      position:relative; border:1px dashed #b2926d; border-radius:8px; background:rgba(255,255,255,.65);
+      display:grid;
+    }
+    .riddle__scroller{
+      grid-area:1 / 1;
+      overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px;
+      line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+      max-height:40svh;
+    }
+    .riddle__fade{
+      grid-area:1 / 1; align-self:end; height:72px;
+      background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
+      border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s;
+    }
+    .riddle__indicator{
+      grid-area:1 / 1; justify-self:center; align-self:end; transform:translateY(-10px);
+      font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none; opacity:1; transition:opacity .2s;
+      animation:bounce 1.2s infinite;
+    }
+    @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
+    .riddle.--no-scroll .riddle__fade, .riddle.--no-scroll .riddle__indicator,
+    .riddle.--at-bottom .riddle__fade, .riddle.--at-bottom .riddle__indicator { opacity:0; }
+
+    .btn{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
       background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
       box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition:transform .15s ease, box-shadow .15s ease;
+      transition:transform .15s, box-shadow .15s; white-space:nowrap;
     }
-    button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
-    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
-    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok{ color:var(--ok); } .err{ color:var(--err); }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+    /* MODALE */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
+    .modal.open{ display:flex; }
+    .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); display:flex; flex-direction:column; }
+    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
+    .modal__close:hover{ background:#2f2f2f; }
+
+    /* Tavolo da gioco interattivo */
+    .board{
+      position:relative; flex:1 1 auto; min-height:200px;
+      display:block; overflow:hidden; background:#000;
+    }
+    .board__img{
+      display:block; width:100%; height:auto; user-select:none; pointer-events:none; /* l’immagine non cattura eventi */
+    }
+    .pawn{
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:38px; height:38px; border-radius:50%;
+      background:linear-gradient(180deg,#f5d76e,#d4a017);
+      border:2px solid #8b6b1b; color:#3b2c20; font-weight:800; font-family:'Georgia',serif;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 10px rgba(0,0,0,.45), inset 0 2px 4px rgba(255,255,255,.45);
+      cursor:grab; touch-action:none; user-select:none;
+    }
+    .pawn:active{ cursor:grabbing; }
+    .modal__toolbar{
+      display:flex; gap:8px; padding:10px; justify-content:flex-end; background:#0f0f0f; border-top:1px solid #222;
+    }
+    .toolbar__btn{
+      border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px; padding:8px 10px; cursor:pointer;
+    }
+    .toolbar__btn:hover{ background:#2a2a2a; }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="card">
-      <div class="riddle" id="riddle">
-        <!-- Inserisci qui il testo dell'enigma 3 -->
-        <!-- Esempio: Nel forziere trovi quattro bussole, ma solo una punta alla verità. Qual è l’unica direzione che non mente? -->
+    <section class="card" aria-labelledby="titolo-regole">
+      <div class="card__head">
+        <h2 id="titolo-regole" class="card__title">Regole</h2>
+        <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
       </div>
-      <form id="solveForm" autocomplete="off">
-        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
-        <div class="field">
-          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
-          <button id="btnCheck" type="submit">Verifica</button>
+
+      <div class="riddle" id="riddleBox">
+        <div class="riddle__scroller" id="riddleScroll">
+Regole moviemnto Roger
+
+Roger parte del covo dei Jolly, indicato con la bandiera pirata.
+Si muove lungo le linea tratteggiate solo sule caselle numerate.
+Per nascondere il tesoro Roger deve effettuare esattemamente 15 passi.
+I passi vengono effettuati tra caselle numerate adicenti.
+Sono considerate adiecenti le caselle numerate collegate dalle linee tratteggiate; i punti neri non valgono per Roger.
+
+Regole movimento cacciatore
+
+Il cacciatore parte del covo dei Jolly, indicato con la bandiera pirata.
+Si muove lungo le linea tratteggiate solo sui punti neri tra le caselle numerate.
+Ad ogni turno il cacciatore può fare da 0 a 3 passi.
+Terminato il movimento si troverà con una o più caselle numerate adiencenti alla sua posizione.
+Il cacciatore deve scegliere una casella numerata e chiedere indizi sul passaggio di Roger.
+Nel caso la casella sia presente nel percorso di Roger gli verrà risposto di sì.
+Nel caso la casella non sia presente nel percorso di Roger gli verrà risposto di no.
+L'inizio del turno del cacciatore, riparte dalla posizione in cui si è fermato il turno precedente.
+Il cacciatore può continuare la sua ricerca per un totale di 15 turni.
+Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, si procederà uno alla volta.
+Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
         </div>
-        <div id="feedback" class="feedback" aria-live="polite"></div>
-      </form>
+        <div class="riddle__fade" aria-hidden="true"></div>
+        <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
+      </div>
     </section>
   </main>
 
-  <script>
-    // ====== CONFIG TAPPA 3 ======
-    // Sostituisci con l'hash SHA-256 della soluzione normalizzata.
-    // Default: "nord"
-    const HASH_EXPECTED = "a9a1b7e1c86a6232f8a5d0fb984e0f7f8c7f0a3a3c1736c2a3d2a2f64d5c6d0a"; 
-    const SUCCESS_URL = "porta6ui.html"; // vai alla tappa 4
-    // ===========================
+  <!-- MODALE: tabellone + pedine -->
+  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
+    <div class="modal__inner">
+      <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
 
-    function normalize(str){ return str.trim().toLowerCase().normalize('NFKD').replace(/\p{Diacritic}/gu,'').replace(/[^\p{L}\p{N}]+/gu,''); }
-    async function sha256Hex(input){ const enc=new TextEncoder().encode(input); const d=await crypto.subtle.digest('SHA-256', enc); return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
-    const form=document.getElementById('solveForm'), input=document.getElementById('answer'), feedback=document.getElementById('feedback');
-    form.addEventListener('submit', async (e)=>{ e.preventDefault(); feedback.textContent=''; const value=normalize(input.value); if(!value) return;
-      const hash=await sha256Hex(value);
-      if(hash===HASH_EXPECTED){ feedback.textContent='✅ Corretto!'; feedback.className='feedback ok'; if(SUCCESS_URL) setTimeout(()=>{ window.location.assign(SUCCESS_URL); },600); }
-      else { feedback.textContent='❌ Errato. Riprova!'; feedback.className='feedback err'; }
+      <div class="board" id="board">
+        <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
+        <!-- Tre pedine -->
+        <div class="pawn" data-id="A" title="Pedina A">A</div>
+        <div class="pawn" data-id="B" title="Pedina B">B</div>
+        <div class="pawn" data-id="C" title="Pedina C">C</div>
+      </div>
+
+      <div class="modal__toolbar">
+        <button class="toolbar__btn" id="btnCenter"><i class="bi bi-crosshair2"></i> Centra pedine</button>
+        <button class="toolbar__btn" id="btnReset"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+        <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Modale base ===== */
+    const btnMap  = document.getElementById('btnMap');
+    const modal   = document.getElementById('modalMap');
+    const btnClose= document.getElementById('btnClose');
+
+    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); }
+    function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
+    btnMap.addEventListener('click', openModal);
+    btnClose?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    /* ===== Overlay scroll riddle ===== */
+    const riddleBox = document.getElementById('riddleBox');
+    const scroller  = document.getElementById('riddleScroll');
+    function updateOverlay(){
+      const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
+      riddleBox.classList.toggle('--no-scroll', !canScroll);
+      const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+      riddleBox.classList.toggle('--at-bottom', atBottom);
+    }
+    scroller.addEventListener('scroll', updateOverlay);
+    window.addEventListener('load', () => requestAnimationFrame(updateOverlay));
+    window.addEventListener('resize', () => requestAnimationFrame(updateOverlay));
+
+    /* ===== Board con pedine trascinabili ===== */
+    const board = document.getElementById('board');
+    const boardImg = document.getElementById('boardImg');
+    const pawns = Array.from(board.querySelectorAll('.pawn'));
+
+    const STORAGE_KEY = 'enigma_board_pawns_v1';
+
+    // posizioni in percentuale {A:{x,y},B:{x,y},C:{x,y}}
+    const defaultPos = { A:{x:20,y:80}, B:{x:50,y:80}, C:{x:80,y:80} };
+    let state = loadState() || defaultPos;
+
+    function loadState(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ return null; }
+    }
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function applyPositions(){
+      pawns.forEach(p => {
+        const id = p.dataset.id;
+        const pos = state[id] || defaultPos[id];
+        p.style.left = pos.x + '%';
+        p.style.top  = pos.y + '%';
+      });
+    }
+
+    // Drag & drop con Pointer Events (mouse + touch)
+    pawns.forEach(pawn => {
+      pawn.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        pawn.setPointerCapture(ev.pointerId);
+
+        const onMove = (e) => {
+          const rect = board.getBoundingClientRect();
+          const cx = (e.clientX - rect.left) / rect.width * 100;
+          const cy = (e.clientY - rect.top)  / rect.height * 100;
+          // vincoli per restare dentro (margine 2% per non tagliare il bordo)
+          const x = Math.min(98, Math.max(2, cx));
+          const y = Math.min(98, Math.max(2, cy));
+
+          pawn.style.left = x + '%';
+          pawn.style.top  = y + '%';
+
+          state[pawn.dataset.id] = {x, y};
+        };
+
+        const onUp = (e) => {
+          pawn.releasePointerCapture(e.pointerId);
+          saveState(); // autosalva al rilascio
+          pawn.removeEventListener('pointermove', onMove);
+          pawn.removeEventListener('pointerup', onUp);
+          pawn.removeEventListener('pointercancel', onUp);
+        };
+
+        pawn.addEventListener('pointermove', onMove);
+        pawn.addEventListener('pointerup', onUp);
+        pawn.addEventListener('pointercancel', onUp);
+      });
     });
-    input.addEventListener('keydown', e=>{ if(e.key==='Enter') form.requestSubmit(); });
+
+    // Bottoni toolbar
+    document.getElementById('btnSave').addEventListener('click', saveState);
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state = JSON.parse(JSON.stringify(defaultPos));
+      applyPositions(); saveState();
+    });
+    document.getElementById('btnCenter').addEventListener('click', () => {
+      // centra visivamente lungo il bordo inferiore
+      state.A.y = state.B.y = state.C.y = 80;
+      applyPositions(); saveState();
+    });
+
+    // Aggiorna posizioni dopo che l’immagine ha calcolato le dimensioni
+    boardImg.addEventListener('load', applyPositions);
+    // fallback se la cache l’ha già caricata
+    if (boardImg.complete) applyPositions();
+    // riposiziona in caso di resize (percentuali non servirebbe, ma utile se cambi layout)
+    window.addEventListener('resize', applyPositions);
   </script>
 </body>
 </html>
-
