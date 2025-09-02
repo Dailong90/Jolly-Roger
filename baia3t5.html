@@ -102,10 +102,26 @@
     .pawn.blue { background:linear-gradient(180deg,#60a5fa,#3b82f6); border-color:#1e3a8a; }
 
     /* Toolbar */
-    .modal__toolbar{
-      display:flex; gap:12px; padding:10px; justify-content:space-between; align-items:center;
-      background:#0f0f0f; border-top:1px solid #222;
+    .modal__toolbar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* 4 colonne uguali */
+      gap: 8px;
+      padding: 10px;
+      align-items: center;
+      background: #0f0f0f;
+      border-top: 1px solid #222;
     }
+
+    .modal__toolbar > * {
+      justify-self: center;   /* centra orizzontalmente ogni elemento */
+    }
+    
+    .gruppo_colore_selettore {
+      display: flex;
+      align-items: center;
+      gap: 4px; /* distanza minima tra label e select */
+    }
+
     .toolbar__side{ display:flex; align-items:center; gap:8px; }
     .turns{
       color:#ddd; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
