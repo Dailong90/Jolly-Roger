@@ -10,7 +10,6 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* Pagina bloccata, sfondo fisso */
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -32,7 +31,6 @@
       z-index:-1;
     }
 
-    /* Wrapper card */
     .wrap {
       position: fixed;
       left: 50%;
@@ -46,7 +44,7 @@
       display:flex;
       flex-direction:column;
       width:100%;
-      background:#fdf6e3; /* pergamena */
+      background:#fdf6e3;
       border: 2px solid #d6c29e;
       border-radius: 12px;
       padding: 12px;
@@ -54,11 +52,10 @@
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height: 70svh;          /* la card non scorre */
+      max-height: 60svh;          /* più stretta in verticale */
       gap: 10px;
     }
 
-    /* Testata con titolo + bottone sempre visibile */
     .card__head{
       display:flex;
       align-items:center;
@@ -74,10 +71,10 @@
       color:#3b2c20;
     }
 
-    /* Testo scorrevole */
     .riddle{
-      flex: 1 1 auto;                 /* occupa spazio rimanente */
-      overflow: auto;                 /* <-- scorre SOLO il testo */
+      position: relative;
+      flex: 1 1 auto;
+      overflow: auto;
       -webkit-overflow-scrolling: touch;
       background: rgba(255,255,255,.65);
       border:1px dashed #b2926d;
@@ -86,10 +83,25 @@
       line-height:1.5;
       font-size:16px;
       color:#3b2c20;
-      white-space:pre-wrap;           /* preserva a capo e spazi */
+      white-space:pre-wrap;
     }
 
-    /* Bottone giallo antichizzato */
+    /* Freccia scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      color: #6b5b4b;
+      animation: bounce 1.2s infinite;
+      pointer-events: none;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, 6px); }
+    }
+
     .btn{
       cursor:pointer;
       border:1px solid #8b6b1b;
@@ -109,12 +121,11 @@
       box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
     }
 
-    /* Modale fullscreen immagine */
     .modal {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.85);
-      display: none;           /* visibile solo quando .open */
+      display: none;
       align-items: center;
       justify-content: center;
       padding: 4vw;
@@ -160,13 +171,11 @@
   <main class="wrap">
     <section class="card" aria-labelledby="titolo-regole">
 
-      <!-- Testata fissa: titolo + bottone -->
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Regole</h2>
         <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
       </div>
 
-      <!-- Testo scorrevole -->
       <div class="riddle" id="regole-testo">
 Regole moviemnto Roger
 
@@ -189,12 +198,13 @@ L'inizio del turno del cacciatore, riparte dalla posizione in cui si è fermato 
 Il cacciatore può continuare la sua ricerca per un totale di 15 turni.
 Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, si procederà uno alla volta.
 Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
+
+        <div class="scroll-indicator">⬇️</div>
       </div>
 
     </section>
   </main>
 
-  <!-- Modale mappa -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
@@ -206,6 +216,8 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     const btnMap  = document.getElementById('btnMap');
     const modal   = document.getElementById('modalMap');
     const btnClose= document.getElementById('btnClose');
+    const riddle  = document.getElementById('regole-testo');
+    const indicator = riddle.querySelector('.scroll-indicator');
 
     function openModal(){
       modal.classList.add('open');
@@ -221,6 +233,15 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     btnClose.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    // Nasconde la freccia se sei in fondo
+    riddle.addEventListener('scroll', () => {
+      if (riddle.scrollTop + riddle.clientHeight >= riddle.scrollHeight - 5) {
+        indicator.style.display = 'none';
+      } else {
+        indicator.style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>
