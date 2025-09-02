@@ -112,24 +112,11 @@
       font-size:.95rem; padding:6px 10px; background:#151515; border:1px solid #2a2a2a; border-radius:8px;
     }
     .toolbar__btn{
-      flex: 0 0 auto; border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px; padding:8px 10px; cursor:pointer;
+      border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px; padding:8px 10px; cursor:pointer;
     }
     .toolbar__btn[disabled]{ opacity:.5; cursor:not-allowed; }
     .toolbar__btn:hover:not([disabled]){ background:#2a2a2a; }
 
-    .modal__toolbar--top{
-      border-bottom:1px solid #222;
-    }
-    .modal__toolbar--bottom{
-      border-top:1px solid #222;
-      justify-content:flex-end; /* Reset a destra in basso */
-    }
-    
-    /* Su mobile puoi centrarlo, se preferisci: */
-    @media (max-width:520px){
-      .modal__toolbar--bottom{ justify-content:center; }
-    }
-    
     /* Variante "danger" per evidenziare Reset e separarlo da Salva */
     .toolbar__btn--danger{
       border-color:#6b1b1b; background:#2a1b1b; color:#f2c5c5;
@@ -139,7 +126,7 @@
     /* Mobile: impila le sezioni per massimizzare la distanza tra i bottoni */
     @media (max-width: 520px){
       .modal__toolbar{ flex-direction:column; align-items:stretch; }
-      .toolbar__side{ justify-content:flex-start; }
+      .toolbar__side{ justify-content:space-between; }
       .turns{ align-self:center; }
     }
 
@@ -194,10 +181,23 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
-    
-      <!-- Toolbar TOP: turni + colore + salva -->
-      <div class="modal__toolbar modal__toolbar--top">
+
+      <div class="board" id="board">
+        <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
+        <!-- Una sola pedina -->
+        <div class="pawn green" data-id="JR" title="Pedina JR">JR</div>
+      </div>
+
+      <!-- Toolbar: Reset a sinistra, Turni al centro, Colore+Salva a destra -->
+      <div class="modal__toolbar">
+        <div class="toolbar__side">
+          <button class="toolbar__btn toolbar__btn--danger" id="btnResetNow" title="Resetta la partita (attenzione)">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+        </div>
+
         <div class="turns" id="turnsInfo">Turno: 0 / 15</div>
+
         <div class="toolbar__side">
           <label for="pawnColor" style="color:#ddd; font-size:.9rem; margin-right:4px;">Colore:</label>
           <select id="pawnColor" class="toolbar__btn">
@@ -207,19 +207,6 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
           </select>
           <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
         </div>
-      </div>
-    
-      <!-- Board con pedina -->
-      <div class="board" id="board">
-        <img class="board__img" id="boardImg" src="assets/lucmap25.png" alt="Tabellone di gioco" />
-        <div class="pawn green" data-id="JR" title="Pedina JR">JR</div>
-      </div>
-    
-      <!-- Toolbar BOTTOM: solo reset -->
-      <div class="modal__toolbar modal__toolbar--bottom">
-        <button class="toolbar__btn toolbar__btn--danger" id="btnResetNow" title="Resetta la partita (attenzione)">
-          <i class="bi bi-arrow-counterclockwise"></i> Reset
-        </button>
       </div>
     </div>
   </div>
