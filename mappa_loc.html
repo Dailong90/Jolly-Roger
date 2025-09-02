@@ -104,6 +104,7 @@
 
     <footer class="game-foot" style="justify-content:space-between;">
       <button class="btn" id="btnResetNow"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+      <button class="btn" id="btnToggleTracks">Tracce-OFF</button>
       <button class="btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
     </footer>
   </div>
@@ -135,6 +136,21 @@
     btnResetNow.addEventListener('click', doResetCurrentGame);
     const turnsInfo= document.getElementById('turnsInfo');
     const gameSelect = document.getElementById('gameSelect');
+
+    /* ===== Toggle tracce ===== */
+    const btnToggleTracks = document.getElementById('btnToggleTracks');
+    let tracksOn = false;
+    
+    btnToggleTracks.addEventListener('click', () => {
+      tracksOn = !tracksOn;
+      if (tracksOn) {
+        boardImg.src = "assets/trackluc.png";
+        btnToggleTracks.textContent = "Tracce-ON";
+      } else {
+        boardImg.src = "assets/lucmap25.png";
+        btnToggleTracks.textContent = "Tracce-OFF";
+      }
+    });
 
     /* ===== Modale fine partita ===== */
     const modalEnd    = document.getElementById('modalEnd');
