@@ -4,194 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Enigma – Regole finali</title>
-  <!-- Bootstrap Icons -->
+  <!-- Bootstrap Icons (per il caret) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-
   <style>
-    :root {
-      --bg-url: url('assets/jolly_bay.jpg');
-    }
+    :root { --bg-url: url('assets/jolly_bay.jpg'); }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      color:#2e2e2e;
-      min-height: 100svh;
-      background:#000;
-      position: relative;
+    body{
+      font-family:'Georgia','Times New Roman',serif;
+      color:#2e2e2e; min-height:100svh; background:#000; position:relative;
     }
-    body::before{
-      content:"";
-      position:fixed; inset:0;
-      background: var(--bg-url) center / cover no-repeat;
-      z-index:-2;
-    }
-    body::after{
-      content:"";
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.25);
-      z-index:-1;
-    }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
-    .wrap {
-      position: fixed;
-      left: 50%;
-      top: 65svh;
-      transform: translate(-50%, -50%);
-      width: min(560px, 92vw);
-      padding: 16px;
+    .wrap{
+      position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
+      width:min(560px,92vw); padding:16px;
     }
-
     .card{
-      display:flex;
-      flex-direction:column;
-      width:100%;
-      background:#fdf6e3;
-      border: 2px solid #d6c29e;
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      display:flex; flex-direction:column; gap:10px;
+      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height: 60svh;
-      gap: 10px;
+      max-height:60svh; /* un po' più stretta in verticale */
     }
 
-    .card__head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 2px 4px 0;
-      flex: 0 0 auto;
-    }
-    .card__title{
-      margin:0;
-      font-size:18px;
-      line-height:1.2;
-      color:#3b2c20;
-    }
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+    .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
+    /* Contenitore scrollabile */
     .riddle{
-      position: relative;
-      flex: 1 1 auto;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      background: rgba(255,255,255,.65);
-      border:1px dashed #b2926d;
-      border-radius:8px;
-      padding:14px 16px;
-      line-height:1.5;
-      font-size:16px;
-      color:#3b2c20;
-      white-space:pre-wrap;
+      position:relative; flex:1 1 auto;
+      background:rgba(255,255,255,.65);
+      border:1px dashed #b2926d; border-radius:8px; padding:0; /* padding spostato sull'inner */
+      overflow:hidden; /* nasconde overlay eccedente */
+    }
+    .riddle__inner{
+      padding:14px 16px 24px;   /* spazio per non coprire l’ultimo rigo */
+      line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+      height:100%; overflow:auto; -webkit-overflow-scrolling:touch;
     }
 
-    /* sfumatura */
-    .riddle::after{
-      content:"";
-      position:absolute;
-      bottom:0; left:0; right:0;
-      height:40px;
-      background: linear-gradient(to top, rgba(253,246,227,0.9), rgba(253,246,227,0));
-      pointer-events:none;
-      border-radius:0 0 8px 8px;
+    /* Sfumatura fissa in basso (più grande) */
+    .riddle__fade{
+      position:absolute; left:0; right:0; bottom:0; height:64px; /* <- più alta */
+      background:linear-gradient(to top, rgba(253,246,227,0.95), rgba(253,246,227,0));
+      pointer-events:none; border-radius:0 0 8px 8px; z-index:2;
+      transition:opacity .2s ease;
     }
 
-    /* Indicatore caret */
-    .scroll-indicator {
-      position: absolute;
-      bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 22px;
-      color: #6b5b4b;
-      animation: bounce 1.2s infinite;
-      pointer-events: none;
-      z-index: 2;
+    /* Caret moderno fisso in basso */
+    .riddle__indicator{
+      position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
+      font-size:24px; color:#6b5b4b; z-index:3; pointer-events:none;
+      animation:bounce 1.2s infinite;
+      transition:opacity .2s ease;
     }
-    @keyframes bounce {
-      0%, 100% { transform: translate(-50%, 0); }
-      50% { transform: translate(-50%, 6px); }
-    }
+    @keyframes bounce { 0%,100%{ transform:translate(-50%,0); } 50%{ transform:translate(-50%,6px); } }
 
+    /* Stato: in fondo => nasconde fade + caret */
+    .riddle.--at-bottom .riddle__fade,
+    .riddle.--at-bottom .riddle__indicator{ opacity:0; }
+
+    /* Bottone giallo */
     .btn{
-      cursor:pointer;
-      border:1px solid #8b6b1b;
-      border-radius:8px;
-      padding:10px 14px;
-      font-weight:700;
-      background: linear-gradient(180deg, #f5d76e, #d4a017);
-      color:#3b2c20;
-      font-family: 'Georgia', serif;
-      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition: transform .15s ease, box-shadow .15s ease;
-      white-space:nowrap;
-      height:auto;
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s; white-space:nowrap;
     }
-    .btn:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
-    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 4vw;
-      z-index: 999;
-    }
-    .modal.open { display: flex; }
-
-    .modal__inner{
-      position: relative;
-      max-width: 92vw;
-      max-height: 92vh;
-      width: 1200px;
-      background: #111;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,.6);
-    }
-    .modal__img{
-      display:block;
-      width: 100%;
-      height: auto;
-      max-height: 92vh;
-      object-fit: contain;
-      background:#000;
-    }
-    .modal__close{
-      position:absolute;
-      top:8px; right:8px;
-      border:none;
-      padding:8px 12px;
-      line-height:1;
-      background:#222;
-      color:#f5d76e;
-      font-weight:700;
-      border-radius:8px;
-      box-shadow:none;
-      cursor:pointer;
-    }
+    /* Modale mappa */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
+    .modal.open{ display:flex; }
+    .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); }
+    .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
+    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
     .modal__close:hover{ background:#2f2f2f; }
   </style>
 </head>
 <body>
   <main class="wrap">
     <section class="card" aria-labelledby="titolo-regole">
-
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Regole</h2>
         <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
       </div>
 
-      <div class="riddle" id="regole-testo">
+      <!-- Box con testo scorrevole + overlay fissi -->
+      <div class="riddle" id="riddleBox">
+        <div class="riddle__inner" id="riddleInner">
 Regole moviemnto Roger
 
 Roger parte del covo dei Jolly, indicato con la bandiera pirata.
@@ -213,13 +119,16 @@ L'inizio del turno del cacciatore, riparte dalla posizione in cui si è fermato 
 Il cacciatore può continuare la sua ricerca per un totale di 15 turni.
 Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, si procederà uno alla volta.
 Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
+        </div>
 
-        <div class="scroll-indicator"><i class="bi bi-caret-down-fill"></i></div>
+        <!-- overlay fissi -->
+        <div class="riddle__fade" aria-hidden="true"></div>
+        <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
-
     </section>
   </main>
 
+  <!-- Modale mappa -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
@@ -228,35 +137,27 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
   </div>
 
   <script>
-    const btnMap  = document.getElementById('btnMap');
-    const modal   = document.getElementById('modalMap');
-    const btnClose= document.getElementById('btnClose');
-    const riddle  = document.getElementById('regole-testo');
-    const indicator = riddle.querySelector('.scroll-indicator');
+    const btnMap   = document.getElementById('btnMap');
+    const modal    = document.getElementById('modalMap');
+    const btnClose = document.getElementById('btnClose');
+    const riddleBox   = document.getElementById('riddleBox');
+    const riddleInner = document.getElementById('riddleInner');
 
-    function openModal(){
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden', 'false');
-      btnClose && btnClose.focus();
-    }
-    function closeModal(){
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-      btnMap && btnMap.focus();
-    }
+    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); }
+    function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
     btnMap.addEventListener('click', openModal);
-    btnClose.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+    btnClose?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-    // Nasconde la freccia se sei in fondo
-    riddle.addEventListener('scroll', () => {
-      if (riddle.scrollTop + riddle.clientHeight >= riddle.scrollHeight - 5) {
-        indicator.style.display = 'none';
-      } else {
-        indicator.style.display = 'block';
-      }
-    });
+    // Show/Hide overlay in base alla posizione di scroll
+    function updateOverlay(){
+      const atBottom = Math.ceil(riddleInner.scrollTop + riddleInner.clientHeight) >= riddleInner.scrollHeight;
+      riddleBox.classList.toggle('--at-bottom', atBottom);
+    }
+    riddleInner.addEventListener('scroll', updateOverlay);
+    // Inizializza stato (utile se il testo è corto)
+    window.addEventListener('load', updateOverlay);
   </script>
 </body>
 </html>
