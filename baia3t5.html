@@ -101,11 +101,12 @@
     .pawn.red  { background:linear-gradient(180deg,#f87171,#ef4444); border-color:#991b1b; }
     .pawn.blue { background:linear-gradient(180deg,#60a5fa,#3b82f6); border-color:#1e3a8a; }
 
-
+    /* Toolbar */
     .modal__toolbar{
-      display:flex; gap:8px; padding:10px; justify-content:space-between; align-items:center;
+      display:flex; gap:12px; padding:10px; justify-content:space-between; align-items:center;
       background:#0f0f0f; border-top:1px solid #222;
     }
+    .toolbar__side{ display:flex; align-items:center; gap:8px; }
     .turns{
       color:#ddd; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size:.95rem; padding:6px 10px; background:#151515; border:1px solid #2a2a2a; border-radius:8px;
@@ -115,6 +116,19 @@
     }
     .toolbar__btn[disabled]{ opacity:.5; cursor:not-allowed; }
     .toolbar__btn:hover:not([disabled]){ background:#2a2a2a; }
+
+    /* Variante "danger" per evidenziare Reset e separarlo da Salva */
+    .toolbar__btn--danger{
+      border-color:#6b1b1b; background:#2a1b1b; color:#f2c5c5;
+    }
+    .toolbar__btn--danger:hover{ background:#3a2222; }
+
+    /* Mobile: impila le sezioni per massimizzare la distanza tra i bottoni */
+    @media (max-width: 520px){
+      .modal__toolbar{ flex-direction:column; align-items:stretch; }
+      .toolbar__side{ justify-content:space-between; }
+      .turns{ align-self:center; }
+    }
 
     /* Fine partita */
     .end__inner{
@@ -174,9 +188,17 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
         <div class="pawn green" data-id="JR" title="Pedina JR">JR</div>
       </div>
 
+      <!-- Toolbar: Reset a sinistra, Turni al centro, Colore+Salva a destra -->
       <div class="modal__toolbar">
+        <div class="toolbar__side">
+          <button class="toolbar__btn toolbar__btn--danger" id="btnResetNow" title="Resetta la partita (attenzione)">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+        </div>
+
         <div class="turns" id="turnsInfo">Turno: 0 / 15</div>
-        <div>
+
+        <div class="toolbar__side">
           <label for="pawnColor" style="color:#ddd; font-size:.9rem; margin-right:4px;">Colore:</label>
           <select id="pawnColor" class="toolbar__btn">
             <option value="green">Verde</option>
@@ -269,6 +291,7 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     const turnsInfo = document.getElementById('turnsInfo');
     const btnSave   = document.getElementById('btnSave');
     const colorSelect = document.getElementById('pawnColor');
+    const btnResetNow = document.getElementById('btnResetNow');
 
     function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
@@ -316,6 +339,23 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       if (colorSelect) colorSelect.value = currentColor;
     }
 
+    // Funzione di reset riutilizzabile (toolbar + fine partita)
+    function resetAll(){
+      // reset posizione
+      state = clone(defaultPos);
+      applyPositions();
+      saveState();
+      lastSaved = clone(state);
+
+      // reset turni
+      turns = 0;
+      saveTurns();
+      updateUI();
+
+      // chiudi eventualmente la modale di fine partita
+      closeEnd();
+    }
+
     // Drag & drop con Pointer Events (mouse + touch)
     pawns.forEach(pawn => {
       pawn.addEventListener('pointerdown', (ev) => {
@@ -347,14 +387,13 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       });
     });
 
-    // Aggiunta listener del select //
+    // Listener select colore
     colorSelect.addEventListener('change', () => {
       currentColor = colorSelect.value;
       applyColor();
       saveColor();
     });
 
-    
     // Bottone SALVA: salva posizione e, se diversa dall'ultima salvata, incrementa il turno
     btnSave.addEventListener('click', () => {
       if (turns >= TURN_LIMIT) {
@@ -380,20 +419,12 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       }
     });
 
-    // Reset totale dalla modale di fine partita
-    btnResetAll.addEventListener('click', () => {
-      // reset posizione
-      state = clone(defaultPos);
-      applyPositions();
-      saveState();
-      lastSaved = clone(state);
+    // Reset totale: fine partita
+    btnResetAll.addEventListener('click', resetAll);
 
-      // reset turni
-      turns = 0;
-      saveTurns();
-      updateUI();
-
-      closeEnd();
+    // Reset totale: bottone sempre visibile in toolbar
+    btnResetNow.addEventListener('click', () => {
+      if (confirm('Resettare la partita?')) resetAll();
     });
 
     // Aggiorna posizioni/turni all'avvio
