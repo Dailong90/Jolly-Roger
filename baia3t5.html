@@ -68,14 +68,14 @@
     }
     .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
-    /* MODALE */
+    /* MODALI */
     .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
     .modal.open{ display:flex; }
+
     .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); display:flex; flex-direction:column; }
     .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
     .modal__close:hover{ background:#2f2f2f; }
 
-    /* Tavolo da gioco interattivo */
     .board{
       position:relative; flex:1 1 auto; min-height:200px;
       display:block; overflow:hidden; background:#000;
@@ -98,12 +98,26 @@
     .pawn:active{ cursor:grabbing; }
 
     .modal__toolbar{
-      display:flex; gap:8px; padding:10px; justify-content:flex-end; background:#0f0f0f; border-top:1px solid #222;
+      display:flex; gap:8px; padding:10px; justify-content:space-between; align-items:center;
+      background:#0f0f0f; border-top:1px solid #222;
+    }
+    .turns{
+      color:#ddd; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.95rem; padding:6px 10px; background:#151515; border:1px solid #2a2a2a; border-radius:8px;
     }
     .toolbar__btn{
       border:1px solid #444; background:#1e1e1e; color:#eee; border-radius:8px; padding:8px 10px; cursor:pointer;
     }
-    .toolbar__btn:hover{ background:#2a2a2a; }
+    .toolbar__btn[disabled]{ opacity:.5; cursor:not-allowed; }
+    .toolbar__btn:hover:not([disabled]){ background:#2a2a2a; }
+
+    /* Fine partita */
+    .end__inner{
+      position:relative; max-width:92vw; width:min(520px,92vw); background:#1a1a1a; color:#eee;
+      border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6);
+    }
+    .end__header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#111; }
+    .end__body{ padding:16px; line-height:1.5; }
   </style>
 </head>
 <body>
@@ -156,7 +170,25 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       </div>
 
       <div class="modal__toolbar">
+        <div class="turns" id="turnsInfo">Turno: 0 / 15</div>
         <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE FINE PARTITA -->
+  <div id="modalEnd" class="modal" role="dialog" aria-modal="true" aria-label="Fine partita" aria-hidden="true">
+    <div class="end__inner">
+      <div class="end__header">
+        <strong>Fine partita</strong>
+        <button class="modal__close" type="button" id="btnCloseEnd" aria-label="Chiudi">✕</button>
+      </div>
+      <div class="end__body">
+        <p>Hai raggiunto il <strong>15° turno</strong>.</p>
+        <p>Puoi resettare per ricominciare dall’inizio.</p>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button class="toolbar__btn" id="btnResetAll"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+        </div>
       </div>
     </div>
   </div>
@@ -172,7 +204,24 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    /* ===== Modale fine partita ===== */
+    const modalEnd = document.getElementById('modalEnd');
+    const btnCloseEnd = document.getElementById('btnCloseEnd');
+    const btnResetAll = document.getElementById('btnResetAll');
+
+    function openEnd(){ modalEnd.classList.add('open'); modalEnd.setAttribute('aria-hidden','false'); }
+    function closeEnd(){ modalEnd.classList.remove('open'); modalEnd.setAttribute('aria-hidden','true'); }
+    btnCloseEnd?.addEventListener('click', closeEnd);
+    modalEnd.addEventListener('click', e => { if (e.target === modalEnd) closeEnd(); });
+
+    // Esc chiude qualunque modale aperta
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (modal.classList.contains('open')) closeModal();
+        if (modalEnd.classList.contains('open')) closeEnd();
+      }
+    });
 
     /* ===== Overlay scroll riddle ===== */
     const riddleBox = document.getElementById('riddleBox');
@@ -193,16 +242,32 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
     const pawns = Array.from(board.querySelectorAll('.pawn'));
 
     const STORAGE_KEY = 'enigma_board_pawnJR_v1';
+    const TURNS_KEY   = 'enigma_board_turns_v1';
+    const TURN_LIMIT  = 15;
 
     // posizione in percentuale {JR:{x,y}} – punto iniziale richiesto
     const defaultPos = { JR:{x:9.3,y:42.2} };
     let state = loadState() || defaultPos;
+    let lastSaved = clone(state);
+    let turns = loadTurns(); // 0 ... 15
+
+    const turnsInfo = document.getElementById('turnsInfo');
+    const btnSave   = document.getElementById('btnSave');
+
+    function clone(o){ return JSON.parse(JSON.stringify(o)); }
 
     function loadState(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ return null; }
     }
     function saveState(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+    function loadTurns(){
+      const n = parseInt(localStorage.getItem(TURNS_KEY), 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+    function saveTurns(){
+      localStorage.setItem(TURNS_KEY, String(turns));
     }
 
     function applyPositions(){
@@ -212,6 +277,11 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
         p.style.left = pos.x + '%';
         p.style.top  = pos.y + '%';
       });
+    }
+
+    function updateUI(){
+      turnsInfo.textContent = `Turno: ${turns} / ${TURN_LIMIT}`;
+      btnSave.disabled = (turns >= TURN_LIMIT);
     }
 
     // Drag & drop con Pointer Events (mouse + touch)
@@ -233,7 +303,7 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
         const onUp = (e) => {
           pawn.releasePointerCapture(e.pointerId);
-          saveState(); // autosalva al rilascio
+          // non salviamo automaticamente: si conta il turno solo col pulsante Salva
           pawn.removeEventListener('pointermove', onMove);
           pawn.removeEventListener('pointerup', onUp);
           pawn.removeEventListener('pointercancel', onUp);
@@ -245,12 +315,50 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
       });
     });
 
-    // Toolbar: solo Salva
-    document.getElementById('btnSave').addEventListener('click', saveState);
+    // Bottone SALVA: salva posizione e, se diversa dall'ultima salvata, incrementa il turno
+    btnSave.addEventListener('click', () => {
+      if (turns >= TURN_LIMIT) {
+        updateUI();
+        openEnd();
+        return;
+      }
 
-    // Aggiorna posizioni dopo che l’immagine ha calcolato le dimensioni
-    boardImg.addEventListener('load', applyPositions);
-    if (boardImg.complete) applyPositions();
+      // confronto “prima vs adesso”
+      const changed = JSON.stringify(state) !== JSON.stringify(lastSaved);
+      saveState(); // salviamo comunque la posizione corrente
+
+      if (changed) {
+        turns = Math.min(TURN_LIMIT, turns + 1);
+        saveTurns();
+        lastSaved = clone(state);
+      }
+
+      updateUI();
+
+      if (turns >= TURN_LIMIT) {
+        openEnd();
+      }
+    });
+
+    // Reset totale dalla modale di fine partita
+    btnResetAll.addEventListener('click', () => {
+      // reset posizione
+      state = clone(defaultPos);
+      applyPositions();
+      saveState();
+      lastSaved = clone(state);
+
+      // reset turni
+      turns = 0;
+      saveTurns();
+      updateUI();
+
+      closeEnd();
+    });
+
+    // Aggiorna posizioni/turni all'avvio
+    boardImg.addEventListener('load', () => { applyPositions(); updateUI(); });
+    if (boardImg.complete) { applyPositions(); updateUI(); }
     window.addEventListener('resize', applyPositions);
   </script>
 </body>
