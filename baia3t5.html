@@ -111,15 +111,15 @@
       background: #0f0f0f;
       border-top: 1px solid #222;
     }
-
+    
     .modal__toolbar > * {
-      justify-self: center;   /* centra orizzontalmente ogni elemento */
+      justify-self: center;  /* centra ogni elemento nella propria colonna */
     }
     
     .gruppo_colore_selettore {
       display: flex;
       align-items: center;
-      gap: 4px; /* distanza minima tra label e select */
+      gap: 6px;
     }
 
     .toolbar__side{ display:flex; align-items:center; gap:8px; }
@@ -206,28 +206,28 @@ Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacci
 
       <!-- Toolbar: Reset a sinistra, Turni al centro, Colore+Salva a destra -->
       <div class="modal__toolbar">
-        <div class="toolbar__side">
-          <button class="toolbar__btn toolbar__btn--danger" id="btnResetNow" title="Resetta la partita (attenzione)">
-            <i class="bi bi-arrow-counterclockwise"></i> Reset
-          </button>
-        </div>
-
+        <!-- Colonna 1 -->
+        <button class="toolbar__btn toolbar__btn--danger" id="btnResetNow" title="Resetta la partita (attenzione)">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </button>
+      
+        <!-- Colonna 2 -->
         <div class="turns" id="turnsInfo">Turno: 0 / 15</div>
-
-        <div class="toolbar__side">
-          <div class="gruppo_colore_selettore">
-            <label for="pawnColor" style="color:#ddd; font-size:.9rem; margin-right:4px;">Colore:</label>
-            <select id="pawnColor" class="toolbar__btn">
-              <option value="green">Verde</option>
-              <option value="red">Rosso</option>
-              <option value="blue">Blu</option>
-            </select>
-          </div>
-          <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
+      
+        <!-- Colonna 3 -->
+        <div class="gruppo_colore_selettore">
+          <label for="pawnColor" style="color:#ddd; font-size:.9rem;">Colore:</label>
+          <select id="pawnColor" class="toolbar__btn">
+            <option value="green">Verde</option>
+            <option value="red">Rosso</option>
+            <option value="blue">Blu</option>
+          </select>
         </div>
+      
+        <!-- Colonna 4 -->
+        <button class="toolbar__btn" id="btnSave"><i class="bi bi-save"></i> Salva</button>
       </div>
-    </div>
-  </div>
+
 
   <!-- MODALE FINE PARTITA -->
   <div id="modalEnd" class="modal" role="dialog" aria-modal="true" aria-label="Fine partita" aria-hidden="true">
