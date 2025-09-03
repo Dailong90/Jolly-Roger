@@ -84,7 +84,7 @@
 
     .sticker{
       position:absolute;
-      width: var(--sticker-w, 15px) !important; /* <— controllo via CSS var */
+      width: var(--sticker-w, 20px) !important; /* <— controllo via CSS var */
       height:auto;
       user-select:none; -webkit-user-drag:none; touch-action:none;
       cursor:grab; z-index:5;
@@ -209,7 +209,7 @@ Mi ricordo che:
       const safe = 16;
       const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
       // limiti ragionevoli (min 64px, max 160px)
-      return Math.max(15, Math.min(15, w));
+      return Math.max(20, Math.min(20, w));
     }
 
     function initialDockLayout(){
