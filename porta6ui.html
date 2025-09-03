@@ -99,22 +99,6 @@
       background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
       pointer-events:none; z-index:1;
     }
-
-    .stage {
-      position: relative;
-      display: inline-block; /* stage largo come il contenuto */
-    }
-    
-    .modal__img {
-      display: block;
-      width: auto;          /* non più 100% */
-      max-width: 100%;      /* non esce dal contenitore */
-      height: auto;
-      max-height: 92vh;
-      object-fit: contain;
-      background: #000;
-    }
-
   </style>
 </head>
 <body>
@@ -234,7 +218,7 @@ Mi ricordo che:
       // imposta la width coerente per tutte le pergamene
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
-        // el.style.setProperty('--sticker-w', `${w}px`);
+        el.style.setProperty('--sticker-w', `${w}px`);
       });
 
       const rect = stage.getBoundingClientRect();
@@ -318,7 +302,7 @@ Mi ricordo che:
         const w = computeStickerWidth();
         IMGS.forEach(({id})=>{
           const el = document.getElementById(id);
-          // el.style.setProperty('--sticker-w', `${w}px`);
+          el.style.setProperty('--sticker-w', `${w}px`);
         });
 
         if(saved && Array.isArray(saved)){
