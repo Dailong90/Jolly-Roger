@@ -99,6 +99,22 @@
       background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
       pointer-events:none; z-index:1;
     }
+
+    .stage {
+      position: relative;
+      display: inline-block; /* stage largo come il contenuto */
+    }
+    
+    .modal__img {
+      display: block;
+      width: auto;          /* non più 100% */
+      max-width: 100%;      /* non esce dal contenitore */
+      height: auto;
+      max-height: 92vh;
+      object-fit: contain;
+      background: #000;
+    }
+
   </style>
 </head>
 <body>
