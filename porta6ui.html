@@ -42,28 +42,22 @@
     .riddle{
       position:relative; border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
-      /* Grid per sovrapporre overlay allo scroller */
       display:grid;
     }
-    /* area scorrevole vera e propria */
     .riddle__scroller{
-      grid-area:1 / 1; /* sotto alle overlay */
+      grid-area:1 / 1;
       overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:14px 16px 32px; /* spazio extra in basso per non coprire l’ultimo rigo */
+      padding:14px 16px 32px;
       line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-      max-height:40svh; /* determina quanto si può scorrere dentro la card */
+      max-height:40svh;
     }
-
-    /* SFUMATURA FISSA IN BASSO */
     .riddle__fade{
       grid-area:1 / 1; align-self:end;
-      height:84px; /* più grande */
+      height:84px;
       background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
       border-radius:0 0 8px 8px;
       pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
     }
-
-    /* CARET FISSO IN BASSO */
     .riddle__indicator{
       grid-area:1 / 1; justify-self:center; align-self:end;
       transform:translateY(-10px);
@@ -73,7 +67,6 @@
     }
     @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
 
-    /* Stati: niente scroll o fine scroll => nasconde overlay */
     .riddle.--no-scroll .riddle__fade,
     .riddle.--no-scroll .riddle__indicator,
     .riddle.--at-bottom .riddle__fade,
@@ -91,9 +84,31 @@
     .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
     .modal.open{ display:flex; }
     .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); }
-    .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
-    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
+    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
     .modal__close:hover{ background:#2f2f2f; }
+
+    /* Stage: mappa + layer adesivi */
+    .stage { position:relative; width:100%; height:auto; }
+    .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
+
+    .stickers { position:absolute; inset:0; overflow:visible; }
+
+    .sticker{
+      position:absolute; width:min(140px,15vw);
+      user-select:none; -webkit-user-drag:none; touch-action:none;
+      cursor:grab; z-index:5;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
+      transition: box-shadow .15s ease;
+    }
+    .sticker:active{ cursor:grabbing; }
+    .sticker.--dragging{ box-shadow:0 8px 18px rgba(0,0,0,.55); z-index:9; }
+
+    /* Guida visiva bassa (solo estetica) */
+    .dock-hint{
+      position:absolute; left:0; right:0; bottom:0; height:60px;
+      background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
+      pointer-events:none; z-index:1;
+    }
   </style>
 </head>
 <body>
@@ -128,39 +143,197 @@ Mi ricordo che:
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa del mondo" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
-      <img class="modal__img" src="assets/world_map.png" alt="Mappa del mondo" />
+
+      <!-- Stage: immagine + layer stickers -->
+      <div class="stage" id="stage">
+        <img class="modal__img" id="mapImg" src="assets/world_map.png" alt="Mappa del mondo" />
+        <div class="stickers" id="stickers"></div>
+        <div class="dock-hint" aria-hidden="true"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    // Modale
-    const btnMap  = document.getElementById('btnMap');
-    const modal   = document.getElementById('modalMap');
-    const btnClose= document.getElementById('btnClose');
+    /* ===== Modale ===== */
+    const btnMap   = document.getElementById('btnMap');
+    const modal    = document.getElementById('modalMap');
+    const btnClose = document.getElementById('btnClose');
 
-    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); }
+    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); ensureStickersInitialized(); }
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-    // Overlay scroll
+    /* ===== Overlay scroll ===== */
     const riddleBox = document.getElementById('riddleBox');
     const scroller  = document.getElementById('riddleScroll');
-
     function updateOverlay(){
       const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
       riddleBox.classList.toggle('--no-scroll', !canScroll);
-
       const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
       riddleBox.classList.toggle('--at-bottom', atBottom);
     }
-
     scroller.addEventListener('scroll', updateOverlay);
-    // inizializza dopo layout e su resize/orientamento
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
     window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
+
+    /* ===== Stickers (drag & drop + persistenza) ===== */
+    const stage      = document.getElementById('stage');
+    const stickersEl = document.getElementById('stickers');
+    const mapImg     = document.getElementById('mapImg');
+    const IMGS = [1,2,3,4,5,6,7].map(i => ({ id:`perg_${i}`, src:`assets/perg_${i}.png` }));
+    const STORAGE_KEY = 'perg_positions_v1';
+    let zCounter = 10;
+    let initialized = false;
+
+    function readSaved(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }catch{ return null; }
+    }
+    function savePositions(){
+      const rect = stage.getBoundingClientRect();
+      const data = IMGS.map(({id})=>{
+        const el = document.getElementById(id);
+        if(!el) return {id, xPct:0, yPct:0};
+        const srect = el.getBoundingClientRect();
+        const left = srect.left - rect.left;
+        const top  = srect.top  - rect.top;
+        const xPct = (left) / Math.max(1, (rect.width - srect.width));
+        const yPct = (top)  / Math.max(1, (rect.height - srect.height));
+        return { id, xPct: Math.min(Math.max(xPct,0),1), yPct: Math.min(Math.max(yPct,0),1) };
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    function placeByPercent(el, xPct, yPct){
+      const rect = stage.getBoundingClientRect();
+      const sw   = el.offsetWidth;
+      const sh   = el.offsetHeight;
+      const left = xPct * Math.max(0, rect.width  - sw);
+      const top  = yPct * Math.max(0, rect.height - sh);
+      el.style.left = `${left}px`;
+      el.style.top  = `${top}px`;
+    }
+    function initialDockLayout(){
+      // in fila in basso, centrati
+      const rect = stage.getBoundingClientRect();
+      const gap = 12;
+      const widths = [];
+      IMGS.forEach(({id})=>{
+        const el = document.getElementById(id);
+        widths.push(el.offsetWidth);
+      });
+      const totalW = widths.reduce((a,b)=>a+b,0) + gap*(IMGS.length-1);
+      let curX = Math.max(8, (rect.width - totalW)/2);
+      const y = Math.max(0, rect.height - (Math.max(...widths) * 0.75) - 12); // un po' sopra il bordo
+      IMGS.forEach(({id}, idx)=>{
+        const el = document.getElementById(id);
+        el.style.left = `${curX}px`;
+        el.style.top  = `${y}px`;
+        curX += el.offsetWidth + gap;
+      });
+    }
+
+    function createSticker({id, src}){
+      const img = document.createElement('img');
+      img.id = id;
+      img.src = src;
+      img.alt = id;
+      img.className = 'sticker';
+      img.draggable = false;
+      stickersEl.appendChild(img);
+      enableDrag(img);
+      return img;
+    }
+
+    function enableDrag(el){
+      let startX=0, startY=0, origLeft=0, origTop=0, dragging=false;
+
+      function onPointerDown(e){
+        e.preventDefault();
+        el.classList.add('--dragging');
+        el.setPointerCapture(e.pointerId);
+        dragging = true;
+        const rect = el.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        origLeft = rect.left;
+        origTop  = rect.top;
+        el.style.zIndex = ++zCounter;
+      }
+
+      function onPointerMove(e){
+        if(!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const stageRect = stage.getBoundingClientRect();
+        const selfRect  = el.getBoundingClientRect();
+
+        let newLeft = origLeft + dx - stageRect.left;
+        let newTop  = origTop  + dy - stageRect.top;
+
+        // limiti dentro lo stage
+        newLeft = Math.min(Math.max(0, newLeft), stageRect.width  - selfRect.width);
+        newTop  = Math.min(Math.max(0, newTop ), stageRect.height - selfRect.height);
+
+        el.style.left = `${newLeft}px`;
+        el.style.top  = `${newTop}px`;
+      }
+
+      function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        el.releasePointerCapture(e.pointerId);
+        el.classList.remove('--dragging');
+        savePositions();
+      }
+
+      el.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    function ensureStickersInitialized(){
+      if(initialized) return;
+      const doInit = ()=>{
+        // crea tutti gli sticker
+        IMGS.forEach(obj => createSticker(obj));
+
+        const saved = readSaved();
+        if(saved && Array.isArray(saved)){
+          // ripristina percentuali
+          saved.forEach(({id,xPct,yPct})=>{
+            const el = document.getElementById(id);
+            if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+          });
+        }else{
+          // layout iniziale in fila in basso
+          initialDockLayout();
+          savePositions();
+        }
+        initialized = true;
+      };
+
+      if (mapImg.complete) {
+        // l'immagine è già caricata: possiamo usare le dimensioni reali dello stage
+        // serve un frame perché offsetWidth/Height siano affidabili
+        requestAnimationFrame(doInit);
+      } else {
+        mapImg.addEventListener('load', () => requestAnimationFrame(doInit), { once:true });
+      }
+    }
+
+    // Adatta le posizioni (percentuali) al resize
+    window.addEventListener('resize', ()=>{
+      if(!initialized) return;
+      const saved = readSaved();
+      if(!saved) return;
+      saved.forEach(({id,xPct,yPct})=>{
+        const el = document.getElementById(id);
+        if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+      });
+    });
   </script>
 </body>
 </html>
