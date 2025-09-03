@@ -84,7 +84,8 @@
 
     .sticker{
       position:absolute;
-      /* niente width fissa: la decido via JS per farle entrare tutte */
+      width: var(--sticker-w, 25px) !important; /* <— controllo via CSS var */
+      height:auto;
       user-select:none; -webkit-user-drag:none; touch-action:none;
       cursor:grab; z-index:5;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
@@ -217,7 +218,7 @@ Mi ricordo che:
       // imposta la width coerente per tutte le pergamene
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
-        el.style.width = `${w}px`;
+        el.style.setProperty('--sticker-w', `${w}px`);
       });
 
       const rect = stage.getBoundingClientRect();
@@ -301,7 +302,7 @@ Mi ricordo che:
         const w = computeStickerWidth();
         IMGS.forEach(({id})=>{
           const el = document.getElementById(id);
-          el.style.width = `${w}px`; // applico anche se ci sono posizioni salvate, così entrano sempre visibili
+          el.style.setProperty('--sticker-w', `${w}px`);
         });
 
         if(saved && Array.isArray(saved)){
