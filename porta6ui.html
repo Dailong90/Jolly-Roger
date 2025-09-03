@@ -3,177 +3,183 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Enigma – Regole finali</title>
-  <!-- Bootstrap Icons (per il caret) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <title>Enigma – Mappa del Mondo</title>
   <style>
-    :root { --bg-url: url('assets/jolly_bay.jpg'); }
+    :root{
+      --bg-url: url('assets/world_map.png'); /* immagine intera, senza tagli */
+      --ok:#10b981; --err:#ef4444;
+    }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+    html, body { margin:0; padding:0; height:100%; }
     body{
-      font-family:'Georgia','Times New Roman',serif; color:#2e2e2e;
-      background:#000; min-height:100svh; position:relative;
+      font-family: 'Georgia','Times New Roman',serif;
+      color:#2e2e2e;
+      min-height:100svh;
+      background:#000;         /* bande laterali/alto-basso se necessario */
+      position:relative;
+      overflow:auto;           /* permetti eventuale scroll se l’immagine è alta */
     }
-    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
-    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
+    /* SFONDO: immagine sempre intera (contain), centrata, senza tagli */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background: var(--bg-url) center center / contain no-repeat;
+      z-index:-2;
+    }
+
+    /* leggero velo per leggere meglio la card, ma lasciamo la mappa nitida */
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background: linear-gradient(to top, rgba(0,0,0,.28), rgba(0,0,0,.10) 40%, rgba(0,0,0,.0) 70%);
+      z-index:-1;
+      pointer-events:none;
+    }
+
+    /* CARD in basso, centrata */
     .wrap{
-      position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
-      width:min(560px,92vw); padding:16px;
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom: max(16px, env(safe-area-inset-bottom) + 12px);
+      width:min(820px, 94vw);
+      padding:0 8px; /* micro respiro ai lati su mobile */
     }
 
     .card{
-      display:flex; flex-direction:column; gap:10px;
-      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
+      width:100%;
+      background:#fdf6e3;
+      border:2px solid #d6c29e;
+      border-radius:12px;
+      padding:20px;
       box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      font-family:'Georgia',serif;
+      backdrop-filter:saturate(1.1);
       background-image:
-        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+        radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height:58svh; /* leggermente più stretta in verticale */
     }
 
-    .card__head{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0;
-    }
-    .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
-
-    /* BOX SCORREVOLE con overlay fisse */
     .riddle{
-      position:relative; border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
-      /* Grid per sovrapporre overlay allo scroller */
-      display:grid;
-    }
-    /* area scorrevole vera e propria */
-    .riddle__scroller{
-      grid-area:1 / 1; /* sotto alle overlay */
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:14px 16px 32px; /* spazio extra in basso per non coprire l’ultimo rigo */
-      line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-      max-height:40svh; /* determina quanto si può scorrere dentro la card */
+      border:1px dashed #b2926d;
+      border-radius:8px;
+      padding:14px 16px;
+      margin:0 0 16px;
+      line-height:1.5;
+      font-size:16px;
+      color:#3b2c20;
     }
 
-    /* SFUMATURA FISSA IN BASSO */
-    .riddle__fade{
-      grid-area:1 / 1; align-self:end;
-      height:84px; /* più grande */
-      background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
-      border-radius:0 0 8px 8px;
-      pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
+    .field{ display:flex; gap:10px; }
+    input[type="text"]{
+      flex:1; background:#fff8e1;
+      border:1px solid #b2926d; color:#2e2e2e;
+      border-radius:8px; padding:12px 14px;
+      outline:none; font-size:16px; height:46px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
     }
+    input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
 
-    /* CARET FISSO IN BASSO */
-    .riddle__indicator{
-      grid-area:1 / 1; justify-self:center; align-self:end;
-      transform:translateY(-10px);
-      font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none;
-      animation:bounce 1.2s infinite;
-      opacity:1; transition:opacity .2s ease;
-    }
-    @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
-
-    /* Stati: niente scroll o fine scroll => nasconde overlay */
-    .riddle.--no-scroll .riddle__fade,
-    .riddle.--no-scroll .riddle__indicator,
-    .riddle.--at-bottom .riddle__fade,
-    .riddle.--at-bottom .riddle__indicator { opacity:0; }
-
-    .btn{
-      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
-      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
+    button{
+      cursor:pointer;
+      border:1px solid #8b6b1b;
+      border-radius:8px;
+      padding:0 16px;
+      font-weight:700;
+      height:46px;
+      background:linear-gradient(180deg,#f5d76e,#d4a017);
+      color:#3b2c20;
+      font-family:'Georgia',serif;
       box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition:transform .15s, box-shadow .15s; white-space:nowrap;
+      transition: transform .15s ease, box-shadow .15s ease;
+      white-space:nowrap;
     }
-    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+    button:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
+    }
 
-    /* Modale mappa */
-    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
-    .modal.open{ display:flex; }
-    .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); }
-    .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
-    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; }
-    .modal__close:hover{ background:#2f2f2f; }
+    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
+    .ok{ color:var(--ok); }
+    .err{ color:var(--err); }
+
+    /* touch-friendly spacing su schermi piccoli */
+    @media (max-width:420px){
+      .card{ padding:16px; }
+      .riddle{ font-size:15px; }
+      input[type="text"]{ font-size:15px; height:44px; }
+      button{ height:44px; }
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="card" aria-labelledby="titolo-regole">
-      <div class="card__head">
-        <h2 id="titolo-regole" class="card__title">Regole</h2>
-        <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Mappa</button>
+  <!-- Card bassa -->
+  <main class="wrap" role="main">
+    <section class="card" aria-labelledby="enigma-title">
+      <div class="riddle" id="riddle">
+        <h2 id="enigma-title" style="margin:0 0 8px; font-size:18px;">Enigma</h2>
+        <p>
+          Rotte tracciate senza un capitano,<br/>
+          cercando il segno nel silenzio umano;<br/>
+          segui i confini dove il blu si placa,<br/>
+          e ciò che resta… la risposta svelata.
+        </p>
+        <p class="no-autolink" name="format-detection" content="telephone=no">Sequenza: 20 - 88 - 5 - 53 - 28 - 68 - 53</p>
       </div>
 
-      <!-- Testo scorrevole + overlay fisse -->
-      <div class="riddle" id="riddleBox">
-        <div class="riddle__scroller" id="riddleScroll">
-Regole moviemnto Roger
-
-Roger parte del covo dei Jolly, indicato con la bandiera pirata.
-Si muove lungo le linea tratteggiate solo sule caselle numerate.
-Per nascondere il tesoro Roger deve effettuare esattemamente 15 passi.
-I passi vengono effettuati tra caselle numerate adicenti.
-Sono considerate adiecenti le caselle numerate collegate dalle linee tratteggiate; i punti neri non valgono per Roger.
-
-Regole movimento cacciatore
-
-Il cacciatore parte del covo dei Jolly, indicato con la bandiera pirata.
-Si muove lungo le linea tratteggiate solo sui punti neri tra le caselle numerate.
-Ad ogni turno il cacciatore può fare da 0 a 3 passi.
-Terminato il movimento si troverà con una o più caselle numerate adiencenti alla sua posizione.
-Il cacciatore deve scegliere una casella numerata e chiedere indizi sul passaggio di Roger.
-Nel caso la casella sia presente nel percorso di Roger gli verrà risposto di sì.
-Nel caso la casella non sia presente nel percorso di Roger gli verrà risposto di no.
-L'inizio del turno del cacciatore, riparte dalla posizione in cui si è fermato il turno precedente.
-Il cacciatore può continuare la sua ricerca per un totale di 15 turni.
-Effettuato un turno, se saranno presenti altre squadre per chiedere un'indizio, si procederà uno alla volta.
-Se dopo 15 turni si necessita di altri 15 indizi per trovare il tesoro, il cacciatore dovrà aspettare 5 minuti per ricominciare.
+      <form id="solveForm" autocomplete="off">
+        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
+        <div class="field">
+          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
+          <button id="btnCheck" type="submit" aria-label="Verifica soluzione">Verifica</button>
         </div>
-
-        <!-- overlay fisse -->
-        <div class="riddle__fade" aria-hidden="true"></div>
-        <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
-      </div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+      </form>
     </section>
   </main>
 
-  <!-- Modale mappa -->
-  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa della caccia al tesoro" aria-hidden="true">
-    <div class="modal__inner">
-      <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
-      <img class="modal__img" src="assets/lucmap25.png" alt="Mappa della caccia al tesoro" />
-    </div>
-  </div>
-
   <script>
-    // Modale
-    const btnMap  = document.getElementById('btnMap');
-    const modal   = document.getElementById('modalMap');
-    const btnClose= document.getElementById('btnClose');
+    /* Sostituisci con l’hash della soluzione normalizzata */
+    const HASH_EXPECTED = "ee4db9c9644f23fdf8475f4d8ceb7e07eeb8d1da53538d37126c6fe4a26abed3";
+    const SUCCESS_URL = "isola2ar.html";
 
-    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); }
-    function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
-    btnMap.addEventListener('click', openModal);
-    btnClose?.addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
-
-    // Overlay scroll
-    const riddleBox = document.getElementById('riddleBox');
-    const scroller  = document.getElementById('riddleScroll');
-
-    function updateOverlay(){
-      const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
-      riddleBox.classList.toggle('--no-scroll', !canScroll);
-
-      const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
-      riddleBox.classList.toggle('--at-bottom', atBottom);
+    function normalize(str){
+      return str.trim().toLowerCase().normalize('NFKD')
+        .replace(/\p{Diacritic}/gu,'')
+        .replace(/[^\p{L}\p{N}]+/gu,'');
     }
 
-    scroller.addEventListener('scroll', updateOverlay);
-    // inizializza dopo layout e su resize/orientamento
-    window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
-    window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
+    async function sha256Hex(input){
+      const enc = new TextEncoder().encode(input);
+      const digest = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const form = document.getElementById('solveForm');
+    const input = document.getElementById('answer');
+    const feedback = document.getElementById('feedback');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      feedback.textContent = '';
+      const value = normalize(input.value);
+      if (!value) return;
+      const hash = await sha256Hex(value);
+      if (hash === HASH_EXPECTED){
+        feedback.textContent = '✅ Corretto!';
+        feedback.className = 'feedback ok';
+        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
+      } else {
+        feedback.textContent = '❌ Errato. Riprova!';
+        feedback.className = 'feedback err';
+      }
+    });
+
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
   </script>
 </body>
 </html>
