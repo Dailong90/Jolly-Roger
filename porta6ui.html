@@ -99,6 +99,14 @@
       background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
       pointer-events:none; z-index:1;
     }
+
+    /* Centra il contenuto (stage) dentro la finestra della modale */
+    .modal__inner{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
   </style>
 </head>
 <body>
@@ -159,6 +167,7 @@ Mi ricordo che:
       mapImg.style.maxHeight = 'none';
       stage.style.width = w + 'px';
       stage.style.height = 'auto';
+      stage.style.margin = '0 auto';  // centra orizzontalmente
     }
 
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
