@@ -113,24 +113,38 @@
   <main class="wrap">
     <section class="card" aria-labelledby="titolo-regole">
       <div class="card__head">
-        <h2 id="titolo-regole" class="card__title">Indicazioni</h2>
+        <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
         <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
       </div>
 
       <div class="riddle" id="riddleBox">
         <div class="riddle__scroller" id="riddleScroll">
-Mi ricordo che:
+Eccoti finalmente, ma quanto ci hai messo? Lascia stare, continuiamo. Aspetta non ricordo la password... ma ho un modo tutto mio per trovarlo.
+Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
+Oh no, il vento ha staccato tutti i fogli! Le città che ho visitato sono: Dakar, Katmandu, L'Avana, Montemiletto, Seattle, Teheran e Tokyo. Rimetti i fogli al loro posto secondo queste indicazioni:
 
--Teheran è stata visitata solo dopo il 1991.
--Tokyo è avvenuta esattamente 4 anni dopo Katmandu.
--Dakar è stata visitata negli anni ’80.
--Tra Teheran e Tokyo c’è  una sola tappa in mezzo.
--L’Avana è successiva a Teheran, ma non è negli anni 2000.
+-Teheran l'ho visitata dopo il 1991.
+-Ho visto Tokyo 4 anni dopo Katmandu.
+-A Dakar sono andato negli anni ’80.
+-Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
+-L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
 -Dopo Tokyo ho visto Seattle.
+          
         </div>
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
+       <!-- Soluzione  -->
+      <form id="solutionForm" onsubmit="checkSolution(event)" style="margin-top:12px">
+        <label for="solutionInput" style="display:block; margin-bottom:6px; font-weight:bold; color:#3b2c20;">
+          Inserisci la soluzione:
+        </label>
+        <input id="solutionInput" type="text"
+               style="width:100%; padding:8px; border:1px solid #8b6b1b; border-radius:6px; font-size:16px;"
+               autocomplete="off" />
+        <button type="submit" class="btn" style="margin-top:10px; width:100%;">Verifica</button>
+        <p id="solutionFeedback" style="margin-top:8px; font-weight:bold;"></p>
+      </form>
     </section>
   </main>
 
@@ -371,6 +385,39 @@ Mi ricordo che:
 
     // Init overlay after load
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
+
+    /* ===== Verifica soluzione (hash) ===== */
+    // Hash SHA-256 della soluzione normalizzata (trim + UPPERCASE)
+    const SOL_HASH = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
+  
+    async function sha256Hex(str){
+      const data = new TextEncoder().encode(str);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  
+    async function checkSolution(e){
+      e.preventDefault();
+      const inputEl = document.getElementById('solutionInput');
+      const feedback = document.getElementById('solutionFeedback');
+      const normalized = (inputEl.value || "").trim().toUpperCase();
+  
+      try{
+        const hash = await sha256Hex(normalized);
+        if(hash === SOL_HASH){
+          feedback.textContent = '✅ Corretto! Avete trovato la soluzione.';
+          feedback.style.color = 'var(--ok, #10b981)';
+        }else{
+          feedback.textContent = '❌ Soluzione errata, riprova.';
+          feedback.style.color = 'var(--err, #ef4444)';
+        }
+      }catch(err){
+        feedback.textContent = '⚠️ Errore inatteso nella verifica.';
+        feedback.style.color = '#b45309';
+        console.error(err);
+      }
+    }
+    
   </script>
 </body>
 </html>
