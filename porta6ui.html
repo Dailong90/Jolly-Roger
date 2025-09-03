@@ -35,6 +35,55 @@
     .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
+    /* Campo soluzione */
+    #solveForm {
+      margin-top: 14px;
+    }
+    
+    #solveForm .tip {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: #3b2c20;
+    }
+    
+    #solveForm .field {
+      display: flex;
+      gap: 6px;
+    }
+    
+    #solveForm input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 1rem;
+      border: 1px solid #8b6b1b;
+      border-radius: 6px;
+      outline: none;
+    }
+    
+    #solveForm button {
+      padding: 8px 14px;
+      font-weight: 700;
+      border: 1px solid #8b6b1b;
+      border-radius: 6px;
+      background: linear-gradient(180deg,#f5d76e,#d4a017);
+      color: #3b2c20;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+    }
+    
+    #solveForm button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
+    }
+    
+    #solveForm .feedback {
+      margin-top: 8px;
+      font-weight: bold;
+    }
+
+
     .riddle{
       position:relative; border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
@@ -135,15 +184,13 @@ Oh no, il vento ha staccato tutti i fogli! Le città che ho visitato sono: Dakar
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
        <!-- Soluzione  -->
-      <form id="solutionForm" onsubmit="checkSolution(event)" style="margin-top:12px">
-        <label for="solutionInput" style="display:block; margin-bottom:6px; font-weight:bold; color:#3b2c20;">
-          Inserisci la soluzione:
-        </label>
-        <input id="solutionInput" type="text"
-               style="width:100%; padding:8px; border:1px solid #8b6b1b; border-radius:6px; font-size:16px;"
-               autocomplete="off" />
-        <button type="submit" class="btn" style="margin-top:10px; width:100%;">Verifica</button>
-        <p id="solutionFeedback" style="margin-top:8px; font-weight:bold;"></p>
+      <form id="solveForm" autocomplete="off">
+        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
+        <div class="field">
+          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
+          <button id="btnCheck" type="submit">Verifica</button>
+        </div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
       </form>
     </section>
   </main>
@@ -387,36 +434,40 @@ Oh no, il vento ha staccato tutti i fogli! Le città che ho visitato sono: Dakar
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
 
     /* ===== Verifica soluzione (hash) ===== */
-    // Hash SHA-256 della soluzione normalizzata (trim + UPPERCASE)
+    // Hash SHA-256 della soluzione normalizzata
     const SOL_HASH = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
-  
+    
+    function normalize(str){
+      return (str || "")
+        .toUpperCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // toglie accenti
+        .replace(/\s+/g, ""); // toglie spazi
+    }
+    
     async function sha256Hex(str){
       const data = new TextEncoder().encode(str);
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+      const digest = await crypto.subtle.digest("SHA-256", data);
+      return [...new Uint8Array(digest)]
+        .map(b => b.toString(16).padStart(2,"0"))
+        .join("");
     }
-  
-    async function checkSolution(e){
+    
+    document.getElementById("solveForm").addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const inputEl = document.getElementById('solutionInput');
-      const feedback = document.getElementById('solutionFeedback');
-      const normalized = (inputEl.value || "").trim().toUpperCase();
-  
-      try{
-        const hash = await sha256Hex(normalized);
-        if(hash === SOL_HASH){
-          feedback.textContent = '✅ Corretto! Avete trovato la soluzione.';
-          feedback.style.color = 'var(--ok, #10b981)';
-        }else{
-          feedback.textContent = '❌ Soluzione errata, riprova.';
-          feedback.style.color = 'var(--err, #ef4444)';
-        }
-      }catch(err){
-        feedback.textContent = '⚠️ Errore inatteso nella verifica.';
-        feedback.style.color = '#b45309';
-        console.error(err);
+      const val = document.getElementById("answer").value.trim();
+      const feedback = document.getElementById("feedback");
+      const norm = normalize(val);
+      const hash = await sha256Hex(norm);
+    
+      if(hash === SOL_HASH){
+        feedback.textContent = "✅ Corretto! Avete trovato la soluzione.";
+        feedback.style.color = "var(--ok,#10b981)";
+      }else{
+        feedback.textContent = "❌ Soluzione errata, riprova.";
+        feedback.style.color = "var(--err,#ef4444)";
       }
-    }
+    });
+
     
   </script>
 </body>
