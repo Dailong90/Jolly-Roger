@@ -209,7 +209,7 @@ Mi ricordo che:
       const safe = 16;
       const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
       // limiti ragionevoli (min 64px, max 160px)
-      return Math.max(15, Math.min(50, w));
+      return Math.max(15, Math.min(15, w));
     }
 
     function initialDockLayout(){
