@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Enigma – Regole mappa mondo</title>
-  <!-- Bootstrap Icons (per il caret) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
     :root { --bg-url: url('assets/jolly_bay.jpg'); }
@@ -30,43 +29,33 @@
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height:58svh; /* leggermente più stretta in verticale */
+      max-height:58svh;
     }
 
-    .card__head{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0;
-    }
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
-    /* BOX SCORREVOLE con overlay fisse */
     .riddle{
       position:relative; border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
       display:grid;
     }
     .riddle__scroller{
-      grid-area:1 / 1;
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:14px 16px 32px;
-      line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+      grid-area:1 / 1; overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
       max-height:40svh;
     }
     .riddle__fade{
-      grid-area:1 / 1; align-self:end;
-      height:84px;
+      grid-area:1 / 1; align-self:end; height:84px;
       background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
-      border-radius:0 0 8px 8px;
-      pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
+      border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
     }
     .riddle__indicator{
-      grid-area:1 / 1; justify-self:center; align-self:end;
-      transform:translateY(-10px);
+      grid-area:1 / 1; justify-self:center; align-self:end; transform:translateY(-10px);
       font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none;
-      animation:bounce 1.2s infinite;
-      opacity:1; transition:opacity .2s ease;
+      animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
     }
     @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
-
     .riddle.--no-scroll .riddle__fade,
     .riddle.--no-scroll .riddle__indicator,
     .riddle.--at-bottom .riddle__fade,
@@ -94,16 +83,16 @@
     .stickers { position:absolute; inset:0; overflow:visible; }
 
     .sticker{
-      position:absolute; width:min(140px,15vw);
+      position:absolute;
+      /* niente width fissa: la decido via JS per farle entrare tutte */
       user-select:none; -webkit-user-drag:none; touch-action:none;
       cursor:grab; z-index:5;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
-      transition: box-shadow .15s ease;
+      transition: box-shadow .15s ease, width .15s ease;
     }
     .sticker:active{ cursor:grabbing; }
     .sticker.--dragging{ box-shadow:0 8px 18px rgba(0,0,0,.55); z-index:9; }
 
-    /* Guida visiva bassa (solo estetica) */
     .dock-hint{
       position:absolute; left:0; right:0; bottom:0; height:60px;
       background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
@@ -119,7 +108,6 @@
         <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
       </div>
 
-      <!-- Testo scorrevole + overlay fisse -->
       <div class="riddle" id="riddleBox">
         <div class="riddle__scroller" id="riddleScroll">
 Mi ricordo che:
@@ -131,8 +119,6 @@ Mi ricordo che:
 -L’Avana è successiva a Teheran, ma non è negli anni 2000.
 -Dopo Tokyo ho visto Seattle.
         </div>
-
-        <!-- overlay fisse -->
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
@@ -143,8 +129,6 @@ Mi ricordo che:
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa del mondo" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
-
-      <!-- Stage: immagine + layer stickers -->
       <div class="stage" id="stage">
         <img class="modal__img" id="mapImg" src="assets/world_map.png" alt="Mappa del mondo" />
         <div class="stickers" id="stickers"></div>
@@ -214,23 +198,38 @@ Mi ricordo che:
       el.style.left = `${left}px`;
       el.style.top  = `${top}px`;
     }
-    function initialDockLayout(){
-      // in fila in basso, centrati
+
+    // Calcola una larghezza che consenta 7 sticker in fila con gap
+    function computeStickerWidth(){
       const rect = stage.getBoundingClientRect();
       const gap = 12;
-      const widths = [];
+      const n = IMGS.length;
+      // un piccolo padding di sicurezza ai lati
+      const safe = 16;
+      const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
+      // limiti ragionevoli (min 64px, max 160px)
+      return Math.max(64, Math.min(160, w));
+    }
+
+    function initialDockLayout(){
+      const gap = 12;
+      const w = computeStickerWidth();
+      // imposta la width coerente per tutte le pergamene
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
-        widths.push(el.offsetWidth);
+        el.style.width = `${w}px`;
       });
-      const totalW = widths.reduce((a,b)=>a+b,0) + gap*(IMGS.length-1);
-      let curX = Math.max(8, (rect.width - totalW)/2);
-      const y = Math.max(0, rect.height - (Math.max(...widths) * 0.75) - 12); // un po' sopra il bordo
-      IMGS.forEach(({id}, idx)=>{
+
+      const rect = stage.getBoundingClientRect();
+      const totalW = w*IMGS.length + gap*(IMGS.length-1);
+      let curX = Math.max(8, Math.floor((rect.width - totalW)/2));
+      const y = Math.max(0, rect.height - (w * 0.75) - 12); // poco sopra il bordo
+
+      IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
         el.style.left = `${curX}px`;
         el.style.top  = `${y}px`;
-        curX += el.offsetWidth + gap;
+        curX += w + gap;
       });
     }
 
@@ -273,7 +272,6 @@ Mi ricordo che:
         let newLeft = origLeft + dx - stageRect.left;
         let newTop  = origTop  + dy - stageRect.top;
 
-        // limiti dentro lo stage
         newLeft = Math.min(Math.max(0, newLeft), stageRect.width  - selfRect.width);
         newTop  = Math.min(Math.max(0, newTop ), stageRect.height - selfRect.height);
 
@@ -297,18 +295,21 @@ Mi ricordo che:
     function ensureStickersInitialized(){
       if(initialized) return;
       const doInit = ()=>{
-        // crea tutti gli sticker
         IMGS.forEach(obj => createSticker(obj));
 
         const saved = readSaved();
+        const w = computeStickerWidth();
+        IMGS.forEach(({id})=>{
+          const el = document.getElementById(id);
+          el.style.width = `${w}px`; // applico anche se ci sono posizioni salvate, così entrano sempre visibili
+        });
+
         if(saved && Array.isArray(saved)){
-          // ripristina percentuali
           saved.forEach(({id,xPct,yPct})=>{
             const el = document.getElementById(id);
             if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
           });
         }else{
-          // layout iniziale in fila in basso
           initialDockLayout();
           savePositions();
         }
@@ -316,24 +317,31 @@ Mi ricordo che:
       };
 
       if (mapImg.complete) {
-        // l'immagine è già caricata: possiamo usare le dimensioni reali dello stage
-        // serve un frame perché offsetWidth/Height siano affidabili
         requestAnimationFrame(doInit);
       } else {
         mapImg.addEventListener('load', () => requestAnimationFrame(doInit), { once:true });
       }
     }
 
-    // Adatta le posizioni (percentuali) al resize
+    // Su resize: ricalcolo la width che permette di vederle tutte e riposiziono
     window.addEventListener('resize', ()=>{
       if(!initialized) return;
-      const saved = readSaved();
-      if(!saved) return;
-      saved.forEach(({id,xPct,yPct})=>{
+      const w = computeStickerWidth();
+      IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
-        if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+        if(el) el.style.width = `${w}px`;
       });
+      const saved = readSaved();
+      if(saved){
+        saved.forEach(({id,xPct,yPct})=>{
+          const el = document.getElementById(id);
+          if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+        });
+      }
     });
+
+    // Init overlay after load
+    window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
   </script>
 </body>
 </html>
