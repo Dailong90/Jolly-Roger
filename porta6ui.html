@@ -324,14 +324,16 @@ Mi ricordo che:
       }
     }
 
-    // Su resize: ricalcolo la width che permette di vederle tutte e riposiziono
+    // Su resize: ricalcolo la width e riposiziono
     window.addEventListener('resize', ()=>{
       if(!initialized) return;
       const w = computeStickerWidth();
+    
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
-        if(el) el.style.width = `${w}px`;
+        if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
       });
+    
       const saved = readSaved();
       if(saved){
         saved.forEach(({id,xPct,yPct})=>{
@@ -340,6 +342,7 @@ Mi ricordo che:
         });
       }
     });
+
 
     // Init overlay after load
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
