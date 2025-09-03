@@ -144,7 +144,23 @@ Mi ricordo che:
     const modal    = document.getElementById('modalMap');
     const btnClose = document.getElementById('btnClose');
 
-    function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); btnClose && btnClose.focus(); ensureStickersInitialized(); }
+    function openModal(){ 
+      modal.classList.add('open'); 
+      modal.setAttribute('aria-hidden','false'); 
+      btnClose && btnClose.focus(); 
+      ensureStickersInitialized();
+    
+      // 🔒 BLOCCA le dimensioni visibili attuali (aggiunta)
+      const w = mapImg.getBoundingClientRect().width;
+      const h = mapImg.getBoundingClientRect().height;
+      mapImg.style.width = w + 'px';
+      mapImg.style.height = h + 'px';
+      mapImg.style.maxWidth = 'none';
+      mapImg.style.maxHeight = 'none';
+      stage.style.width = w + 'px';
+      stage.style.height = 'auto';
+    }
+
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
@@ -325,23 +341,23 @@ Mi ricordo che:
     }
 
     // Su resize: ricalcolo la width e riposiziono
-    window.addEventListener('resize', ()=>{
-      if(!initialized) return;
-      const w = computeStickerWidth();
+    // window.addEventListener('resize', ()=>{
+    //   if(!initialized) return;
+    //   const w = computeStickerWidth();
     
-      IMGS.forEach(({id})=>{
-        const el = document.getElementById(id);
-        if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
-      });
+    //   IMGS.forEach(({id})=>{
+    //     const el = document.getElementById(id);
+    //     if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
+    //   });
     
-      const saved = readSaved();
-      if(saved){
-        saved.forEach(({id,xPct,yPct})=>{
-          const el = document.getElementById(id);
-          if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
-        });
-      }
-    });
+    //   const saved = readSaved();
+    //   if(saved){
+    //     saved.forEach(({id,xPct,yPct})=>{
+    //       const el = document.getElementById(id);
+    //       if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+    //     });
+    //   }
+    // });
 
 
     // Init overlay after load
