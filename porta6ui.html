@@ -17,6 +17,35 @@
     body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
     body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
+    /* Bottone grande centrato */
+    .btn--big{
+      display:block;
+      width:min(360px, 80vw);
+      margin: 0 auto 10px;
+      text-align:center;
+      font-size:18px;
+      padding:12px 16px;
+    }
+    
+    /* Card nascosta inizialmente */
+    .card.is-hidden{
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      pointer-events:none;
+      visibility:hidden;
+    }
+    
+    /* Animazione di ingresso */
+    .card{
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+    }
+    .card:not(.is-hidden){
+      opacity:1;
+      transform:none;
+      visibility:visible;
+      transition-delay:0s;
+    }
+
     .wrap{
       position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
       width:min(560px,92vw); padding:16px;
@@ -141,7 +170,10 @@
 </head>
 <body>
   <main class="wrap">
-    <section class="card" aria-labelledby="titolo-regole">
+    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+      Dannato vento!
+    </button>
+    <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
         <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
@@ -447,6 +479,52 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       }
     });
 
+    /* ===== Reveal card on demand ===== */
+    (function(){
+      const REVEAL_KEY = 'card_revealed_v1';
+      const btn = document.getElementById('btnReveal');
+      const card = document.getElementById('contentCard');
+      const title = document.getElementById('titolo-regole'); // lo hai già
+    
+      function reveal(){
+        card.classList.remove('is-hidden');
+        card.setAttribute('aria-hidden','false');
+        btn.setAttribute('aria-expanded','true');
+        btn.style.display = 'none';
+        // focus accessibile sull’intestazione
+        if(title) title.setAttribute('tabindex','-1'), title.focus();
+        try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+      }
+    
+      function init(){
+        // Se in passato è già stata rivelata, saltare il bottone
+        try{
+          if(localStorage.getItem(REVEAL_KEY) === '1'){
+            btn.style.display = 'none';
+            card.classList.remove('is-hidden');
+            card.setAttribute('aria-hidden','false');
+            btn.setAttribute('aria-expanded','true');
+            return;
+          }
+        }catch{}
+    
+        // Stato iniziale: card nascosta, bottone visibile
+        card.classList.add('is-hidden');
+        card.setAttribute('aria-hidden','true');
+        btn.setAttribute('aria-expanded','false');
+    
+        // Click o Enter/Space
+        btn.addEventListener('click', reveal);
+        btn.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+        });
+      }
+    
+      // partire subito
+      init();
+    })();
+
+    
     
     // Invio con Enter
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
