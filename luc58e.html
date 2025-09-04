@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (start fisso ogni blackout)</title>
+<title>Enigma – Lanterna (stanza buia)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -15,14 +15,16 @@
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
     user-select: none; touch-action: none;
   }
-  body.blackout .scene{ background:#000 !important; }
+  body.blackout .scene{
+    background: url('assets/stanza_buia.jpg') center/cover no-repeat #000;
+  }
 
   .secret{
     position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:24px; pointer-events:none;
   }
   .secret p{ margin:.35rem 0; max-width:min(720px,92vw); color:#e7e7e7; }
 
-  /* Interruttore fisso, invisibile ma cliccabile (hotspot) */
+  /* Interruttore fisso, invisibile ma cliccabile */
   .switch{
     position:absolute;
     left:92.56%; top:31.66%;
@@ -32,7 +34,7 @@
     opacity:0; cursor:pointer; z-index:30;
   }
 
-  /* Overlay nero con buco circolare (attivo solo in blackout) */
+  /* Overlay con “maschera torcia” */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
   }
@@ -47,7 +49,7 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Torcia: visibile solo in blackout, non ruota */
+  /* Torcia: visibile solo in blackout */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%);
@@ -58,8 +60,8 @@
 </style>
 </head>
 <body>
-  <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
-    <div class="secret" aria-hidden="false">
+  <div class="scene" id="scene">
+    <div class="secret">
       <div>
         <p>La chiave non brilla se non la illumini bene…</p>
         <p><strong>N 40° 56.●●●  E 014° 59.●●●</strong></p>
@@ -67,9 +69,9 @@
     </div>
 
     <!-- Interruttore invisibile -->
-    <button id="roomSwitch" class="switch" aria-label="Interruttore (toggle blackout)"></button>
+    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
-    <!-- Overlay scuro -->
+    <!-- Overlay con buco torcia -->
     <div class="dark" id="dark"></div>
 
     <!-- Torcia -->
@@ -83,11 +85,11 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  // Posizione di partenza FISSA per ogni ingresso in blackout
+  // Posizione iniziale fissa
   const DEFAULT_TORCH_PCT = { left: 68.37, top: 66.85 };
 
   let blackout = false;
-  let suppressPointerOnce = false; // evita spostamenti dovuti al click sull'interruttore
+  let suppressPointerOnce = false;
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
@@ -98,29 +100,24 @@
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
 
-  // Toggle blackout – la torcia riparte SEMPRE da DEFAULT_TORCH_PCT
-  ['pointerdown','pointerup','click'].forEach(evt=>{
-    switchB.addEventListener(evt, (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      if(evt === 'click'){
-        blackout = !blackout;
-        document.body.classList.toggle('blackout', blackout);
+  // Toggle blackout
+  switchB.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    blackout = !blackout;
+    document.body.classList.toggle('blackout', blackout);
 
-        if(blackout){
-          const r = sceneRect();
-          const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
-          const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
-          setTorchPos(x, y);
-          // Evita che il click di toggle generi un primo pointer usato come "move"
-          suppressPointerOnce = true;
-          setTimeout(()=>{ suppressPointerOnce = false; }, 60);
-        }
-      }
-    }, {passive:false});
-  });
+    if(blackout){
+      const r = sceneRect();
+      const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
+      const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
+      setTorchPos(x, y);
+      suppressPointerOnce = true;
+      setTimeout(()=>{ suppressPointerOnce = false; }, 60);
+    }
+  }, {passive:false});
 
-  // Movimento torcia (consentito solo in blackout, ma NON salvato)
+  // Movimento torcia
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -130,13 +127,12 @@
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
     setTorchPos(x, y);
-    // nessun salvataggio: ogni nuovo blackout riparte dal DEFAULT_TORCH_PCT
   }
   scene.addEventListener('pointermove', pointerScene, {passive:true});
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Resize: se sei in blackout, riallinea la torcia al default percentuale
+  // Resize
   window.addEventListener('resize', ()=>{
     if(blackout){
       const r = sceneRect();
