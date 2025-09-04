@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna Candela</title>
+<title>Enigma – Lanterna con tremolio bianco</title>
 <style>
-  :root{ --x:50vw; --y:50vh; --r:80px; }
+  :root{ --x:50vw; --y:50vh; --r:100px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
   body{ font-family: Georgia, "Times New Roman", serif; background:#000; color:#ddd; overflow:hidden; }
@@ -29,33 +29,33 @@
     opacity:0; cursor:pointer; z-index:30;
   }
 
-  /* Overlay con effetto candela */
+  /* Overlay con luce bianca + tremolio */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
     z-index:20;
   }
   body.blackout .dark{
     opacity:1;
-    animation: flicker 1.5s infinite alternate;
+    animation: flicker 1.8s infinite alternate;
     background:
       radial-gradient(circle at var(--x) var(--y),
-        rgba(255, 210, 120, 0.0) 0,                /* centro trasparente */
-        rgba(255, 200, 100, 0.25) calc(var(--r) - 15px),  /* giallo chiaro */
-        rgba(255, 170, 60, 0.55) var(--r),              /* arancio medio */
-        rgba(0,0,0,0.85) calc(var(--r) + 60px),
+        rgba(255,255,255,0) 0,
+        rgba(255,255,255,0) calc(var(--r) - 15px),
+        rgba(255,255,255,0.3) var(--r),
+        rgba(0,0,0,0.8) calc(var(--r) + 80px),
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Animazione tremolio */
+  /* Animazione tremolio delicato */
   @keyframes flicker {
-    0%   { --r:75px; }
-    25%  { --r:82px; }
-    50%  { --r:78px; }
-    75%  { --r:85px; }
-    100% { --r:80px; }
+    0%   { --r:95px; }
+    25%  { --r:103px; }
+    50%  { --r:98px; }
+    75%  { --r:106px; }
+    100% { --r:100px; }
   }
 
-  /* Torcia grafica */
+  /* Torcia grafica (tua modifica) */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%);
@@ -65,7 +65,7 @@
   }
   body.blackout .torch{ display:block; }
 
-  /* Testo illuminabile */
+  /* Testo illuminabile (tua modifica) */
   .blackout-text{
     position:absolute; top:18px; left:18px;
     font-size:10px; color:#030303;
@@ -83,10 +83,10 @@
     <!-- Testo illuminabile -->
     <div class="blackout-text">Sai cosa prendo?</div>
 
-    <!-- Overlay candela -->
+    <!-- Overlay luce -->
     <div class="dark" id="dark"></div>
 
-    <!-- Immagine candela/torcia -->
+    <!-- Immagine torcia/candela -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
   </div>
 
@@ -128,7 +128,7 @@
     }
   }, {passive:false});
 
-  // Movimento candela
+  // Movimento luce
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
