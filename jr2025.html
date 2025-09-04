@@ -79,6 +79,23 @@
     }
     input[type="text"]:focus{ border-color: #c9a85b; box-shadow: 0 0 6px rgba(201,168,91,.6); }
 
+    .field {
+      display: flex;
+      gap: 10px;
+      align-items: center; /* allinea verticalmente input e bottone */
+    }
+    
+    .field input[type="text"] {
+      flex: 1 1 auto;   /* si adatta alla larghezza disponibile */
+      min-width: 0;     /* importantissimo: impedisce che forzi larghezze minime */
+    }
+    
+    .field button {
+      flex: 0 0 auto;   /* resta della sua dimensione naturale */
+      white-space: nowrap; /* impedisce di spezzare il testo del bottone */
+    }
+
+
     /* Bottone giallo antichizzato */
     button{
       cursor:pointer;
