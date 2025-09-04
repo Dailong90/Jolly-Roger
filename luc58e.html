@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (stanza buia)</title>
+<title>Enigma – Lanterna (testo illuminato)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -19,12 +19,7 @@
     background: url('assets/stanza_buia.jpg') center/cover no-repeat #000;
   }
 
-  .secret{
-    position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:24px; pointer-events:none;
-  }
-  .secret p{ margin:.35rem 0; max-width:min(720px,92vw); color:#e7e7e7; }
-
-  /* Interruttore fisso, invisibile ma cliccabile */
+  /* Interruttore invisibile */
   .switch{
     position:absolute;
     left:92.56%; top:31.66%;
@@ -34,9 +29,10 @@
     opacity:0; cursor:pointer; z-index:30;
   }
 
-  /* Overlay con “maschera torcia” */
+  /* Overlay con maschera torcia */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
+    z-index:20;
   }
   body.blackout .dark{
     opacity:1;
@@ -49,29 +45,35 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Torcia: visibile solo in blackout */
+  /* Torcia */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%);
     pointer-events:none; display:none;
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
+    z-index:30;
   }
   body.blackout .torch{ display:block; }
+
+  /* Testo da illuminare */
+  .blackout-text{
+    position:absolute; top:8px; left:8px;
+    font-size:10px; color:#e7e7e7;
+    z-index:10; /* sotto l’overlay scuro */
+    white-space:nowrap;
+  }
+  body:not(.blackout) .blackout-text{ display:none; }
 </style>
 </head>
 <body>
   <div class="scene" id="scene">
-    <div class="secret">
-      <div>
-        <p>La chiave non brilla se non la illumini bene…</p>
-        <p><strong>N 40° 56.●●●  E 014° 59.●●●</strong></p>
-      </div>
-    </div>
-
-    <!-- Interruttore invisibile -->
+    <!-- Interruttore -->
     <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
-    <!-- Overlay con buco torcia -->
+    <!-- Testo nascosto dal buio, visibile solo nella torcia -->
+    <div class="blackout-text">Sai cosa prendo?</div>
+
+    <!-- Overlay torcia -->
     <div class="dark" id="dark"></div>
 
     <!-- Torcia -->
@@ -85,7 +87,6 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  // Posizione iniziale fissa
   const DEFAULT_TORCH_PCT = { left: 68.37, top: 66.85 };
 
   let blackout = false;
