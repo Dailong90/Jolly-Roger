@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (fix coord torcia)</title>
+<title>Enigma – Lanterna (panel always on)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -57,29 +57,20 @@
   }
   body.blackout .torch{ display:block; }
 
-  /* HUD con bottone coord torcia */
-  .hud{
-    position:absolute; left:12px; right:12px; top:12px;
-    display:flex; justify-content:flex-end; gap:10px;
-    font-size:14px; color:#ccc; z-index:40;
+  /* Pannello sempre visibile (non interattivo verso la scena) */
+  .panel{
+    position:absolute; top:12px; right:12px; z-index:50;
+    background:#0f0f0f; border:1px solid #333; border-radius:12px; padding:10px 12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    font-size:12px; line-height:1.35;
   }
-  .btn{
-    border:1px solid #333; border-radius:999px; padding:6px 10px;
-    background:rgba(0,0,0,.6); color:#eaeaea; cursor:pointer;
-    backdrop-filter: blur(2px);
+  .panel .row{ display:flex; gap:6px; align-items:center; margin:4px 0; }
+  .panel .label{ min-width:72px; color:#bbb; }
+  .panel .value{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#eaeaea; }
+  /* Evita che i click sul pannello spostino la torcia */
+  .panel, .panel *{
+    pointer-events:auto;
   }
-  .btn:hover{ background:rgba(0,0,0,.75); }
-
-  /* Modal coordinata torcia */
-  .modal{
-    position:absolute; inset:auto 12px 12px 12px;
-    background:#0f0f0f; border:1px solid #333; border-radius:12px; padding:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5); z-index:50; display:none;
-  }
-  .modal pre{ margin:0; white-space:pre-wrap; word-break:break-word; font-size:12px; }
-  .modal .row{ display:flex; gap:8px; margin:6px 0; align-items:center; }
-  .modal .label{ min-width:90px; color:#bbb; }
-  .modal .value{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 </style>
 </head>
 <body>
@@ -100,20 +91,11 @@
     <!-- Torcia -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
 
-    <!-- HUD -->
-    <div class="hud" id="hud">
-      <button id="btnTorchCoord" class="btn" type="button">Coord torcia</button>
-    </div>
-
-    <!-- Popup per le coordinate della torcia -->
-    <div class="modal" id="coordModal">
+    <!-- Pannello coordinate (sempre visibile) -->
+    <div class="panel" id="coordPanel">
       <div class="row"><span class="label">PX:</span><span class="value" id="pxOut"></span></div>
       <div class="row"><span class="label">PERCENT:</span><span class="value" id="pctOut"></span></div>
       <div class="row"><span class="label">JSON:</span><span class="value" id="jsonOut"></span></div>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" id="btnCopy">Copia JSON</button>
-        <button class="btn" id="btnClose">Chiudi</button>
-      </div>
     </div>
   </div>
 
@@ -124,21 +106,16 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  // HUD + Modal
-  const hud     = document.getElementById('hud');
-  const coordModal = document.getElementById('coordModal');
-  const pxOut  = document.getElementById('pxOut');
-  const pctOut = document.getElementById('pctOut');
-  const jsonOut= document.getElementById('jsonOut');
-  const btnTorchCoord = document.getElementById('btnTorchCoord');
-  const btnCopy = document.getElementById('btnCopy');
-  const btnClose= document.getElementById('btnClose');
+  // Pannello output
+  const pxOut   = document.getElementById('pxOut');
+  const pctOut  = document.getElementById('pctOut');
+  const jsonOut = document.getElementById('jsonOut');
+  const panel   = document.getElementById('coordPanel');
 
   const LS_TORCH = 'lanterna_torch_pos_px';
 
   let blackout = false;
   let suppressPointerOnce = false; // evita il primo pointer dopo toggle
-  let suspendTorchMove = false;    // blocca il tracking mentre usi i pulsanti
 
   // Utils
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
@@ -162,14 +139,12 @@
     }catch{ return null; }
   }
 
-  // Evita che i controlli muovano la torcia
-  function stopPointer(e){ e.preventDefault(); e.stopPropagation(); }
+  // Evita che i click sul pannello muovano la torcia
   ['pointerdown','pointerup','click','pointermove'].forEach(evt=>{
-    hud.addEventListener(evt, stopPointer, {passive:false});
-    coordModal.addEventListener(evt, stopPointer, {passive:false});
+    panel.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
   });
 
-  // Interruttore: blocca propagazione e gestisce toggle
+  // Interruttore: toggle blackout (e non far passare l'evento)
   ['pointerdown','pointerup','click'].forEach(evt=>{
     switchB.addEventListener(evt, (e)=>{
       e.preventDefault();
@@ -184,90 +159,71 @@
           const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
           const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
           setTorchPos(x, y);
-          suppressPointerOnce = true;
+          refreshPanel(x, y, r);      // aggiorna subito il pannello
+          suppressPointerOnce = true;  // blocca il primissimo pointer dopo il toggle
           setTimeout(()=>{ suppressPointerOnce = false; }, 60);
+        } else {
+          // rimaniamo con le ultime coord salvate mostrate
+          const saved = loadTorchPos();
+          const r = sceneRect();
+          const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+          const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+          refreshPanel(x, y, r);
         }
       }
     }, {passive:false});
   });
 
-  // Tracking torcia (solo in blackout)
+  // Tracking torcia (solo in blackout) – ignora pannello e interruttore
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
-    if(suspendTorchMove) return; // << blocco mentre premi i pulsanti
+
     const t = e.target;
-    if(t.closest('.hud') || t.closest('.modal') || t.closest('.switch')) return;
+    if(t.closest('.panel') || t.closest('.switch')) return;
 
     const r = sceneRect();
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
     setTorchPos(x, y);
     saveTorchPos(x, y);
+    refreshPanel(x, y, r);
   }
   scene.addEventListener('pointermove', pointerScene, {passive:true});
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Coord torcia (px, %, JSON)
-  function showTorchCoords(){
-    const r = sceneRect();
-    let x, y;
-    const saved = loadTorchPos();
-
-    if(blackout){
-      const cx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--x')) || r.width/2;
-      const cy = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--y')) || r.height/2;
-      x = clamp(cx, 0, r.width);
-      y = clamp(cy, 0, r.height);
-    }else if(saved){
-      x = clamp(saved.x, 0, r.width);
-      y = clamp(saved.y, 0, r.height);
-    }else{
-      x = r.width/2; y = r.height/2;
-    }
-
-    const leftPct = (x / r.width)  * 100;
-    const topPct  = (y / r.height) * 100;
-    const json = { left: `${leftPct.toFixed(2)}%`, top: `${topPct.toFixed(2)}%` };
-
-    pxOut.textContent  = `left(px): ${Math.round(x)}, top(px): ${Math.round(y)}`;
+  // Aggiorna pannello (usa pos attuale o salvata se non in blackout)
+  function refreshPanel(x, y, r){
+    const rect = r || sceneRect();
+    const pxX = Math.round(x), pxY = Math.round(y);
+    const leftPct = (x / rect.width)  * 100;
+    const topPct  = (y / rect.height) * 100;
+    pxOut.textContent  = `left(px): ${pxX}, top(px): ${pxY}`;
     pctOut.textContent = `left(%): ${leftPct.toFixed(2)}, top(%): ${topPct.toFixed(2)}`;
-    jsonOut.textContent = JSON.stringify(json);
-
-    coordModal.style.display = 'block';
+    jsonOut.textContent = JSON.stringify({ left: `${leftPct.toFixed(2)}%`, top: `${topPct.toFixed(2)}%` });
   }
 
-  // Quando clicchi la HUD/modal, sospendi il tracking fino al prossimo pointerup
-  function suspendUntilPointerUp(){
-    suspendTorchMove = true;
-    const clear = ()=>{ suspendTorchMove = false; window.removeEventListener('pointerup', clear, true); };
-    window.addEventListener('pointerup', clear, true);
+  // Init: mostra subito le ultime coord salvate (o centro) nel pannello
+  function initPanel(){
+    const r = sceneRect();
+    const saved = loadTorchPos();
+    const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+    const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+    refreshPanel(x, y, r);
   }
 
-  btnTorchCoord.addEventListener('click', (e)=>{ stopPointer(e); suspendUntilPointerUp(); showTorchCoords(); }, {passive:false});
-  btnClose.addEventListener('click', (e)=>{ stopPointer(e); suspendUntilPointerUp(); coordModal.style.display='none'; }, {passive:false});
-  btnCopy.addEventListener('click', async (e)=>{
-    stopPointer(e); suspendUntilPointerUp();
-    try{
-      await navigator.clipboard.writeText(jsonOut.textContent);
-      btnCopy.textContent = 'Copiato!';
-      setTimeout(()=> btnCopy.textContent = 'Copia JSON', 1200);
-    }catch{
-      alert('Copia non riuscita. Seleziona e copia manualmente il testo.');
-    }
-  }, {passive:false});
-
-  // Resize: se in blackout, riposiziona torcia alla posizione salvata
+  // Resize: aggiorna pannello e (se in blackout) riposiziona torcia alla salvata
   window.addEventListener('resize', ()=>{
-    if(blackout){
-      const saved = loadTorchPos();
-      const r = sceneRect();
-      const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-      const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-      setTorchPos(x, y);
-    }
+    const r = sceneRect();
+    const saved = loadTorchPos();
+    const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+    const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+    if(blackout) setTorchPos(x, y);
+    refreshPanel(x, y, r);
   });
+
+  initPanel();
 })();
 </script>
 </body>
