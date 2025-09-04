@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (panel always on)</title>
+<title>Enigma – Lanterna (pulito)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -31,7 +31,6 @@
     background:transparent; border:none; padding:0; margin:0;
     opacity:0; cursor:pointer; z-index:30;
   }
-  .switch:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
 
   /* Overlay nero con buco circolare (attivo solo in blackout) */
   .dark{
@@ -56,47 +55,25 @@
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
   }
   body.blackout .torch{ display:block; }
-
-  /* Pannello sempre visibile (non interattivo verso la scena) */
-  .panel{
-    position:absolute; top:12px; right:12px; z-index:50;
-    background:#0f0f0f; border:1px solid #333; border-radius:12px; padding:10px 12px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);
-    font-size:12px; line-height:1.35;
-  }
-  .panel .row{ display:flex; gap:6px; align-items:center; margin:4px 0; }
-  .panel .label{ min-width:72px; color:#bbb; }
-  .panel .value{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#eaeaea; }
-  /* Evita che i click sul pannello spostino la torcia */
-  .panel, .panel *{
-    pointer-events:auto;
-  }
 </style>
 </head>
 <body>
-  <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
-    <div class="secret" aria-hidden="false">
+  <div class="scene" id="scene">
+    <div class="secret">
       <div>
         <p>La chiave non brilla se non la illumini bene…</p>
         <p><strong>N 40° 56.●●●  E 014° 59.●●●</strong></p>
       </div>
     </div>
 
-    <!-- Interruttore invisibile, fisso, cliccabile -->
-    <button id="roomSwitch" class="switch" aria-label="Interruttore (toggle blackout)"></button>
+    <!-- Interruttore invisibile -->
+    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
-    <!-- Overlay scuro con “buco” circolare -->
+    <!-- Overlay scuro -->
     <div class="dark" id="dark"></div>
 
     <!-- Torcia -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
-
-    <!-- Pannello coordinate (sempre visibile) -->
-    <div class="panel" id="coordPanel">
-      <div class="row"><span class="label">PX:</span><span class="value" id="pxOut"></span></div>
-      <div class="row"><span class="label">PERCENT:</span><span class="value" id="pctOut"></span></div>
-      <div class="row"><span class="label">JSON:</span><span class="value" id="jsonOut"></span></div>
-    </div>
   </div>
 
 <script>
@@ -106,18 +83,12 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  // Pannello output
-  const pxOut   = document.getElementById('pxOut');
-  const pctOut  = document.getElementById('pctOut');
-  const jsonOut = document.getElementById('jsonOut');
-  const panel   = document.getElementById('coordPanel');
-
   const LS_TORCH = 'lanterna_torch_pos_px';
+  const DEFAULT_TORCH_PCT = { left: 68.37, top: 66.85 };
 
   let blackout = false;
-  let suppressPointerOnce = false; // evita il primo pointer dopo toggle
+  let suppressPointerOnce = false;
 
-  // Utils
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
@@ -139,91 +110,56 @@
     }catch{ return null; }
   }
 
-  // Evita che i click sul pannello muovano la torcia
-  ['pointerdown','pointerup','click','pointermove'].forEach(evt=>{
-    panel.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
-  });
+  // Toggle blackout
+  switchB.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    blackout = !blackout;
+    document.body.classList.toggle('blackout', blackout);
 
-  // Interruttore: toggle blackout (e non far passare l'evento)
-  ['pointerdown','pointerup','click'].forEach(evt=>{
-    switchB.addEventListener(evt, (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      if(evt === 'click'){
-        blackout = !blackout;
-        document.body.classList.toggle('blackout', blackout);
-
-        if(blackout){
-          const saved = loadTorchPos();
-          const r = sceneRect();
-          const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-          const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-          setTorchPos(x, y);
-          refreshPanel(x, y, r);      // aggiorna subito il pannello
-          suppressPointerOnce = true;  // blocca il primissimo pointer dopo il toggle
-          setTimeout(()=>{ suppressPointerOnce = false; }, 60);
-        } else {
-          // rimaniamo con le ultime coord salvate mostrate
-          const saved = loadTorchPos();
-          const r = sceneRect();
-          const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-          const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-          refreshPanel(x, y, r);
-        }
+    const r = sceneRect();
+    if(blackout){
+      const saved = loadTorchPos();
+      let x, y;
+      if(saved){
+        x = clamp(saved.x, 0, r.width);
+        y = clamp(saved.y, 0, r.height);
+      } else {
+        x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
+        y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
       }
-    }, {passive:false});
-  });
+      setTorchPos(x, y);
+      suppressPointerOnce = true;
+      setTimeout(()=>{ suppressPointerOnce = false; }, 60);
+    }
+  }, {passive:false});
 
-  // Tracking torcia (solo in blackout) – ignora pannello e interruttore
+  // Movimento torcia
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
-
-    const t = e.target;
-    if(t.closest('.panel') || t.closest('.switch')) return;
+    if(e.target.closest('.switch')) return;
 
     const r = sceneRect();
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
     setTorchPos(x, y);
     saveTorchPos(x, y);
-    refreshPanel(x, y, r);
   }
   scene.addEventListener('pointermove', pointerScene, {passive:true});
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Aggiorna pannello (usa pos attuale o salvata se non in blackout)
-  function refreshPanel(x, y, r){
-    const rect = r || sceneRect();
-    const pxX = Math.round(x), pxY = Math.round(y);
-    const leftPct = (x / rect.width)  * 100;
-    const topPct  = (y / rect.height) * 100;
-    pxOut.textContent  = `left(px): ${pxX}, top(px): ${pxY}`;
-    pctOut.textContent = `left(%): ${leftPct.toFixed(2)}, top(%): ${topPct.toFixed(2)}`;
-    jsonOut.textContent = JSON.stringify({ left: `${leftPct.toFixed(2)}%`, top: `${topPct.toFixed(2)}%` });
-  }
-
-  // Init: mostra subito le ultime coord salvate (o centro) nel pannello
-  function initPanel(){
-    const r = sceneRect();
-    const saved = loadTorchPos();
-    const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-    const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-    refreshPanel(x, y, r);
-  }
-
-  // Resize: aggiorna pannello e (se in blackout) riposiziona torcia alla salvata
+  // Resize
   window.addEventListener('resize', ()=>{
-    const r = sceneRect();
-    const saved = loadTorchPos();
-    const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-    const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-    if(blackout) setTorchPos(x, y);
-    refreshPanel(x, y, r);
+    if(blackout){
+      const r = sceneRect();
+      const saved = loadTorchPos();
+      const x = saved ? clamp(saved.x, 0, r.width) : (DEFAULT_TORCH_PCT.left/100)*r.width;
+      const y = saved ? clamp(saved.y, 0, r.height): (DEFAULT_TORCH_PCT.top /100)*r.height;
+      setTorchPos(x, y);
+    }
   });
-
-  initPanel();
 })();
 </script>
 </body>
