@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Enigma – Lanterna (scheletro)</title>
+<style>
+  :root{
+    /* Parametri regolabili */
+    --beam-length: 140vmax;   /* lunghezza del fascio */
+    --beam-aperture: 52;      /* apertura in gradi (totale) */
+    --penumbra: 90px;         /* raggio penombra intorno all'apice */
+    --cursor-size: 72px;      /* dimensione PNG torcia */
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+  body{
+    font-family: Georgia, "Times New Roman", serif;
+    background:#000;
+    color:#ddd;
+    overflow:hidden;
+  }
+
+  .scene{
+    position:relative;
+    width:100%; height:100%;
+    background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
+  }
+
+  /* Testo segreto (sotto al buio) */
+  .secret{
+    position:absolute; inset:0;
+    display:grid; place-items:center;
+    text-align:center; padding:24px;
+    pointer-events:none;
+  }
+  .secret p{
+    max-width:min(720px, 92vw);
+    margin:.4rem 0;
+    line-height:1.4;
+    color:#e7e7e7; /* colore normale: verrà coperto dal buio, visibile solo nella finestra di luce */
+  }
+
+  /* Overlay nero che oscurerà tutto, con maschera SVG per "bucare" il cono */
+  .dark{
+    position:absolute; inset:0;
+    background:#000;
+    opacity:.85; /* luce ambiente iniziale (prima del blackout) */
+    transition: opacity .25s ease;
+    pointer-events:none;
+    /* la maschera SVG viene applicata via CSS sotto (in JS settiamo l'attributo href) */
+  }
+  body.blackout .dark{
+    opacity:.97; /* buio quasi totale dopo il click sull'interruttore */
+  }
+
+  /* Torcia (PNG) ancorata al puntatore */
+  .torch{
+    position:absolute;
+    width:var(--cursor-size); height:auto;
+    left:0; top:0;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin:center;
+    pointer-events:none;
+    will-change: transform;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
+  }
+
+  /* Interruttore nascosto (cliccabile ma invisibile) – sposta le coord a piacere */
+  .switch{
+    position:absolute;
+    left:62%; top:48%; /* ← METTI QUI IL TUO PUNTO SULL'IMMAGINE */
+    width:48px; height:72px; /* dimensioni zona cliccabile */
+    background:transparent;
+    border:none; padding:0; margin:0;
+    opacity:0; cursor:pointer;
+    /* per debug: abilita la riga seguente per vedere il riquadro cliccabile */
+    /* outline:1px dashed rgba(255,255,0,.6); */
+  }
+
+  /* Indicazioni (facoltative) */
+  .hud{
+    position:absolute; left:12px; right:12px; bottom:12px;
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:14px; color:#ccc; opacity:.85;
+    mix-blend-mode:screen;
+    pointer-events:none;
+  }
+  .badge{
+    border:1px solid #333; border-radius:999px; padding:6px 10px;
+    background:rgba(0,0,0,.5); backdrop-filter: blur(2px);
+  }
+
+  /* Accessibilità focus (se l'utente tabba) */
+  .switch:focus-visible{ outline:2px solid #66afe9; outline-offset:2px; }
+</style>
+</head>
+<body>
+  <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
+    <!-- Testo da scovare -->
+    <div class="secret" aria-hidden="false">
+      <div>
+        <p>La chiave non brilla se non la illumini bene…</p>
+        <p>…segui il taglio di luce tra quadri e mensole.</p>
+        <p><strong>N 40° 56.●●●  E 014° 59.●●●</strong></p>
+      </div>
+    </div>
+
+    <!-- Pulsante invisibile sull'interruttore “disegnato” nello sfondo -->
+    <button class="switch" id="roomSwitch" aria-label="Interruttore (nascosto)"></button>
+
+    <!-- Overlay buio, bucato dalla maschera SVG aggiornata via JS -->
+    <div class="dark" id="dark"></div>
+
+    <!-- Torcia PNG che segue il puntatore -->
+    <img id="torch" class="torch" src="assets/torcia.png" alt="" aria-hidden="true" />
+
+    <!-- HUD -->
+    <div class="hud">
+      <span class="badge">Sposta la torcia per “leggere”</span>
+      <span class="badge">Tocca l’interruttore invisibile per il blackout</span>
+    </div>
+
+    <!-- SVG Mask a tutto schermo: bianco = visibile (buio), nero = bucato (luce) -->
+    <svg id="maskSvg" width="0" height="0" viewBox="0 0 100 100" style="position:absolute">
+      <!-- Usiamo unità nello spazio utente (px) per semplicità -->
+      <defs>
+        <mask id="torch-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+          <!-- Base: tutto bianco (overlay visibile) -->
+          <rect id="maskRect" x="0" y="0" width="100%" height="100%" fill="white"/>
+          <!-- Cono: nero (buca il buio) -->
+          <polygon id="cone" points="" fill="black" />
+          <!-- Penombra morbida: un radial “grigio→nero” attorno all’apice per ammorbidire i bordi -->
+          <radialGradient id="pen" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="black" stop-opacity="1"/>
+            <stop offset="1" stop-color="black" stop-opacity="0"/>
+          </radialGradient>
+          <circle id="penCircle" cx="0" cy="0" r="0" fill="url(#pen)" />
+        </mask>
+      </defs>
+    </svg>
+  </div>
+
+<script>
+(function(){
+  const scene  = document.getElementById('scene');
+  const dark   = document.getElementById('dark');
+  const torch  = document.getElementById('torch');
+  const swBtn  = document.getElementById('roomSwitch');
+
+  // SVG mask elements
+  const maskSvg   = document.getElementById('maskSvg');
+  const conePoly  = document.getElementById('cone');
+  const penCircle = document.getElementById('penCircle');
+
+  // Applica la maschera all'overlay scuro
+  dark.style.maskImage = 'url(#torch-mask)';
+  dark.style.webkitMaskImage = 'url(#torch-mask)';
+
+  let lastX = null, lastY = null;
+  let angleRad = 0;
+
+  // Parametri regolabili (coerenti con CSS vars)
+  let apertureDeg = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--beam-aperture')) || 52;
+  let penumbraR   = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--penumbra')) || 90;
+  let beamLength  = null; // calcolato al resize
+
+  const state = {
+    x: window.innerWidth/2,
+    y: window.innerHeight/2
+  };
+
+  function resize(){
+    // Lunghezza del fascio: usa la diagonale, derivata da CSS var per coerenza visiva
+    const w = scene.clientWidth, h = scene.clientHeight;
+    beamLength = Math.hypot(w, h) * 1.1; // un po' oltre i bordi
+    update(state.x, state.y, angleRad);
+  }
+
+  function update(x, y, a){
+    // Aggiorna posizione torcia
+    torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${a * 180/Math.PI}deg)`;
+
+    // Aggiorna cono (triangolo) in coordinate schermo
+    // Apice = (x, y). Base a distanza beamLength, divisa sui due lati secondo half-angle
+    const half = (apertureDeg * Math.PI / 180) / 2;
+    const ax = Math.cos(a), ay = Math.sin(a);
+
+    // Direzioni bordo sx/dx ruotate di ±half
+    const leftDirX  = Math.cos(a - half);
+    const leftDirY  = Math.sin(a - half);
+    const rightDirX = Math.cos(a + half);
+    const rightDirY = Math.sin(a + half);
+
+    const x2 = x + leftDirX  * beamLength;
+    const y2 = y + leftDirY  * beamLength;
+    const x3 = x + rightDirX * beamLength;
+    const y3 = y + rightDirY * beamLength;
+
+    // Imposta i punti del poligono (apice -> base sx -> base dx)
+    const pts = `${x},${y} ${x2},${y2} ${x3},${y3}`;
+    conePoly.setAttribute('points', pts);
+
+    // Penombra: cerchio attorno all'apice
+    penCircle.setAttribute('cx', x);
+    penCircle.setAttribute('cy', y);
+    penCircle.setAttribute('r', penumbraR);
+  }
+
+  function handlePointer(clientX, clientY){
+    const rect = scene.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // Calcola direzione di movimento per ruotare il fascio
+    if(lastX !== null && lastY !== null){
+      const dx = x - lastX;
+      const dy = y - lastY;
+      if(Math.abs(dx) + Math.abs(dy) > 0.5){ // evita jitter
+        angleRad = Math.atan2(dy, dx);
+      }
+    }
+    lastX = x; lastY = y;
+
+    state.x = x; state.y = y;
+    update(x, y, angleRad);
+  }
+
+  // Eventi: mouse e touch (Pointer Events)
+  scene.addEventListener('pointermove', e => handlePointer(e.clientX, e.clientY), {passive:true});
+  scene.addEventListener('pointerdown', e => handlePointer(e.clientX, e.clientY), {passive:true});
+  scene.addEventListener('pointerenter', e => handlePointer(e.clientX, e.clientY), {passive:true});
+
+  // Blackout sull'interruttore
+  swBtn.addEventListener('click', () => {
+    document.body.classList.toggle('blackout');
+  });
+
+  // Init
+  window.addEventListener('resize', resize);
+  resize();
+  // Posizione iniziale al centro
+  update(state.x, state.y, angleRad);
+})();
+</script>
+</body>
+</html>
