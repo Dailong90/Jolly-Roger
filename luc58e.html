@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (interruttore mobile + coord)</title>
+<title>Enigma – Lanterna (switch fisso invisibile + coord torcia)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -13,9 +13,9 @@
   .scene{
     position:relative; width:100%; height:100%;
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
-    user-select: none;
-    touch-action: none; /* aiuta il drag su mobile */
+    user-select: none; touch-action: none;
   }
+  /* In blackout lo sfondo sparisce del tutto */
   body.blackout .scene{ background:#000 !important; }
 
   .secret{
@@ -23,16 +23,15 @@
   }
   .secret p{ margin:.35rem 0; max-width:min(720px,92vw); color:#e7e7e7; }
 
-  /* Interruttore: 30px, drag handle, sta sopra tutto */
+  /* Interruttore fisso, invisibile ma cliccabile (hotspot) */
   .switch{
-    position:absolute; width:30px; height:30px;
-    border:none; border-radius:50%;
-    background:#e31616;
-    box-shadow:0 0 10px rgba(227,22,22,.9), inset 0 0 6px rgba(255,255,255,.35);
-    cursor:grab; z-index:20;
-    transform: translate(-50%, -50%); /* coord riferite al centro */
+    position:absolute;
+    left:92.56%; top:31.66%;
+    width:30px; height:30px;
+    transform:translate(-50%,-50%);
+    background:transparent; border:none; padding:0; margin:0;
+    opacity:0; cursor:pointer; z-index:30;
   }
-  .switch:active{ cursor:grabbing; }
   .switch:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
 
   /* Overlay nero con buco circolare (attivo solo in blackout) */
@@ -52,18 +51,18 @@
 
   /* Torcia: visibile solo in blackout, non ruota */
   .torch{
-    position:absolute; left:0; top:0; width:25px; height:auto;
+    position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%);
     pointer-events:none; display:none;
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
   }
   body.blackout .torch{ display:block; }
 
-  /* HUD: include bottone coord sempre visibile */
+  /* HUD con bottone coord torcia (sempre visibile) */
   .hud{
     position:absolute; left:12px; right:12px; top:12px;
     display:flex; justify-content:flex-end; gap:10px;
-    font-size:14px; color:#ccc; z-index:30;
+    font-size:14px; color:#ccc; z-index:40;
   }
   .btn{
     border:1px solid #333; border-radius:999px; padding:6px 10px;
@@ -72,17 +71,16 @@
   }
   .btn:hover{ background:rgba(0,0,0,.75); }
 
-  /* Popup semplice per mostrare JSON coord */
+  /* Modal coordinata torcia */
   .modal{
     position:absolute; inset:auto 12px 12px 12px;
     background:#0f0f0f; border:1px solid #333; border-radius:12px; padding:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5); z-index:40; display:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.5); z-index:50; display:none;
   }
   .modal pre{ margin:0; white-space:pre-wrap; word-break:break-word; font-size:12px; }
   .modal .row{ display:flex; gap:8px; margin:6px 0; align-items:center; }
   .modal .label{ min-width:90px; color:#bbb; }
   .modal .value{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-
 </style>
 </head>
 <body>
@@ -94,7 +92,7 @@
       </div>
     </div>
 
-    <!-- Interruttore mobile -->
+    <!-- Interruttore invisibile, fisso, cliccabile -->
     <button id="roomSwitch" class="switch" aria-label="Interruttore (toggle blackout)"></button>
 
     <!-- Overlay scuro con “buco” circolare -->
@@ -105,10 +103,10 @@
 
     <!-- HUD -->
     <div class="hud">
-      <button id="btnCoord" class="btn" type="button">Mostra coord.</button>
+      <button id="btnTorchCoord" class="btn" type="button">Coord torcia</button>
     </div>
 
-    <!-- Popup per le coordinate -->
+    <!-- Popup per le coordinate della torcia -->
     <div class="modal" id="coordModal">
       <div class="row"><span class="label">PX:</span><span class="value" id="pxOut"></span></div>
       <div class="row"><span class="label">PERCENT:</span><span class="value" id="pctOut"></span></div>
@@ -122,95 +120,42 @@
 
 <script>
 (function(){
-  const scene     = document.getElementById('scene');
-  const switchB   = document.getElementById('roomSwitch');
-  const torch     = document.getElementById('torch');
-  const root      = document.documentElement;
+  const scene   = document.getElementById('scene');
+  const switchB = document.getElementById('roomSwitch');
+  const torch   = document.getElementById('torch');
+  const root    = document.documentElement;
 
   // Modal elems
   const coordModal = document.getElementById('coordModal');
-  const pxOut      = document.getElementById('pxOut');
-  const pctOut     = document.getElementById('pctOut');
-  const jsonOut    = document.getElementById('jsonOut');
-  const btnCoord   = document.getElementById('btnCoord');
-  const btnCopy    = document.getElementById('btnCopy');
-  const btnClose   = document.getElementById('btnClose');
+  const pxOut  = document.getElementById('pxOut');
+  const pctOut = document.getElementById('pctOut');
+  const jsonOut= document.getElementById('jsonOut');
+  const btnTorchCoord = document.getElementById('btnTorchCoord');
+  const btnCopy = document.getElementById('btnCopy');
+  const btnClose= document.getElementById('btnClose');
 
-  // Persistenza
-  const LS_KEYS = {
-    switch: 'lanterna_switch_pos_percent', // {leftPct, topPct}
-    torch : 'lanterna_torch_pos_px'        // {x, y}
-  };
+  // Persistenza posizione torcia
+  const LS_TORCH = 'lanterna_torch_pos_px';
 
   let blackout = false;
 
   // ---------------------------
-  // Utils posizionamento
+  // Utilità
   // ---------------------------
-  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+  const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
+  const sceneRect = ()=> scene.getBoundingClientRect();
 
   function setTorchPos(x, y){
     root.style.setProperty('--x', x + 'px');
     root.style.setProperty('--y', y + 'px');
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
-
-  function getSceneRect(){ return scene.getBoundingClientRect(); }
-
-  // ---------------------------
-  // Interruttore: legge/scrive pos (percentuale)
-  // ---------------------------
-  function applySwitchPosFromPercent(obj){
-    const rect = getSceneRect();
-    const cx = rect.left + (obj.leftPct/100) * rect.width;
-    const cy = rect.top  + (obj.topPct/100)  * rect.height;
-    // switchB è centrato con translate(-50%, -50%)
-    switchB.style.left = (obj.leftPct) + '%';
-    switchB.style.top  = (obj.topPct) + '%';
-  }
-
-  function getCurrentSwitchPercent(){
-    const rect = getSceneRect();
-    const swRect = switchB.getBoundingClientRect();
-    // Poiché il bottone è centrato, la sua "posizione logica" è il centro
-    const cx = swRect.left + swRect.width/2;
-    const cy = swRect.top  + swRect.height/2;
-    const leftPct = clamp(((cx - rect.left) / rect.width) * 100, 0, 100);
-    const topPct  = clamp(((cy - rect.top ) / rect.height) * 100, 0, 100);
-    return { leftPct, topPct };
-  }
-
-  function setSwitchPosByPx(x, y){
-    const rect = getSceneRect();
-    const leftPct = clamp(((x - rect.left) / rect.width) * 100, 0, 100);
-    const topPct  = clamp(((y - rect.top ) / rect.height) * 100, 0, 100);
-    switchB.style.left = leftPct + '%';
-    switchB.style.top  = topPct  + '%';
-  }
-
-  function saveSwitchPercent(obj){
-    localStorage.setItem(LS_KEYS.switch, JSON.stringify(obj));
-  }
-
-  function loadSwitchPercent(){
-    try{
-      const raw = localStorage.getItem(LS_KEYS.switch);
-      if(!raw) return null;
-      const obj = JSON.parse(raw);
-      if(typeof obj.leftPct === 'number' && typeof obj.topPct === 'number') return obj;
-      return null;
-    }catch{ return null; }
-  }
-
-  // ---------------------------
-  // Torcia: persistenza px
-  // ---------------------------
   function saveTorchPos(x, y){
-    localStorage.setItem(LS_KEYS.torch, JSON.stringify({x, y}));
+    localStorage.setItem(LS_TORCH, JSON.stringify({x,y}));
   }
   function loadTorchPos(){
     try{
-      const raw = localStorage.getItem(LS_KEYS.torch);
+      const raw = localStorage.getItem(LS_TORCH);
       if(!raw) return null;
       const obj = JSON.parse(raw);
       if(typeof obj.x === 'number' && typeof obj.y === 'number') return obj;
@@ -219,94 +164,74 @@
   }
 
   // ---------------------------
-  // Drag interruttore (pointer events)
+  // Toggle blackout con hotspot invisibile
   // ---------------------------
-  let dragging = false;
-
-  switchB.addEventListener('pointerdown', (e)=>{
-    dragging = true;
-    switchB.setPointerCapture(e.pointerId);
-    // Se non stiamo trascinando (tap/click breve) faremo toggle a pointerup
-    // Qui aggiorniamo subito la posizione così senti "agganciare"
-    setSwitchPosByPx(e.clientX, e.clientY);
-    e.preventDefault();
-  });
-
-  switchB.addEventListener('pointermove', (e)=>{
-    if(!dragging) return;
-    setSwitchPosByPx(e.clientX, e.clientY);
-  });
-
-  switchB.addEventListener('pointerup', (e)=>{
-    if(dragging){
-      // Salva posizione in percentuale
-      const pct = getCurrentSwitchPercent();
-      saveSwitchPercent(pct);
-      switchB.releasePointerCapture(e.pointerId);
-      dragging = false;
-      // Se l'utente ha fatto solo un tap (spostamento minimo), esegui toggle blackout
-      // Heuristica: se il movimento è stato minimo tra down e up è comunque drag valido.
-      // Manteniamo il comportamento semplice: anche quando lo sposti, il toggle NON parte automaticamente.
-      // Per attivare/disattivare il blackout, richiedi un secondo tap.
-    }
-  });
-
-  // Toggle blackout con click (senza drag): usa click nativo
   switchB.addEventListener('click', ()=>{
-    if(dragging) return; // sicurezza
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
     if(blackout){
-      // entra in blackout: ripristina la torcia all'ultima posizione nota (o centra)
+      // entra in blackout: ripristina torcia all'ultima posizione salvata o centra
       const saved = loadTorchPos();
-      const rect = getSceneRect();
-      const startX = saved ? saved.x : rect.width/2;
-      const startY = saved ? saved.y : rect.height/2;
-      setTorchPos(startX, startY);
+      const r = sceneRect();
+      const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+      const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+      setTorchPos(x, y);
     } else {
-      // esce: non azzeriamo la posizione salvata della torcia
+      // esce: non azzeriamo la posizione salvata
     }
   });
 
   // Movimento torcia (solo in blackout)
   function pointerScene(e){
     if(!blackout) return;
-    const rect = getSceneRect();
-    const x = clamp(e.clientX - rect.left, 0, rect.width);
-    const y = clamp(e.clientY - rect.top , 0, rect.height);
+    const r = sceneRect();
+    const x = clamp(e.clientX - r.left, 0, r.width);
+    const y = clamp(e.clientY - r.top , 0, r.height);
     setTorchPos(x, y);
-    saveTorchPos(x, y); // aggiorna persistenza in tempo reale
+    saveTorchPos(x, y);
   }
   scene.addEventListener('pointermove', pointerScene, {passive:true});
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
   // ---------------------------
-  // Bottone "Mostra coord."
+  // Coord torcia (px, %, JSON)
   // ---------------------------
-  function showCoordModal(){
-    const rect = getSceneRect();
-    const swRect = switchB.getBoundingClientRect();
-    const cx = swRect.left + swRect.width/2 - rect.left;
-    const cy = swRect.top  + swRect.height/2 - rect.top;
+  function showTorchCoords(){
+    const r = sceneRect();
+    // Se non sei in blackout, usiamo l'ultima posizione salvata
+    const saved = loadTorchPos();
+    let x, y;
+    if(blackout){
+      // leggi da CSS vars correnti
+      const cx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--x')) || r.width/2;
+      const cy = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--y')) || r.height/2;
+      x = clamp(cx, 0, r.width);
+      y = clamp(cy, 0, r.height);
+    }else if(saved){
+      x = clamp(saved.x, 0, r.width);
+      y = clamp(saved.y, 0, r.height);
+    }else{
+      x = r.width/2; y = r.height/2;
+    }
 
-    const pct = getCurrentSwitchPercent();
+    const leftPct = (x / r.width)  * 100;
+    const topPct  = (y / r.height) * 100;
+
     const json = {
-      left: `${pct.leftPct.toFixed(2)}%`,
-      top : `${pct.topPct.toFixed(2)}%`,
-      width: 30,
-      height: 30
+      left: `${leftPct.toFixed(2)}%`,
+      top : `${topPct.toFixed(2)}%`
     };
 
-    pxOut.textContent  = `left(px): ${Math.round(cx)}, top(px): ${Math.round(cy)}`;
-    pctOut.textContent = `left(%): ${pct.leftPct.toFixed(2)}, top(%): ${pct.topPct.toFixed(2)}`;
+    pxOut.textContent  = `left(px): ${Math.round(x)}, top(px): ${Math.round(y)}`;
+    pctOut.textContent = `left(%): ${leftPct.toFixed(2)}, top(%): ${topPct.toFixed(2)}`;
     jsonOut.textContent = JSON.stringify(json);
 
     coordModal.style.display = 'block';
   }
 
-  btnCoord.addEventListener('click', showCoordModal);
+  btnTorchCoord.addEventListener('click', showTorchCoords);
   btnClose.addEventListener('click', ()=> coordModal.style.display = 'none');
   btnCopy.addEventListener('click', async ()=>{
     try{
@@ -314,42 +239,22 @@
       btnCopy.textContent = 'Copiato!';
       setTimeout(()=> btnCopy.textContent = 'Copia JSON', 1200);
     }catch{
-      // fallback: selezione manuale
       alert('Copia non riuscita. Seleziona e copia manualmente il testo.');
     }
   });
 
   // ---------------------------
-  // Init posizioni da LocalStorage o default centro
+  // Resize: mantieni coerenza pos torcia se in blackout
   // ---------------------------
-  function initPositions(){
-    const savedSwitch = loadSwitchPercent();
-    if(savedSwitch){
-      applySwitchPosFromPercent(savedSwitch);
-    } else {
-      // di default al centro
-      switchB.style.left = '50%';
-      switchB.style.top  = '50%';
-    }
-    // La torcia viene posizionata quando entri in blackout
-  }
-
   window.addEventListener('resize', ()=>{
-    // Re-applica la percentuale dello switch per rispettare la responsività
-    const savedSwitch = loadSwitchPercent();
-    if(savedSwitch) applySwitchPosFromPercent(savedSwitch);
-
-    // Se sei in blackout, re-imposta la torcia all'ultima posizione salvata
     if(blackout){
-      const savedTorch = loadTorchPos();
-      const rect = getSceneRect();
-      const x = savedTorch ? clamp(savedTorch.x, 0, rect.width) : rect.width/2;
-      const y = savedTorch ? clamp(savedTorch.y, 0, rect.height) : rect.height/2;
+      const saved = loadTorchPos();
+      const r = sceneRect();
+      const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+      const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
       setTorchPos(x, y);
     }
   });
-
-  initPositions();
 })();
 </script>
 </body>
