@@ -3,65 +3,37 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (v3 blackout puro)</title>
+<title>Enigma – Lanterna (toggle blackout)</title>
 <style>
-  :root{
-    --x: 50vw;   /* posizione luce X */
-    --y: 50vh;   /* posizione luce Y */
-    --r: 120px;  /* raggio del fascio */
-  }
+  :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
-  body{
-    font-family: Georgia, "Times New Roman", serif;
-    background:#000;
-    color:#ddd;
-    overflow:hidden;
-  }
+  body{ font-family: Georgia, "Times New Roman", serif; background:#000; color:#ddd; overflow:hidden; }
 
   .scene{
     position:relative; width:100%; height:100%;
-    /* Stato base: stanza visibile */
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
   }
-  /* In blackout lo sfondo scompare: tutto nero */
-  body.blackout .scene{
-    background: #000 !important;
-  }
+  /* In blackout lo sfondo sparisce del tutto */
+  body.blackout .scene{ background:#000 !important; }
 
-  /* Testo da scovare: sta SOTTO al layer scuro.
-     Sarà visibile SOLO attraverso il "buco" del fascio. */
   .secret{
-    position:absolute; inset:0;
-    display:grid; place-items:center; text-align:center; padding:24px;
-    pointer-events:none;
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:24px; pointer-events:none;
   }
-  .secret p{
-    margin:.35rem 0; max-width:min(720px,92vw);
-    /* colore chiaro: invisibile finché coperto dal nero, visibile nel buco luce */
-    color:#e7e7e7;
-  }
+  .secret p{ margin:.35rem 0; max-width:min(720px,92vw); color:#e7e7e7; }
 
-  /* Pulsante VISIBILE: cerchio rosso 30px al centro */
+  /* Interruttore – visibile sempre, al centro (puoi spostarlo quando vuoi) */
   .switch{
-    position:absolute;
-    left:50%; top:50%;
-    width:30px; height:30px;
-    transform: translate(-50%, -50%);
-    border:none; border-radius:50%;
-    background:#e31616;
-    box-shadow: 0 0 10px rgba(227,22,22,.9), inset 0 0 6px rgba(255,255,255,.35);
-    cursor:pointer;
+    position:absolute; left:50%; top:50%; width:30px; height:30px; transform:translate(-50%,-50%);
+    border:none; border-radius:50%; background:#e31616;
+    box-shadow:0 0 10px rgba(227,22,22,.9), inset 0 0 6px rgba(255,255,255,.35);
+    cursor:pointer; z-index:10; /* sopra l'overlay scuro */
   }
   .switch:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
 
-  /* Overlay scuro sopra TUTTO (testo incluso).
-     In blackout diventa opaco, con buco circolare che mostra sotto (testo). */
+  /* Overlay nero con buco circolare (attivo solo in blackout) */
   .dark{
-    position:absolute; inset:0;
-    pointer-events:none;
-    opacity:0;                     /* prima del blackout invisibile */
-    transition: opacity .25s ease;
+    position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
   }
   body.blackout .dark{
     opacity:1;
@@ -74,32 +46,24 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Torcia PNG: nascosta prima del blackout; NON ruota */
+  /* Torcia: visibile solo in blackout, non ruota */
   .torch{
-    position:absolute; left:0; top:0;
-    width:35px; height:auto;
-    transform: translate(-50%, -50%); /* centro sul dito/mouse */
-    pointer-events:none;
-    display:none; /* visibile solo in blackout */
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.6));
+    position:absolute; left:0; top:0; width:25px; height:auto;
+    transform:translate(-50%,-50%); pointer-events:none; display:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
   }
   body.blackout .torch{ display:block; }
 
-  /* HUD */
   .hud{
-    position:absolute; left:12px; right:12px; bottom:12px;
-    display:flex; justify-content:space-between; gap:10px;
+    position:absolute; left:12px; right:12px; bottom:12px; display:flex; justify-content:space-between; gap:10px;
     font-size:14px; color:#ccc; opacity:.85; pointer-events:none;
   }
   .badge{
-    border:1px solid #333; border-radius:999px; padding:6px 10px;
-    background:rgba(0,0,0,.5); backdrop-filter: blur(2px);
+    border:1px solid #333; border-radius:999px; padding:6px 10px; background:rgba(0,0,0,.5); backdrop-filter: blur(2px);
   }
 </style>
 </head>
 <body>
   <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
-    <!-- Testo da scovare (resta sotto al layer scuro) -->
     <div class="secret" aria-hidden="false">
       <div>
         <p>La chiave non brilla se non la illumini bene…</p>
@@ -107,31 +71,26 @@
       </div>
     </div>
 
-    <!-- Pulsante rosso visibile al centro -->
-    <button id="roomSwitch" class="switch" aria-label="Spegni la luce (blackout)"></button>
+    <button id="roomSwitch" class="switch" aria-label="Interruttore (toggle blackout)"></button>
 
-    <!-- Overlay nero con “buco” circolare che segue il puntatore (solo in blackout) -->
     <div class="dark" id="dark"></div>
-
-    <!-- Torcia (attiva SOLO dopo blackout) -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
 
     <div class="hud">
       <span class="badge">Premi il cerchio rosso per il blackout</span>
-      <span class="badge">Poi muovi la torcia per leggere</span>
+      <span class="badge">Muovi la torcia per leggere (solo in blackout)</span>
     </div>
   </div>
 
 <script>
 (function(){
-  const scene  = document.getElementById('scene');
-  const switchBtn = document.getElementById('roomSwitch');
-  const torch  = document.getElementById('torch');
-  const root   = document.documentElement;
+  const scene   = document.getElementById('scene');
+  const switchB = document.getElementById('roomSwitch');
+  const torch   = document.getElementById('torch');
+  const root    = document.documentElement;
 
   let blackout = false;
 
-  // Aggiorna posizione del fascio e della torcia (solo se blackout attivo)
   function setPos(x, y){
     root.style.setProperty('--x', x + 'px');
     root.style.setProperty('--y', y + 'px');
@@ -139,30 +98,33 @@
   }
 
   function pointerHandler(e){
-    if(!blackout) return; // prima del blackout non succede nulla
+    if(!blackout) return; // disattivo interazione se non è nero
     const rect = scene.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     setPos(x, y);
   }
 
-  // Attiva il blackout
-  switchBtn.addEventListener('click', () => {
-    blackout = true;
-    document.body.classList.add('blackout');
-    // Posiziona la torcia inizialmente al centro
-    const r = scene.getBoundingClientRect();
-    setPos(r.width/2, r.height/2);
-    // (Opzionale) nascondi il pulsante dopo il click:
-    // switchBtn.style.display = 'none';
+  // Toggle blackout ON/OFF
+  switchB.addEventListener('click', () => {
+    blackout = !blackout;
+    document.body.classList.toggle('blackout', blackout);
+
+    if(blackout){
+      // entra in blackout: centra la torcia e abilita il fascio
+      const r = scene.getBoundingClientRect();
+      setPos(r.width/2, r.height/2);
+    } else {
+      // esce dal blackout: nessuna interazione torcia, fascio disattivo
+      // (CSS nasconde la torcia; overlay .dark va a opacity:0)
+    }
   });
 
-  // Gestione puntatore (mouse/touch) – solo dopo blackout
   scene.addEventListener('pointermove', pointerHandler, {passive:true});
   scene.addEventListener('pointerdown', pointerHandler, {passive:true});
   scene.addEventListener('pointerenter', pointerHandler, {passive:true});
 
-  // Re-centra al resize se già in blackout
+  // Re-centra se serve quando è in blackout
   window.addEventListener('resize', () => {
     if(!blackout) return;
     const r = scene.getBoundingClientRect();
