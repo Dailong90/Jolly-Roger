@@ -38,6 +38,8 @@
     /* Bottone grande centrato per rivelare la card */
     .btn--big{
       display: fixed;
+      left: 16px;
+      bottom: 16px; 
       width: auto;
       margin: 0 auto 10px;
       text-align:center;
@@ -136,11 +138,11 @@
 <body>
   <main class="wrap">
     <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
-      Hey Roger!
+      Parla con Roger
     </button>
 
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo">
-      <header>
+      <header class="head__actions">
         <h1 id="titolo" style="margin:0 0 6px;">L'oro di Roger</h1>
         <button id="btnHide" type="button" class="btn btn--ghost">Nascondi</button>
       </header>
