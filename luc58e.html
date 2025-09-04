@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (switch fisso invisibile + coord torcia)</title>
+<title>Enigma – Lanterna (fix posizione torcia)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -15,7 +15,6 @@
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
     user-select: none; touch-action: none;
   }
-  /* In blackout lo sfondo sparisce del tutto */
   body.blackout .scene{ background:#000 !important; }
 
   .secret{
@@ -51,7 +50,7 @@
 
   /* Torcia: visibile solo in blackout, non ruota */
   .torch{
-    position:absolute; left:0; top:0; width:26px; height:auto;
+    position:absolute; left:0; top:0; width:72px; height:auto;
     transform:translate(-50%,-50%);
     pointer-events:none; display:none;
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
@@ -138,10 +137,9 @@
   const LS_TORCH = 'lanterna_torch_pos_px';
 
   let blackout = false;
+  let suppressPointerOnce = false; // << blocca il primo pointer dopo il toggle
 
-  // ---------------------------
-  // Utilità
-  // ---------------------------
+  // Utils
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
@@ -163,28 +161,34 @@
     }catch{ return null; }
   }
 
-  // ---------------------------
-  // Toggle blackout con hotspot invisibile
-  // ---------------------------
-  switchB.addEventListener('click', ()=>{
-    blackout = !blackout;
-    document.body.classList.toggle('blackout', blackout);
+  // --- Interruttore: blocca propagazione per non spostare la torcia sul click
+  ['pointerdown','pointerup','click'].forEach(evt=>{
+    switchB.addEventListener(evt, (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(evt === 'click'){
+        blackout = !blackout;
+        document.body.classList.toggle('blackout', blackout);
 
-    if(blackout){
-      // entra in blackout: ripristina torcia all'ultima posizione salvata o centra
-      const saved = loadTorchPos();
-      const r = sceneRect();
-      const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-      const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
-      setTorchPos(x, y);
-    } else {
-      // esce: non azzeriamo la posizione salvata
-    }
+        if(blackout){
+          // Ripristina torcia all'ultima posizione (o centra) SENZA lasciar passare il primo pointer
+          const saved = loadTorchPos();
+          const r = sceneRect();
+          const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+          const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+          setTorchPos(x, y);
+          suppressPointerOnce = true; // evita che il click appena fatto sposti la torcia
+          // rimuovi il blocco dopo un tick
+          setTimeout(()=>{ suppressPointerOnce = false; }, 50);
+        }
+      }
+    }, {passive:false});
   });
 
   // Movimento torcia (solo in blackout)
   function pointerScene(e){
     if(!blackout) return;
+    if(suppressPointerOnce) return; // blocca il primissimo pointer dopo il toggle
     const r = sceneRect();
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
@@ -195,25 +199,20 @@
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // ---------------------------
   // Coord torcia (px, %, JSON)
-  // ---------------------------
   function showTorchCoords(){
     const r = sceneRect();
-    // Se non sei in blackout, usiamo l'ultima posizione salvata
-    const saved = loadTorchPos();
+    // Usa variabili correnti se in blackout, altrimenti l'ultima salvata
     let x, y;
     if(blackout){
-      // leggi da CSS vars correnti
       const cx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--x')) || r.width/2;
       const cy = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--y')) || r.height/2;
       x = clamp(cx, 0, r.width);
       y = clamp(cy, 0, r.height);
-    }else if(saved){
-      x = clamp(saved.x, 0, r.width);
-      y = clamp(saved.y, 0, r.height);
     }else{
-      x = r.width/2; y = r.height/2;
+      const saved = loadTorchPos();
+      x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
+      y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
     }
 
     const leftPct = (x / r.width)  * 100;
@@ -227,7 +226,6 @@
     pxOut.textContent  = `left(px): ${Math.round(x)}, top(px): ${Math.round(y)}`;
     pctOut.textContent = `left(%): ${leftPct.toFixed(2)}, top(%): ${topPct.toFixed(2)}`;
     jsonOut.textContent = JSON.stringify(json);
-
     coordModal.style.display = 'block';
   }
 
@@ -243,9 +241,7 @@
     }
   });
 
-  // ---------------------------
-  // Resize: mantieni coerenza pos torcia se in blackout
-  // ---------------------------
+  // Resize: se in blackout, riposiziona torcia alla posizione salvata (coerente con nuova size)
   window.addEventListener('resize', ()=>{
     if(blackout){
       const saved = loadTorchPos();
