@@ -29,7 +29,7 @@
     opacity:0; cursor:pointer; z-index:30;
   }
 
-  /* Overlay con effetto torcia/candela */
+  /* Overlay con effetto candela */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
     z-index:20;
@@ -39,20 +39,20 @@
     animation: flicker 1.5s infinite alternate;
     background:
       radial-gradient(circle at var(--x) var(--y),
-        rgba(255, 200, 100, 0.95) 0,             /* giallo forte al centro */
-        rgba(255, 180, 80, 0.6) calc(var(--r) - 15px),
-        rgba(255, 140, 40, 0.25) var(--r),
+        rgba(255, 210, 120, 0.0) 0,                /* centro trasparente */
+        rgba(255, 200, 100, 0.25) calc(var(--r) - 15px),  /* giallo chiaro */
+        rgba(255, 170, 60, 0.55) var(--r),              /* arancio medio */
         rgba(0,0,0,0.85) calc(var(--r) + 60px),
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Animazione tremolio candela */
+  /* Animazione tremolio */
   @keyframes flicker {
-    0%   { --r:75px; filter:brightness(1); }
-    25%  { --r:82px; filter:brightness(1.05); }
-    50%  { --r:78px; filter:brightness(0.95); }
-    75%  { --r:85px; filter:brightness(1.1); }
-    100% { --r:80px; filter:brightness(1); }
+    0%   { --r:75px; }
+    25%  { --r:82px; }
+    50%  { --r:78px; }
+    75%  { --r:85px; }
+    100% { --r:80px; }
   }
 
   /* Torcia grafica */
@@ -65,10 +65,10 @@
   }
   body.blackout .torch{ display:block; }
 
-  /* Testo nascosto, illuminabile */
+  /* Testo illuminabile */
   .blackout-text{
-    position:absolute; top:8px; left:8px;
-    font-size:10px; color:#070707;
+    position:absolute; top:18px; left:18px;
+    font-size:10px; color:#030303;
     z-index:10;
     white-space:nowrap;
   }
