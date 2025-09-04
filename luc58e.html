@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (v2 richieste)</title>
+<title>Enigma – Lanterna (v3 blackout puro)</title>
 <style>
   :root{
-    --x: 50vw;           /* posizione luce X */
-    --y: 50vh;           /* posizione luce Y */
-    --r: 120px;          /* raggio del fascio */
+    --x: 50vw;   /* posizione luce X */
+    --y: 50vh;   /* posizione luce Y */
+    --r: 120px;  /* raggio del fascio */
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
@@ -21,10 +21,16 @@
 
   .scene{
     position:relative; width:100%; height:100%;
+    /* Stato base: stanza visibile */
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
   }
+  /* In blackout lo sfondo scompare: tutto nero */
+  body.blackout .scene{
+    background: #000 !important;
+  }
 
-  /* Testo nascosto da leggere con la luce (se ti serve già in pagina) */
+  /* Testo da scovare: sta SOTTO al layer scuro.
+     Sarà visibile SOLO attraverso il "buco" del fascio. */
   .secret{
     position:absolute; inset:0;
     display:grid; place-items:center; text-align:center; padding:24px;
@@ -32,9 +38,11 @@
   }
   .secret p{
     margin:.35rem 0; max-width:min(720px,92vw);
+    /* colore chiaro: invisibile finché coperto dal nero, visibile nel buco luce */
+    color:#e7e7e7;
   }
 
-  /* Pulsante VISIBILE: cerchio rosso 30px al centro dell'immagine */
+  /* Pulsante VISIBILE: cerchio rosso 30px al centro */
   .switch{
     position:absolute;
     left:50%; top:50%;
@@ -47,16 +55,15 @@
   }
   .switch:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
 
-  /* Overlay nero. Il "buco" della luce è creato dal gradient (solo in blackout). */
+  /* Overlay scuro sopra TUTTO (testo incluso).
+     In blackout diventa opaco, con buco circolare che mostra sotto (testo). */
   .dark{
     position:absolute; inset:0;
     pointer-events:none;
-    /* Stato base: nessun blackout → invisibile */
-    opacity:0;
+    opacity:0;                     /* prima del blackout invisibile */
     transition: opacity .25s ease;
   }
   body.blackout .dark{
-    /* Blackout attivo: sovrapponi il nero (la "finestra" della luce è nel background) */
     opacity:1;
     background:
       radial-gradient(circle at var(--x) var(--y),
@@ -64,22 +71,21 @@
         rgba(0,0,0,0) calc(var(--r) - 10px),
         rgba(0,0,0,0.35) var(--r),
         rgba(0,0,0,0.78) calc(var(--r) + 100px),
-        rgba(0,0,0,0.92) 100%);
-    mix-blend-mode: normal; /* su alcuni browser è più stabile di multiply in blackout totale */
+        rgba(0,0,0,0.98) 100%);
   }
 
-  /* Torcia PNG: nascosta prima del blackout; non ruota */
+  /* Torcia PNG: nascosta prima del blackout; NON ruota */
   .torch{
     position:absolute; left:0; top:0;
-    width:72px; height:auto;
-    transform: translate(-50%, -50%); /* centro sotto il dito/mouse */
+    width:35px; height:auto;
+    transform: translate(-50%, -50%); /* centro sul dito/mouse */
     pointer-events:none;
     display:none; /* visibile solo in blackout */
     filter: drop-shadow(0 2px 6px rgba(0,0,0,.6));
   }
   body.blackout .torch{ display:block; }
 
-  /* HUD di aiuto (facoltativo) */
+  /* HUD */
   .hud{
     position:absolute; left:12px; right:12px; bottom:12px;
     display:flex; justify-content:space-between; gap:10px;
@@ -93,7 +99,7 @@
 </head>
 <body>
   <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
-    <!-- (Facoltativo) Testo da scovare -->
+    <!-- Testo da scovare (resta sotto al layer scuro) -->
     <div class="secret" aria-hidden="false">
       <div>
         <p>La chiave non brilla se non la illumini bene…</p>
@@ -101,13 +107,13 @@
       </div>
     </div>
 
-    <!-- Pulsante rosso (visibile) al centro dell'immagine -->
+    <!-- Pulsante rosso visibile al centro -->
     <button id="roomSwitch" class="switch" aria-label="Spegni la luce (blackout)"></button>
 
-    <!-- Overlay scuro con “buco” circolare che segue il puntatore (solo in blackout) -->
+    <!-- Overlay nero con “buco” circolare che segue il puntatore (solo in blackout) -->
     <div class="dark" id="dark"></div>
 
-    <!-- Torcia (mostrata e “attiva” solo dopo il blackout) -->
+    <!-- Torcia (attiva SOLO dopo blackout) -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
 
     <div class="hud">
@@ -147,7 +153,7 @@
     // Posiziona la torcia inizialmente al centro
     const r = scene.getBoundingClientRect();
     setPos(r.width/2, r.height/2);
-    // (Opzionale) nascondi il pulsante rosso dopo il click:
+    // (Opzionale) nascondi il pulsante dopo il click:
     // switchBtn.style.display = 'none';
   });
 
@@ -156,7 +162,7 @@
   scene.addEventListener('pointerdown', pointerHandler, {passive:true});
   scene.addEventListener('pointerenter', pointerHandler, {passive:true});
 
-  // Aggiorna la posizione al resize (mantiene al centro se serve)
+  // Re-centra al resize se già in blackout
   window.addEventListener('resize', () => {
     if(!blackout) return;
     const r = scene.getBoundingClientRect();
