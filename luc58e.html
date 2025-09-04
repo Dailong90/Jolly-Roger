@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Enigma – Lanterna (testo illuminato + tremolio)</title>
 <style>
-  :root{ --x:50vw; --y:50vh; --r:20px; }
+  :root{ --x:50vw; --y:50vh; --r:10px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
   body{ font-family: Georgia, "Times New Roman", serif; background:#000; color:#ddd; overflow:hidden; }
@@ -41,8 +41,8 @@
       radial-gradient(circle at var(--x) var(--y),
         rgba(0,0,0,0) 0,
         rgba(0,0,0,0) calc(var(--r) - 10px),
-        rgba(0,0,0,0.18) var(--r),
-        rgba(0,0,0,0.78) calc(var(--r) + 100px),
+        rgba(0,0,0,0.12) var(--r),
+        rgba(0,0,0,0.52) calc(var(--r) + 100px),
         rgba(0,0,0,0.98) 100%);
   }
 
@@ -68,7 +68,7 @@
   /* Testo da illuminare (valori originali) */
   .blackout-text{
     position:absolute; top:18px; left:18px;
-    font-size:10px; color:#030303;
+    font-size:10px; color:#080808;
     z-index:10; /* sotto l’overlay scuro */
     white-space:nowrap;
   }
