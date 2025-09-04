@@ -35,6 +35,47 @@
       z-index:-1;
     }
 
+    /* Bottone grande centrato per rivelare la card */
+    .btn--big{
+      display: fixed;
+      width: auto;
+      margin: 0 auto 10px;
+      text-align:center;
+      font-size:18px;
+      padding:12px 16px;
+    }
+    
+    /* Contenitore azioni in testata (Bacheca + Nascondi) */
+    .head__actions{ display:flex; gap:8px; }
+    
+    /* Bottone ghost (secondario) */
+    .btn.btn--ghost{
+      background:#efe6c7;
+      border-color:#b2926d;
+      box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
+    }
+    
+    /* Card nascosta (stato iniziale) */
+    .card.is-hidden{
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      pointer-events:none;
+      visibility:hidden;
+    }
+    
+    /* Animazione di ingresso */
+    .card{
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+    }
+    .card:not(.is-hidden){
+      opacity:1;
+      transform:none;
+      visibility:visible;
+      transition-delay:0s;
+    }
+
+
+    
     /* CARD FISSA: coerente con le altre schermate */
     .wrap {
       position: fixed;
@@ -94,9 +135,14 @@
 </head>
 <body>
   <main class="wrap">
-    <section class="card" aria-labelledby="titolo">
+    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+      Hey Roger!
+    </button>
+
+    <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo">
       <header>
         <h1 id="titolo" style="margin:0 0 6px;">L'oro di Roger</h1>
+        <button id="btnHide" type="button" class="btn btn--ghost">Nascondi</button>
       </header>
 
       <div class="intro-text">
@@ -122,6 +168,66 @@
   </main>
 
   <script>
+
+    /* ===== Reveal/Hide card ===== */
+    (function(){
+      const REVEAL_KEY = 'card_revealed_v1_index';
+      const btnReveal = document.getElementById('btnReveal');
+      const card = document.getElementById('contentCard');
+      const btnHide = document.getElementById('btnHide');
+      const title = document.getElementById('Enigma – Caccia al Tesoro');
+    
+      function reveal(){
+        card.classList.remove('is-hidden');
+        card.setAttribute('aria-hidden','false');
+        btnReveal.setAttribute('aria-expanded','true');
+        btnReveal.style.display = 'none';
+        btnHide.style.display = ''; // mostra il tasto Nascondi
+        try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+        // focus accessibile sull’intestazione
+        if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
+      }
+    
+      function hide(){
+        card.classList.add('is-hidden');
+        card.setAttribute('aria-hidden','true');
+        btnReveal.setAttribute('aria-expanded','false');
+        btnReveal.style.display = 'block';
+        btnHide.style.display = 'none'; // nasconde il tasto Nascondi
+        try{ localStorage.removeItem(REVEAL_KEY); }catch{}
+        // torna il focus al bottone reveal
+        btnReveal.focus();
+      }
+    
+      function init(){
+        // stato iniziale coerente
+        const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
+        if(wasRevealed){
+          card.classList.remove('is-hidden');
+          card.setAttribute('aria-hidden','false');
+          btnReveal.style.display = 'none';
+          btnReveal.setAttribute('aria-expanded','true');
+          btnHide.style.display = '';
+        }else{
+          card.classList.add('is-hidden');
+          card.setAttribute('aria-hidden','true');
+          btnReveal.style.display = 'block';
+          btnReveal.setAttribute('aria-expanded','false');
+          btnHide.style.display = 'none';
+        }
+    
+        // eventi
+        btnReveal.addEventListener('click', reveal);
+        btnReveal.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); }
+        });
+        btnHide.addEventListener('click', hide);
+      }
+    
+      init();
+    })();
+
+    
     // Accessibilità: Enter per iniziare
     const start = document.getElementById('startBtn');
     window.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && start){ start.click(); } });
