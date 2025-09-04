@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (pulito)</title>
+<title>Enigma – Lanterna (start fisso ogni blackout)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -58,8 +58,8 @@
 </style>
 </head>
 <body>
-  <div class="scene" id="scene">
-    <div class="secret">
+  <div class="scene" id="scene" role="application" aria-label="Lanterna enigmistica">
+    <div class="secret" aria-hidden="false">
       <div>
         <p>La chiave non brilla se non la illumini bene…</p>
         <p><strong>N 40° 56.●●●  E 014° 59.●●●</strong></p>
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Interruttore invisibile -->
-    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
+    <button id="roomSwitch" class="switch" aria-label="Interruttore (toggle blackout)"></button>
 
     <!-- Overlay scuro -->
     <div class="dark" id="dark"></div>
@@ -83,11 +83,11 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  const LS_TORCH = 'lanterna_torch_pos_px';
+  // Posizione di partenza FISSA per ogni ingresso in blackout
   const DEFAULT_TORCH_PCT = { left: 68.37, top: 66.85 };
 
   let blackout = false;
-  let suppressPointerOnce = false;
+  let suppressPointerOnce = false; // evita spostamenti dovuti al click sull'interruttore
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
@@ -97,44 +97,30 @@
     root.style.setProperty('--y', y + 'px');
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
-  function saveTorchPos(x, y){
-    localStorage.setItem(LS_TORCH, JSON.stringify({x,y}));
-  }
-  function loadTorchPos(){
-    try{
-      const raw = localStorage.getItem(LS_TORCH);
-      if(!raw) return null;
-      const obj = JSON.parse(raw);
-      if(typeof obj.x === 'number' && typeof obj.y === 'number') return obj;
-      return null;
-    }catch{ return null; }
-  }
 
-  // Toggle blackout
-  switchB.addEventListener('click', (e)=>{
-    e.preventDefault();
-    e.stopPropagation();
-    blackout = !blackout;
-    document.body.classList.toggle('blackout', blackout);
+  // Toggle blackout – la torcia riparte SEMPRE da DEFAULT_TORCH_PCT
+  ['pointerdown','pointerup','click'].forEach(evt=>{
+    switchB.addEventListener(evt, (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(evt === 'click'){
+        blackout = !blackout;
+        document.body.classList.toggle('blackout', blackout);
 
-    const r = sceneRect();
-    if(blackout){
-      const saved = loadTorchPos();
-      let x, y;
-      if(saved){
-        x = clamp(saved.x, 0, r.width);
-        y = clamp(saved.y, 0, r.height);
-      } else {
-        x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
-        y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
+        if(blackout){
+          const r = sceneRect();
+          const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
+          const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
+          setTorchPos(x, y);
+          // Evita che il click di toggle generi un primo pointer usato come "move"
+          suppressPointerOnce = true;
+          setTimeout(()=>{ suppressPointerOnce = false; }, 60);
+        }
       }
-      setTorchPos(x, y);
-      suppressPointerOnce = true;
-      setTimeout(()=>{ suppressPointerOnce = false; }, 60);
-    }
-  }, {passive:false});
+    }, {passive:false});
+  });
 
-  // Movimento torcia
+  // Movimento torcia (consentito solo in blackout, ma NON salvato)
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -144,19 +130,18 @@
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
     setTorchPos(x, y);
-    saveTorchPos(x, y);
+    // nessun salvataggio: ogni nuovo blackout riparte dal DEFAULT_TORCH_PCT
   }
   scene.addEventListener('pointermove', pointerScene, {passive:true});
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Resize
+  // Resize: se sei in blackout, riallinea la torcia al default percentuale
   window.addEventListener('resize', ()=>{
     if(blackout){
       const r = sceneRect();
-      const saved = loadTorchPos();
-      const x = saved ? clamp(saved.x, 0, r.width) : (DEFAULT_TORCH_PCT.left/100)*r.width;
-      const y = saved ? clamp(saved.y, 0, r.height): (DEFAULT_TORCH_PCT.top /100)*r.height;
+      const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
+      const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
       setTorchPos(x, y);
     }
   });
