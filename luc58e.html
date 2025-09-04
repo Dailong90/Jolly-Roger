@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (fix posizione torcia)</title>
+<title>Enigma – Lanterna (fix coord torcia)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -57,7 +57,7 @@
   }
   body.blackout .torch{ display:block; }
 
-  /* HUD con bottone coord torcia (sempre visibile) */
+  /* HUD con bottone coord torcia */
   .hud{
     position:absolute; left:12px; right:12px; top:12px;
     display:flex; justify-content:flex-end; gap:10px;
@@ -101,7 +101,7 @@
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
 
     <!-- HUD -->
-    <div class="hud">
+    <div class="hud" id="hud">
       <button id="btnTorchCoord" class="btn" type="button">Coord torcia</button>
     </div>
 
@@ -124,7 +124,8 @@
   const torch   = document.getElementById('torch');
   const root    = document.documentElement;
 
-  // Modal elems
+  // HUD + Modal
+  const hud     = document.getElementById('hud');
   const coordModal = document.getElementById('coordModal');
   const pxOut  = document.getElementById('pxOut');
   const pctOut = document.getElementById('pctOut');
@@ -133,11 +134,11 @@
   const btnCopy = document.getElementById('btnCopy');
   const btnClose= document.getElementById('btnClose');
 
-  // Persistenza posizione torcia
   const LS_TORCH = 'lanterna_torch_pos_px';
 
   let blackout = false;
-  let suppressPointerOnce = false; // << blocca il primo pointer dopo il toggle
+  let suppressPointerOnce = false; // evita il primo pointer dopo toggle
+  let suspendTorchMove = false;    // blocca il tracking mentre usi i pulsanti
 
   // Utils
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
@@ -161,7 +162,14 @@
     }catch{ return null; }
   }
 
-  // --- Interruttore: blocca propagazione per non spostare la torcia sul click
+  // Evita che i controlli muovano la torcia
+  function stopPointer(e){ e.preventDefault(); e.stopPropagation(); }
+  ['pointerdown','pointerup','click','pointermove'].forEach(evt=>{
+    hud.addEventListener(evt, stopPointer, {passive:false});
+    coordModal.addEventListener(evt, stopPointer, {passive:false});
+  });
+
+  // Interruttore: blocca propagazione e gestisce toggle
   ['pointerdown','pointerup','click'].forEach(evt=>{
     switchB.addEventListener(evt, (e)=>{
       e.preventDefault();
@@ -171,24 +179,26 @@
         document.body.classList.toggle('blackout', blackout);
 
         if(blackout){
-          // Ripristina torcia all'ultima posizione (o centra) SENZA lasciar passare il primo pointer
           const saved = loadTorchPos();
           const r = sceneRect();
           const x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
           const y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
           setTorchPos(x, y);
-          suppressPointerOnce = true; // evita che il click appena fatto sposti la torcia
-          // rimuovi il blocco dopo un tick
-          setTimeout(()=>{ suppressPointerOnce = false; }, 50);
+          suppressPointerOnce = true;
+          setTimeout(()=>{ suppressPointerOnce = false; }, 60);
         }
       }
     }, {passive:false});
   });
 
-  // Movimento torcia (solo in blackout)
+  // Tracking torcia (solo in blackout)
   function pointerScene(e){
     if(!blackout) return;
-    if(suppressPointerOnce) return; // blocca il primissimo pointer dopo il toggle
+    if(suppressPointerOnce) return;
+    if(suspendTorchMove) return; // << blocco mentre premi i pulsanti
+    const t = e.target;
+    if(t.closest('.hud') || t.closest('.modal') || t.closest('.switch')) return;
+
     const r = sceneRect();
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
@@ -202,36 +212,43 @@
   // Coord torcia (px, %, JSON)
   function showTorchCoords(){
     const r = sceneRect();
-    // Usa variabili correnti se in blackout, altrimenti l'ultima salvata
     let x, y;
+    const saved = loadTorchPos();
+
     if(blackout){
       const cx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--x')) || r.width/2;
       const cy = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--y')) || r.height/2;
       x = clamp(cx, 0, r.width);
       y = clamp(cy, 0, r.height);
+    }else if(saved){
+      x = clamp(saved.x, 0, r.width);
+      y = clamp(saved.y, 0, r.height);
     }else{
-      const saved = loadTorchPos();
-      x = saved ? clamp(saved.x, 0, r.width) : r.width/2;
-      y = saved ? clamp(saved.y, 0, r.height) : r.height/2;
+      x = r.width/2; y = r.height/2;
     }
 
     const leftPct = (x / r.width)  * 100;
     const topPct  = (y / r.height) * 100;
-
-    const json = {
-      left: `${leftPct.toFixed(2)}%`,
-      top : `${topPct.toFixed(2)}%`
-    };
+    const json = { left: `${leftPct.toFixed(2)}%`, top: `${topPct.toFixed(2)}%` };
 
     pxOut.textContent  = `left(px): ${Math.round(x)}, top(px): ${Math.round(y)}`;
     pctOut.textContent = `left(%): ${leftPct.toFixed(2)}, top(%): ${topPct.toFixed(2)}`;
     jsonOut.textContent = JSON.stringify(json);
+
     coordModal.style.display = 'block';
   }
 
-  btnTorchCoord.addEventListener('click', showTorchCoords);
-  btnClose.addEventListener('click', ()=> coordModal.style.display = 'none');
-  btnCopy.addEventListener('click', async ()=>{
+  // Quando clicchi la HUD/modal, sospendi il tracking fino al prossimo pointerup
+  function suspendUntilPointerUp(){
+    suspendTorchMove = true;
+    const clear = ()=>{ suspendTorchMove = false; window.removeEventListener('pointerup', clear, true); };
+    window.addEventListener('pointerup', clear, true);
+  }
+
+  btnTorchCoord.addEventListener('click', (e)=>{ stopPointer(e); suspendUntilPointerUp(); showTorchCoords(); }, {passive:false});
+  btnClose.addEventListener('click', (e)=>{ stopPointer(e); suspendUntilPointerUp(); coordModal.style.display='none'; }, {passive:false});
+  btnCopy.addEventListener('click', async (e)=>{
+    stopPointer(e); suspendUntilPointerUp();
     try{
       await navigator.clipboard.writeText(jsonOut.textContent);
       btnCopy.textContent = 'Copiato!';
@@ -239,9 +256,9 @@
     }catch{
       alert('Copia non riuscita. Seleziona e copia manualmente il testo.');
     }
-  });
+  }, {passive:false});
 
-  // Resize: se in blackout, riposiziona torcia alla posizione salvata (coerente con nuova size)
+  // Resize: se in blackout, riposiziona torcia alla posizione salvata
   window.addEventListener('resize', ()=>{
     if(blackout){
       const saved = loadTorchPos();
