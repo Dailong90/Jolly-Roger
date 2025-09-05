@@ -1,200 +1,211 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Enigma – Lant</title>
-<style>
-  :root{ --x:50vw; --y:50vh; --r:120px; }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ height:100%; margin:0; overflow:hidden; }
-  body{ font-family:Georgia,"Times New Roman",serif; color:#ddd; background:#000; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Enigma – Regole mappa mondo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root { --bg-url: url('assets/cambusa_cap.png'); }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== SCENA LANTERNA ===== */
-  .scene{
-    position:relative; width:100%; height:100%;
-    background:url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
-    user-select:none; touch-action:none;
-  }
-  body.blackout .scene{
-    background:url('assets/stanza_buia2.jpg') center/cover no-repeat #000;
-  }
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+    body{
+      font-family:'Georgia','Times New Roman',serif; color:#2e2e2e;
+      background:#000; min-height:100svh; position:relative;
+    }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
-  /* Interruttore invisibile (disabilitabile) */
-  .switch{
-    position:absolute; left:92.56%; top:31.66%;
-    width:30px; height:30px; transform:translate(-50%,-50%);
-    background:transparent; border:none; padding:0; margin:0;
-    opacity:0; cursor:pointer; z-index:30;
-  }
-  .switch[disabled]{ pointer-events:none; }
+    .wrap{
+      position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
+      width:min(560px,92vw); padding:16px;
+    }
 
-  /* Buio con maschera torcia */
-  .dark{
-    position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease; z-index:20;
-  }
-  body.blackout .dark{
-    opacity:1;
-    animation:flicker 1.6s ease-in-out infinite;
-    background:
-      radial-gradient(circle at var(--x) var(--y),
-        rgba(0,0,0,0) 0,
-        rgba(0,0,0,0) calc(var(--r) - 30px),
-        rgba(0,0,0,0.1) var(--r),
-        rgba(0,0,0,0.72) calc(var(--r) + 100px),
-        rgba(0,0,0,0.98) 100%);
-  }
+    .card{
+      display:flex; flex-direction:column; gap:10px;
+      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      background-image:
+        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height:58svh;
+    }
 
-  /* Spotlight */
-  .spotlight{
-    position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
-  }
-  body.blackout .spotlight{
-    opacity:1;
-    animation:flicker 1.6s ease-in-out infinite;
-    background:
-      radial-gradient(circle at var(--x) var(--y),
-        rgba(255,243,191,0.5) 0,
-        rgba(251,207,85,0.3)  calc(var(--r) - 20px),
-        rgba(213,140,18,0.0)  calc(var(--r) + 65px));
-    mix-blend-mode:screen;
-  }
+    /* Bottone grande centrato per rivelare la card */
+    .btn--big{
+      display: fixed;
+      left: 16px;
+      bottom: 16px; 
+      width: auto;
+      margin: 0;
+      text-align:center;
+      font-size:18px;
+      padding:12px 16px;
+      z-index: 1000; 
+    }
+    
+    /* Contenitore azioni in testata (Bacheca + Nascondi) */
+    .head__actions{ display:flex; gap:8px; }
+    
+    /* Bottone ghost (secondario) */
+    .btn.btn--ghost{
+      background:#efe6c7;
+      border-color:#b2926d;
+      box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
+    }
+    
+    /* Card nascosta (stato iniziale) */
+    .card.is-hidden{
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      pointer-events:none;
+      visibility:hidden;
+    }
+    
+    /* Animazione di ingresso */
+    .card{
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+    }
+    .card:not(.is-hidden){
+      opacity:1;
+      transform:none;
+      visibility:visible;
+      transition-delay:0s;
+    }
 
-  @keyframes flicker{
-    0%   { --r:38px; }
-    25%  { --r:41px; }
-    50%  { --r:39px; }
-    75%  { --r:43px; }
-    100% { --r:40px; }
-  }
 
-  /* Torcia PNG */
-  .torch{
-    position:absolute; left:0; top:0; width:26px; height:auto;
-    transform:translate(-50%,-50%); pointer-events:none; display:none;
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,.6)); z-index:30;
-  }
-  body.blackout .torch{ display:block; }
+    
+    /* Campo soluzione */
+    .field{ display:flex; gap:10px; }
+    #solveForm input[type="text"]{
+      flex:1; background:#fff8e1;
+      border:1px solid #b2926d; color:#2e2e2e;
+      border-radius:8px; padding:12px 14px;
+      outline:none; font-size:16px; height:46px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+    }
+    #solveForm input[type="text"]:focus{
+      border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6);
+    }
+    #solveForm button{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px;
+      padding:0 16px; font-weight:700; height:46px;
+      background:linear-gradient(180deg,#f5d76e,#d4a017);
+      color:#3b2c20; font-family:'Georgia', serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s;
+    }
+    #solveForm button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
+    }
+    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
+    .ok{ color:#10b981; }  /* fallback se non usi --ok */
+    .err{ color:#ef4444; } /* fallback se non usi --err */
 
-  /* Testo illuminabile */
-  .blackout-text{
-    position:absolute; top:25px; left:125px; font-size:10px; color:#070707;
-    z-index:10; white-space:nowrap;
-  }
-  body:not(.blackout) .blackout-text{ display:none; }
+    
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+    .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
-  /* ===== CARD ===== */
-  .wrap{
-    position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
-    width:min(560px,92vw); padding:16px; z-index:55;
-  }
-  body.blackout .wrap{ display:none !important; }
-  body.blackout #btnReveal { display: none !important; }
+    .riddle{
+      position:relative; border:1px dashed #b2926d; border-radius:8px;
+      background:rgba(255,255,255,.65);
+      display:grid;
+    }
+    .riddle__scroller{
+      grid-area:1 / 1; overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+      max-height:40svh;
+    }
+    .riddle__fade{
+      grid-area:1 / 1; align-self:end; height:84px;
+      background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
+      border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
+    }
+    .riddle__indicator{
+      grid-area:1 / 1; justify-self:center; align-self:end; transform:translateY(-10px);
+      font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none;
+      animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
+    }
+    @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
+    .riddle.--no-scroll .riddle__fade,
+    .riddle.--no-scroll .riddle__indicator,
+    .riddle.--at-bottom .riddle__fade,
+    .riddle.--at-bottom .riddle__indicator { opacity:0; }
 
-  .card{
-    display:flex; flex-direction:column; gap:10px; overflow:hidden;
-    background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
-    box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-    background-image:
-      radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
-      radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-    max-height:58svh;
-    transition:opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
-  }
-  .card.is-hidden{
-    opacity:0; transform:translateY(10px) scale(.98);
-    pointer-events:none; visibility:hidden;
-  }
-  .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
+    .btn{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s; white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
-  .btn{
-    cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
-    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
-    box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-    transition:transform .15s, box-shadow .15s; white-space:nowrap;
-  }
-  .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+    /* Modale mappa */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
+    .modal.open{ display:flex; }
+    .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); }
+    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
+    .modal__close:hover{ background:#2f2f2f; }
 
-  .btn--big{
-    position:fixed; left:16px; bottom:16px; width:auto; margin:0; text-align:center;
-    font-size:18px; padding:12px 16px; z-index:60;
-  }
-  .btn.btn--ghost{
-    background:#efe6c7; border-color:#b2926d;
-    box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
-  }
+    /* Stage: mappa + layer adesivi */
+    .stage { position:relative; width:100%; height:auto; }
+    .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
 
-  .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
-  .card__title{ margin:0; font-size:18px; color:#090909; }
-  .head__actions{ display:flex; gap:8px; }
+    .stickers { position:absolute; inset:0; overflow:visible; }
 
-  .riddle{
-    position:relative; border:1px dashed #b2926d; border-radius:8px; background:rgba(255,255,255,.65);
-    display:grid;
-  }
-  .riddle__scroller{
-    grid-area:1/1; overflow:auto; -webkit-overflow-scrolling:touch;
-    padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-    max-height:40svh;
-  }
-  .riddle__fade{
-    grid-area:1/1; align-self:end; height:84px;
-    background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
-    border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
-  }
-  .riddle__indicator{
-    grid-area:1/1; justify-self:center; align-self:end; transform:translateY(-10px);
-    font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none; animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
-  }
-  @keyframes bounce{ 0%,100%{ transform:translateY(-10px);} 50%{ transform:translateY(-4px);} }
-  .riddle.--no-scroll .riddle__fade,
-  .riddle.--no-scroll .riddle__indicator,
-  .riddle.--at-bottom .riddle__fade,
-  .riddle.--at-bottom .riddle__indicator{ opacity:0; }
+    .sticker{
+      position:absolute;
+      width: var(--sticker-w, 22px) !important; /* <— controllo via CSS var */
+      height:auto;
+      user-select:none; -webkit-user-drag:none; touch-action:none;
+      cursor:grab; z-index:5;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
+      transition: box-shadow .15s ease, width .15s ease;
+    }
+    .sticker:active{ cursor:grabbing; }
+    .sticker.--dragging{ box-shadow:0 8px 18px rgba(0,0,0,.55); z-index:9; }
 
-  .field{ display:flex; gap:10px; }
-  #solveForm input[type="text"]{
-    flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
-    border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.2); min-width:0; width:auto;
-  }
-  #solveForm input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
-  #solveForm button{ height:46px; }
+    .dock-hint{
+      position:absolute; left:0; right:0; bottom:0; height:60px;
+      background:linear-gradient(to top, rgba(0,0,0,.35), transparent);
+      pointer-events:none; z-index:1;
+    }
 
-  .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
-  .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-  .ok{ color:#10b981; } .err{ color:#ef4444; }
+    /* Centra il contenuto (stage) dentro la finestra della modale */
+    .modal__inner{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-  #btnReveal:focus { outline: none; }
-</style>
+    #btnReveal {
+      position: fixed !important;   /* forza posizione assoluta nel viewport */
+      left: 16px !important;        /* distanza dal bordo sinistro */
+      bottom: 16px !important;      /* distanza dal fondo */
+      margin: 0 !important;         /* annulla i margini centranti */
+      width: auto !important;       /* larghezza solo quanto serve */
+      text-align:center;
+      font-size:18px;
+      padding:12px 16px;
+      z-index: 1000;                /* sopra la mappa/card */
+    }
+
+    
+  </style>
 </head>
 <body>
-  <!-- ===== SCENA ===== -->
-  <div class="scene" id="scene">
-    <!-- disabilitato di base -->
-    <button id="roomSwitch" class="switch" aria-label="Interruttore" disabled></button>
-
-    <div class="blackout-text">Sai cosa prendo?</div>
-
-    <div class="dark" id="dark"></div>
-    <div class="spotlight" id="spotlight"></div>
-
-    <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
-  </div>
-
-  <!-- Bottone grande per rivelare la card -->
-  <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
-    A lume di candela
-  </button>
-
-  <!-- ===== CARD ===== -->
   <main class="wrap">
+    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+      Dannato vento!
+    </button>
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
-        <h2 id="titolo-regole" class="card__title">A lume di candela</h2>
-        <div class="head__actions">
-          <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
-        </div>
+        <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
+        <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
+        <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
       </div>
 
       <div class="riddle" id="riddleBox">
@@ -202,7 +213,7 @@
 Cominciamo! Allora dobbiamo inserire la password... aspetta, non la ricordo! Tranquillo, ho un modo tutto mio per trovarla.
 Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
 Oh no, il vento ha staccato tutti i fogli! 
-
+<!-- Le città che ho visitato sono: Dakar, Katmandu, L'Avana, Montemiletto, Seattle, Teheran e Tokyo.  -->
 Rimetti i fogli al loro posto secondo queste indicazioni:
 
 -Teheran l'ho visitata dopo il 1991.
@@ -211,194 +222,356 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
 -Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
 -L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
 -Dopo Tokyo ho visto Seattle.
+          
         </div>
         <div class="riddle__fade" aria-hidden="true"></div>
-        <div class="riddle__indicator" aria-hidden="true">▼</div>
+        <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
-
+       <!-- Soluzione  -->
       <form id="solveForm" autocomplete="off">
         <div class="field">
           <input id="answer" name="answer" type="text" placeholder="Password…" required />
-          <button id="btnCheck" type="submit" class="btn">Verifica</button>
+          <button id="btnCheck" type="submit">Verifica</button>
         </div>
         <div id="feedback" class="feedback" aria-live="polite"></div>
       </form>
     </section>
   </main>
 
-<script>
-(function(){
-  /* ========= LANTERNA ========= */
-  const scene   = document.getElementById('scene');
-  const switchB = document.getElementById('roomSwitch');
-  const torch   = document.getElementById('torch');
-  const root    = document.documentElement;
+  <!-- Modale mappa -->
+  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Mappa del mondo" aria-hidden="true">
+    <div class="modal__inner">
+      <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
+      <div class="stage" id="stage">
+        <img class="modal__img" id="mapImg" src="assets/world_map.png" alt="Mappa del mondo" />
+        <div class="stickers" id="stickers"></div>
+        <div class="dock-hint" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
 
-  const DEFAULT_TORCH_PCT = { left: 68.37, top: 66.85 };
+  <script>
+    /* ===== Modale ===== */
+    const btnMap   = document.getElementById('btnMap');
+    const modal    = document.getElementById('modalMap');
+    const btnClose = document.getElementById('btnClose');
 
-  let blackout = false;
-  let suppressPointerOnce = false;
-  let cardOpen = false;
-
-  // contatore di aperture card
-  let revealCount = 0;
-
-  const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
-  const sceneRect = ()=> scene.getBoundingClientRect();
-
-  function setTorchPos(x, y){
-    torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-    const h = torch.getBoundingClientRect().height || 0;
-    const dx = 0, dy = -h/2 + 4;
-    root.style.setProperty('--x', (x+dx) + 'px');
-    root.style.setProperty('--y', (y+dy) + 'px');
-  }
-
-  /* ====== Click sullo switch: verrà ATTACCATO solo quando consentito ====== */
-  function onSwitchClick(e){
-    e.preventDefault(); e.stopPropagation();
-    if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return; // guard
-    blackout = !blackout;
-    document.body.classList.toggle('blackout', blackout);
-
-    if(blackout){
-      const r = sceneRect();
-      const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
-      const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
-      setTorchPos(x, y);
-      suppressPointerOnce = true;
-      setTimeout(()=>{ suppressPointerOnce = false; }, 60);
-    }
-  }
-
-  function enableSwitchOnce(){
-    // abilita e attacca il listener una sola volta
-    switchB.removeEventListener('click', onSwitchClick);
-    switchB.addEventListener('click', onSwitchClick, { passive:false });
-    switchB.removeAttribute('disabled');
-  }
-
-  function disableSwitch(){
-    switchB.setAttribute('disabled','true');
-    switchB.removeEventListener('click', onSwitchClick);
-    if (blackout){
-      blackout = false;
-      document.body.classList.remove('blackout');
-    }
-  }
-
-  /* ========= CARD (reveal/hide) ========= */
-  const btnReveal  = document.getElementById('btnReveal');
-  const card       = document.getElementById('contentCard');
-  const btnHide    = document.getElementById('btnHide');
-  const title      = document.getElementById('titolo-regole');
-
-  function reveal(){
-    if(blackout){
-      blackout = false;
-      document.body.classList.remove('blackout');
-    }
-    cardOpen = true;
-    revealCount += 1;                  // aumenta il contatore
-
-    card.classList.remove('is-hidden');
-    card.setAttribute('aria-hidden','false');
-    btnReveal.setAttribute('aria-expanded','true');
-    btnReveal.style.display = 'none';
-
-    // card aperta => switch sicuramente OFF
-    disableSwitch();
-
-    if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
-  }
-
-  function hide(){
-    cardOpen = false;
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.setAttribute('aria-expanded','false');
-    btnReveal.style.display = 'block';
-
-    // Abilita lo switch SOLO se siamo esattamente al primo ciclo (revealCount === 1)
-    if (revealCount === 1){
-      enableSwitchOnce();
-    } else {
-      disableSwitch();
+    function openModal(){ 
+      modal.classList.add('open'); 
+      modal.setAttribute('aria-hidden','false'); 
+      btnClose && btnClose.focus(); 
+      ensureStickersInitialized();
+    
+      // 🔒 BLOCCA le dimensioni visibili attuali (aggiunta)
+      const w = mapImg.getBoundingClientRect().width;
+      const h = mapImg.getBoundingClientRect().height;
+      mapImg.style.width = w + 'px';
+      mapImg.style.height = h + 'px';
+      mapImg.style.maxWidth = 'none';
+      mapImg.style.maxHeight = 'none';
+      stage.style.width = w + 'px';
+      stage.style.height = 'auto';
+      stage.style.margin = '0 auto';  // centra orizzontalmente
     }
 
-    btnReveal.focus();
-  }
+    function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
+    btnMap.addEventListener('click', openModal);
+    btnClose?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-  // ====== Stato iniziale pulito ======
-  (function init(){
-    // Card chiusa; non chiamare hide() per non attivare logiche collaterali.
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.style.display = 'block';
-    btnReveal.setAttribute('aria-expanded','false');
-    btnHide.style.display = 'none';
-    disableSwitch(); // niente listener + disabled
-  })();
-
-  // ====== Eventi card ======
-  btnReveal.addEventListener('click', reveal);
-  btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
-  btnHide.addEventListener('click', hide);
-
-  // ====== Torcia follow ======
-  function pointerScene(e){
-    if(!blackout) return;
-    if(suppressPointerOnce) return;
-    if(e.target.closest('.switch')) return;
-    const r = sceneRect();
-    const x = clamp(e.clientX - r.left, 0, r.width);
-    const y = clamp(e.clientY - r.top , 0, r.height);
-    setTorchPos(x, y);
-  }
-  scene.addEventListener('pointermove', pointerScene, {passive:true});
-  scene.addEventListener('pointerdown', pointerScene, {passive:true});
-  scene.addEventListener('pointerenter', pointerScene, {passive:true});
-
-  window.addEventListener('resize', ()=>{
-    if(blackout){
-      const r = sceneRect();
-      const x = (DEFAULT_TORCH_PCT.left / 100) * r.width;
-      const y = (DEFAULT_TORCH_PCT.top  / 100) * r.height;
-      setTorchPos(x, y);
+    /* ===== Overlay scroll ===== */
+    const riddleBox = document.getElementById('riddleBox');
+    const scroller  = document.getElementById('riddleScroll');
+    function updateOverlay(){
+      const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
+      riddleBox.classList.toggle('--no-scroll', !canScroll);
+      const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+      riddleBox.classList.toggle('--at-bottom', atBottom);
     }
-  });
+    scroller.addEventListener('scroll', updateOverlay);
+    window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
+    window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
 
-  /* ===== Verifica soluzione ===== */
-  const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
-  const SUCCESS_URL   = "jr2025.html";
-  const form     = document.getElementById('solveForm');
-  const input    = document.getElementById('answer');
-  const feedback = document.getElementById('feedback');
+    /* ===== Stickers (drag & drop + persistenza) ===== */
+    const stage      = document.getElementById('stage');
+    const stickersEl = document.getElementById('stickers');
+    const mapImg     = document.getElementById('mapImg');
+    const IMGS = [1,2,3,4,5,6,7].map(i => ({ id:`perg_${i}`, src:`assets/perg_${i}.png` }));
+    const STORAGE_KEY = 'perg_positions_v1';
+    let zCounter = 10;
+    let initialized = false;
 
-  async function sha256Hex(input){
-    const enc = new TextEncoder().encode(input);
-    const digest = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    feedback.textContent = '';
-    const value = input.value;
-    if(value.length === 0) return;
-    const hash = await sha256Hex(value);
-    if(hash === HASH_EXPECTED){
-      feedback.textContent = '✅ Corretto!';
-      feedback.className = 'feedback ok';
-      if(SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
-    }else{
-      feedback.textContent = '❌ Errato. Riprova!';
-      feedback.className = 'feedback err';
+    function readSaved(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }catch{ return null; }
     }
-  });
-  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') form.requestSubmit(); });
+    function savePositions(){
+      const rect = stage.getBoundingClientRect();
+      const data = IMGS.map(({id})=>{
+        const el = document.getElementById(id);
+        if(!el) return {id, xPct:0, yPct:0};
+        const srect = el.getBoundingClientRect();
+        const left = srect.left - rect.left;
+        const top  = srect.top  - rect.top;
+        const xPct = (left) / Math.max(1, (rect.width - srect.width));
+        const yPct = (top)  / Math.max(1, (rect.height - srect.height));
+        return { id, xPct: Math.min(Math.max(xPct,0),1), yPct: Math.min(Math.max(yPct,0),1) };
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    function placeByPercent(el, xPct, yPct){
+      const rect = stage.getBoundingClientRect();
+      const sw   = el.offsetWidth;
+      const sh   = el.offsetHeight;
+      const left = xPct * Math.max(0, rect.width  - sw);
+      const top  = yPct * Math.max(0, rect.height - sh);
+      el.style.left = `${left}px`;
+      el.style.top  = `${top}px`;
+    }
 
-})();
-</script>
+    // Calcola una larghezza che consenta 7 sticker in fila con gap
+    function computeStickerWidth(){
+      const rect = stage.getBoundingClientRect();
+      const gap = 12;
+      const n = IMGS.length;
+      // un piccolo padding di sicurezza ai lati
+      const safe = 16;
+      const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
+      // limiti ragionevoli (min 64px, max 160px)
+      return Math.max(22, Math.min(22, w));
+    }
+
+    function initialDockLayout(){
+      const gap = 12;
+      const w = computeStickerWidth();
+      // imposta la width coerente per tutte le pergamene
+      IMGS.forEach(({id})=>{
+        const el = document.getElementById(id);
+        el.style.setProperty('--sticker-w', `${w}px`);
+      });
+
+      const rect = stage.getBoundingClientRect();
+      const totalW = w*IMGS.length + gap*(IMGS.length-1);
+      let curX = Math.max(8, Math.floor((rect.width - totalW)/2));
+      const y = Math.max(0, rect.height - (w * 0.75) - 12); // poco sopra il bordo
+
+      IMGS.forEach(({id})=>{
+        const el = document.getElementById(id);
+        el.style.left = `${curX}px`;
+        el.style.top  = `${y}px`;
+        curX += w + gap;
+      });
+    }
+
+    function createSticker({id, src}){
+      const img = document.createElement('img');
+      img.id = id;
+      img.src = src;
+      img.alt = id;
+      img.className = 'sticker';
+      img.draggable = false;
+      stickersEl.appendChild(img);
+      enableDrag(img);
+      return img;
+    }
+
+    function enableDrag(el){
+      let startX=0, startY=0, origLeft=0, origTop=0, dragging=false;
+
+      function onPointerDown(e){
+        e.preventDefault();
+        el.classList.add('--dragging');
+        el.setPointerCapture(e.pointerId);
+        dragging = true;
+        const rect = el.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        origLeft = rect.left;
+        origTop  = rect.top;
+        el.style.zIndex = ++zCounter;
+      }
+
+      function onPointerMove(e){
+        if(!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const stageRect = stage.getBoundingClientRect();
+        const selfRect  = el.getBoundingClientRect();
+
+        let newLeft = origLeft + dx - stageRect.left;
+        let newTop  = origTop  + dy - stageRect.top;
+
+        newLeft = Math.min(Math.max(0, newLeft), stageRect.width  - selfRect.width);
+        newTop  = Math.min(Math.max(0, newTop ), stageRect.height - selfRect.height);
+
+        el.style.left = `${newLeft}px`;
+        el.style.top  = `${newTop}px`;
+      }
+
+      function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        el.releasePointerCapture(e.pointerId);
+        el.classList.remove('--dragging');
+        savePositions();
+      }
+
+      el.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    function ensureStickersInitialized(){
+      if(initialized) return;
+      const doInit = ()=>{
+        IMGS.forEach(obj => createSticker(obj));
+
+        const saved = readSaved();
+        const w = computeStickerWidth();
+        IMGS.forEach(({id})=>{
+          const el = document.getElementById(id);
+          el.style.setProperty('--sticker-w', `${w}px`);
+        });
+
+        if(saved && Array.isArray(saved)){
+          saved.forEach(({id,xPct,yPct})=>{
+            const el = document.getElementById(id);
+            if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+          });
+        }else{
+          initialDockLayout();
+          savePositions();
+        }
+        initialized = true;
+      };
+
+      if (mapImg.complete) {
+        requestAnimationFrame(doInit);
+      } else {
+        mapImg.addEventListener('load', () => requestAnimationFrame(doInit), { once:true });
+      }
+    }
+
+    // Su resize: ricalcolo la width e riposiziono
+    // window.addEventListener('resize', ()=>{
+    //   if(!initialized) return;
+    //   const w = computeStickerWidth();
+    
+    //   IMGS.forEach(({id})=>{
+    //     const el = document.getElementById(id);
+    //     if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
+    //   });
+    
+    //   const saved = readSaved();
+    //   if(saved){
+    //     saved.forEach(({id,xPct,yPct})=>{
+    //       const el = document.getElementById(id);
+    //       if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
+    //     });
+    //   }
+    // });
+
+
+    // Init overlay after load
+    window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
+
+    /* ===== Verifica soluzione (hash) */
+    const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
+    // Se vuoi un redirect al successo, metti qui l'URL (altrimenti stringa vuota):
+    const SUCCESS_URL = "jr2025.html";
+    
+    async function sha256Hex(input) {
+      const enc = new TextEncoder().encode(input);
+      const digest = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    
+    const form = document.getElementById('solveForm');
+    const input = document.getElementById('answer');
+    const feedback = document.getElementById('feedback');
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      feedback.textContent = '';
+      const value = input.value;            // ← NIENTE normalize/trim
+      if (value.length === 0) return;
+    
+      const hash = await sha256Hex(value);  // hash del valore esatto
+      if (hash === HASH_EXPECTED) {
+        feedback.textContent = '✅ Corretto!';
+        feedback.className = 'feedback ok';
+        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
+      } else {
+        feedback.textContent = '❌ Errato. Riprova!';
+        feedback.className = 'feedback err';
+      }
+    });
+
+    /* ===== Reveal/Hide card ===== */
+    (function(){
+      const REVEAL_KEY = 'card_revealed_v1';
+      const btnReveal = document.getElementById('btnReveal');
+      const card = document.getElementById('contentCard');
+      const btnHide = document.getElementById('btnHide');
+      const title = document.getElementById('titolo-regole');
+    
+      function reveal(){
+        card.classList.remove('is-hidden');
+        card.setAttribute('aria-hidden','false');
+        btnReveal.setAttribute('aria-expanded','true');
+        btnReveal.style.display = 'none';
+        btnHide.style.display = ''; // mostra il tasto Nascondi
+        try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+        // focus accessibile sull’intestazione
+        if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
+      }
+    
+      function hide(){
+        card.classList.add('is-hidden');
+        card.setAttribute('aria-hidden','true');
+        btnReveal.setAttribute('aria-expanded','false');
+        btnReveal.style.display = 'block';
+        btnHide.style.display = 'none'; // nasconde il tasto Nascondi
+        try{ localStorage.removeItem(REVEAL_KEY); }catch{}
+        // torna il focus al bottone reveal
+        btnReveal.focus();
+      }
+    
+      function init(){
+        // stato iniziale coerente
+        const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
+        if(wasRevealed){
+          card.classList.remove('is-hidden');
+          card.setAttribute('aria-hidden','false');
+          btnReveal.style.display = 'none';
+          btnReveal.setAttribute('aria-expanded','true');
+          btnHide.style.display = '';
+        }else{
+          card.classList.add('is-hidden');
+          card.setAttribute('aria-hidden','true');
+          btnReveal.style.display = 'block';
+          btnReveal.setAttribute('aria-expanded','false');
+          btnHide.style.display = 'none';
+        }
+    
+        // eventi
+        btnReveal.addEventListener('click', reveal);
+        btnReveal.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); }
+        });
+        btnHide.addEventListener('click', hide);
+      }
+    
+      init();
+    })();
+
+    
+    
+    // Invio con Enter
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
+
+    
+  </script>
 </body>
 </html>
