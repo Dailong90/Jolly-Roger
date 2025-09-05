@@ -30,6 +30,8 @@
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
       max-height:58svh;
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+      overflow:hidden; /* <-- mantiene sempre dentro input+button */
     }
 
     /* Bottone grande centrato per rivelare la card */
@@ -62,11 +64,6 @@
       pointer-events:none;
       visibility:hidden;
     }
-    
-    /* Animazione di ingresso */
-    .card{
-      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
-    }
     .card:not(.is-hidden){
       opacity:1;
       transform:none;
@@ -74,12 +71,24 @@
       transition-delay:0s;
     }
 
-
-    
-    /* Campo soluzione */
-    .field{ display:flex; gap:10px; }
+    /* Campo soluzione - FIX overflow & larghezze */
+    #solveForm{
+      width:100%;
+      max-width:100%;
+      overflow:hidden;
+      box-sizing:border-box;
+    }
+    .field{
+      display:flex;
+      gap:10px;
+      width:100%;
+      max-width:100%;
+    }
     #solveForm input[type="text"]{
-      flex:1; background:#fff8e1;
+      flex:1;
+      min-width:0;     /* <-- consente di restringersi */
+      width:auto;      /* <-- evita di forzare 100% + bottone fuori */
+      background:#fff8e1;
       border:1px solid #b2926d; color:#2e2e2e;
       border-radius:8px; padding:12px 14px;
       outline:none; font-size:16px; height:46px;
@@ -95,6 +104,8 @@
       color:#3b2c20; font-family:'Georgia', serif;
       box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
       transition:transform .15s, box-shadow .15s;
+      flex-shrink:0;   /* <-- il bottone non collassa */
+      white-space:nowrap;
     }
     #solveForm button:hover{
       transform:translateY(-1px);
@@ -105,7 +116,6 @@
     .ok{ color:#10b981; }  /* fallback se non usi --ok */
     .err{ color:#ef4444; } /* fallback se non usi --err */
 
-    
     .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
@@ -158,7 +168,7 @@
 
     .sticker{
       position:absolute;
-      width: var(--sticker-w, 22px) !important; /* <— controllo via CSS var */
+      width: var(--sticker-w, 22px) !important;
       height:auto;
       user-select:none; -webkit-user-drag:none; touch-action:none;
       cursor:grab; z-index:5;
@@ -174,7 +184,6 @@
       pointer-events:none; z-index:1;
     }
 
-    /* Centra il contenuto (stage) dentro la finestra della modale */
     .modal__inner{
       display:flex;
       align-items:center;
@@ -258,7 +267,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       mapImg.style.maxHeight = 'none';
       stage.style.width = w + 'px';
       stage.style.height = 'auto';
-      stage.style.margin = '0 auto';  // centra orizzontalmente
+      stage.style.margin = '0 auto';
     }
 
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
@@ -316,22 +325,18 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       el.style.top  = `${top}px`;
     }
 
-    // Calcola una larghezza che consenta 7 sticker in fila con gap
     function computeStickerWidth(){
       const rect = stage.getBoundingClientRect();
       const gap = 12;
       const n = IMGS.length;
-      // un piccolo padding di sicurezza ai lati
       const safe = 16;
       const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
-      // limiti ragionevoli (min 64px, max 160px)
       return Math.max(22, Math.min(22, w));
     }
 
     function initialDockLayout(){
       const gap = 12;
       const w = computeStickerWidth();
-      // imposta la width coerente per tutte le pergamene
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
         el.style.setProperty('--sticker-w', `${w}px`);
@@ -340,7 +345,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       const rect = stage.getBoundingClientRect();
       const totalW = w*IMGS.length + gap*(IMGS.length-1);
       let curX = Math.max(8, Math.floor((rect.width - totalW)/2));
-      const y = Math.max(0, rect.height - (w * 0.75) - 12); // poco sopra il bordo
+      const y = Math.max(0, rect.height - (w * 0.75) - 12);
 
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
@@ -440,32 +445,11 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       }
     }
 
-    // Su resize: ricalcolo la width e riposiziono
-    // window.addEventListener('resize', ()=>{
-    //   if(!initialized) return;
-    //   const w = computeStickerWidth();
-    
-    //   IMGS.forEach(({id})=>{
-    //     const el = document.getElementById(id);
-    //     if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
-    //   });
-    
-    //   const saved = readSaved();
-    //   if(saved){
-    //     saved.forEach(({id,xPct,yPct})=>{
-    //       const el = document.getElementById(id);
-    //       if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
-    //     });
-    //   }
-    // });
-
-
     // Init overlay after load
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
 
     /* ===== Verifica soluzione (hash) */
     const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
-    // Se vuoi un redirect al successo, metti qui l'URL (altrimenti stringa vuota):
     const SUCCESS_URL = "jr2025.html";
     
     async function sha256Hex(input) {
@@ -481,10 +465,10 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       feedback.textContent = '';
-      const value = input.value;            // ← NIENTE normalize/trim
+      const value = input.value;
       if (value.length === 0) return;
     
-      const hash = await sha256Hex(value);  // hash del valore esatto
+      const hash = await sha256Hex(value);
       if (hash === HASH_EXPECTED) {
         feedback.textContent = '✅ Corretto!';
         feedback.className = 'feedback ok';
@@ -508,9 +492,8 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         card.setAttribute('aria-hidden','false');
         btnReveal.setAttribute('aria-expanded','true');
         btnReveal.style.display = 'none';
-        btnHide.style.display = ''; // mostra il tasto Nascondi
+        btnHide.style.display = '';
         try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-        // focus accessibile sull’intestazione
         if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
       }
     
@@ -519,14 +502,12 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         card.setAttribute('aria-hidden','true');
         btnReveal.setAttribute('aria-expanded','false');
         btnReveal.style.display = 'block';
-        btnHide.style.display = 'none'; // nasconde il tasto Nascondi
+        btnHide.style.display = 'none';
         try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-        // torna il focus al bottone reveal
         btnReveal.focus();
       }
     
       function init(){
-        // stato iniziale coerente
         const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
         if(wasRevealed){
           card.classList.remove('is-hidden');
@@ -542,7 +523,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
           btnHide.style.display = 'none';
         }
     
-        // eventi
         btnReveal.addEventListener('click', reveal);
         btnReveal.addEventListener('keydown', (e)=>{
           if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); }
@@ -553,12 +533,9 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       init();
     })();
 
-    
-    
     // Invio con Enter
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
 
-    
   </script>
 </body>
 </html>
