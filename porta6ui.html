@@ -83,12 +83,14 @@
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
-  /* ===== CARD (asciutta) ===== */
+  /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
   .wrap{
     position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
     width:min(560px,92vw); padding:16px; z-index:55;
   }
+  /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
+  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
   body.blackout #btnReveal { display: none !important; }
 
   .card{
@@ -107,6 +109,7 @@
   }
   .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
+  /* Bottone grande per rivelare la card */
   .btn{
     cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
     background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
@@ -246,7 +249,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
-  // luce dalla parte superiore della PNG
   function setTorchPos(x, y){
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
     const h = torch.getBoundingClientRect().height || 0;
@@ -255,17 +257,12 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     root.style.setProperty('--y', (y+dy) + 'px');
   }
 
-  // abilita lo switch SOLO se: card chiusa e revealCount === 1
-  function updateSwitchEnabled(){
-    const canEnable = !cardOpen && (revealCount === 1);
-    if (canEnable) switchB.removeAttribute('disabled');
-    else           switchB.setAttribute('disabled','true');
-  }
-
-  // Toggle blackout: solo se abilitato e card chiusa e revealCount === 1
-  switchB.addEventListener('click', (e)=>{
+  /* ========= abilita/disabilita switch attaccando o staccando il listener ========= */
+  function onSwitchClick(e){
     e.preventDefault(); e.stopPropagation();
+    // guard ridondante
     if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return;
+
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -277,8 +274,84 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       suppressPointerOnce = true;
       setTimeout(()=>{ suppressPointerOnce = false; }, 60);
     }
-  }, {passive:false});
+  }
 
+  function enableSwitch(){
+    switchB.removeAttribute('disabled');
+    // evita doppi listener
+    switchB.removeEventListener('click', onSwitchClick);
+    switchB.addEventListener('click', onSwitchClick, { passive:false });
+  }
+
+  function disableSwitch(){
+    switchB.setAttribute('disabled','true');
+    switchB.removeEventListener('click', onSwitchClick);
+    // se era attivo il blackout, spegnilo per coerenza
+    if (blackout){
+      blackout = false;
+      document.body.classList.remove('blackout');
+    }
+  }
+
+  /* ========= CARD (reveal/hide) ========= */
+  const btnReveal  = document.getElementById('btnReveal');
+  const card       = document.getElementById('contentCard');
+  const btnHide    = document.getElementById('btnHide');
+  const title      = document.getElementById('titolo-regole');
+
+  function reveal(){
+    if(blackout){
+      blackout = false;
+      document.body.classList.remove('blackout');
+    }
+    cardOpen = true;
+
+    // incrementa contatore all'apertura
+    revealCount += 1;
+
+    card.classList.remove('is-hidden');
+    card.setAttribute('aria-hidden','false');
+    btnReveal.setAttribute('aria-expanded','true');
+    btnReveal.style.display = 'none';
+
+    // card aperta => switch sempre disabilitato
+    disableSwitch();
+
+    if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
+  }
+
+  function hide(){
+    cardOpen = false;
+    card.classList.add('is-hidden');
+    card.setAttribute('aria-hidden','true');
+    btnReveal.setAttribute('aria-expanded','false');
+    btnReveal.style.display = 'block';
+
+    // abilita switch SOLO se la card è stata aperta esattamente 1 volta
+    if (revealCount === 1){
+      enableSwitch();
+    } else {
+      disableSwitch();
+    }
+
+    btnReveal.focus();
+  }
+
+  // Stato iniziale: card chiusa, switch disabilitato e senza listener
+  (function initReveal(){
+    card.classList.add('is-hidden');
+    card.setAttribute('aria-hidden','true');
+    btnReveal.style.display = 'block';
+    btnReveal.setAttribute('aria-expanded','false');
+    btnHide.style.display = 'none';
+    disableSwitch(); // <--- disabilitato + niente listener
+  })();
+
+  btnReveal.addEventListener('click', reveal);
+  btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
+  btnHide.addEventListener('click', hide);
+
+  /* ========= Torcia follow ========= */
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -300,79 +373,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       setTorchPos(x, y);
     }
   });
-
-  /* ========= CARD (reveal/hide asciutta) ========= */
-  const REVEAL_KEY = 'card_revealed_v1';
-  const btnReveal  = document.getElementById('btnReveal');
-  const card       = document.getElementById('contentCard');
-  const btnHide    = document.getElementById('btnHide');
-  const title      = document.getElementById('titolo-regole');
-
-  function reveal(){
-    // Card non visibile in blackout -> esci dal blackout se attivo
-    if(blackout){
-      blackout = false;
-      document.body.classList.remove('blackout');
-    }
-    cardOpen = true;
-
-    // incrementa contatore all'apertura
-    revealCount += 1;
-
-    card.classList.remove('is-hidden');
-    card.setAttribute('aria-hidden','false');
-    btnReveal.setAttribute('aria-expanded','true');
-    btnReveal.style.display = 'none';   // bottone apre scompare
-    try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-
-    // card aperta => switch disabilitato
-    updateSwitchEnabled();
-
-    if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
-  }
-
-  function hide(){
-    cardOpen = false;
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.setAttribute('aria-expanded','false');
-    btnReveal.style.display = 'block';  // bottone ricompare
-    try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-
-    // abilita lo switch SOLO se revealCount === 1
-    updateSwitchEnabled();
-
-    btnReveal.focus();
-  }
-
-  // Stato iniziale: card chiusa e switch DISABILITATO
-  (function initReveal(){
-    // non chiamiamo hide() per evitare effetti collaterali;
-    // impostiamo lo stato iniziale direttamente:
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.style.display = 'block';
-    btnReveal.setAttribute('aria-expanded','false');
-    btnHide.style.display = 'none';
-    switchB.setAttribute('disabled','true'); // disabilitato di base
-  })();
-
-  btnReveal.addEventListener('click', reveal);
-  btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
-  btnHide.addEventListener('click', hide);
-
-  // Effetti overlay scroller (freccia/fade)
-  const riddleBox = document.getElementById('riddleBox');
-  const scroller  = document.getElementById('riddleScroll');
-  function updateOverlay(){
-    const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
-    riddleBox.classList.toggle('--no-scroll', !canScroll);
-    const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
-    riddleBox.classList.toggle('--at-bottom', atBottom);
-  }
-  scroller.addEventListener('scroll', updateOverlay);
-  window.addEventListener('load', ()=>{ requestAnimationFrame(updateOverlay); });
-  window.addEventListener('resize', ()=>{ requestAnimationFrame(updateOverlay); });
 
   /* ===== Verifica soluzione (hash esatto, senza normalize) ===== */
   const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
