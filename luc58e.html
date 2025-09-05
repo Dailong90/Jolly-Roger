@@ -90,6 +90,8 @@
   }
   /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
+  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
+  body.blackout #btnReveal { display: none !important; }
 
   .card{
     display:flex; flex-direction:column; gap:10px;
@@ -126,7 +128,7 @@
   }
 
   .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
-  .card__title{ margin:0; font-size:18px; }
+  .card__title{ margin:0; font-size:18px; color:#090909; }
   .head__actions{ display:flex; gap:8px; }
 
   .riddle{
@@ -165,9 +167,6 @@
   .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
   .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
   .ok{ color:#10b981; } .err{ color:#ef4444; }
-
-  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
-  body.blackout #btnReveal { display: none; }
   
 </style>
 </head>
