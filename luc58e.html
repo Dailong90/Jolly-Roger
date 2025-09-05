@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Enigma – Lant</title>
+<title>Enigma – Leggi la lettera</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:120px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -83,12 +83,14 @@
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
-  /* ===== CARD (asciutta) ===== */
+  /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
   .wrap{
     position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
     width:min(560px,92vw); padding:16px; z-index:55;
   }
+  /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
+  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
   body.blackout #btnReveal { display: none !important; }
 
   .card{
@@ -107,6 +109,7 @@
   }
   .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
+  /* Bottone grande per rivelare la card */
   .btn{
     cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
     background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
@@ -165,14 +168,16 @@
   .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
   .ok{ color:#10b981; } .err{ color:#ef4444; }
 
-  #btnReveal:focus { outline: none; }
+  #btnReveal:focus {
+    outline: none;
+  }
+
 </style>
 </head>
 <body>
   <!-- ===== SCENA ===== -->
   <div class="scene" id="scene">
-    <!-- disabilitato di base -->
-    <button id="roomSwitch" class="switch" aria-label="Interruttore" disabled></button>
+    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
     <div class="blackout-text">Sai cosa prendo?</div>
 
@@ -184,14 +189,14 @@
 
   <!-- Bottone grande per rivelare la card -->
   <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
-    A lume di candela
+    Leggi la lettera
   </button>
 
   <!-- ===== CARD asciutta (no bacheca) ===== -->
   <main class="wrap">
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
-        <h2 id="titolo-regole" class="card__title">A lume di candela</h2>
+        <h2 id="titolo-regole" class="card__title">Da Roger...</h2>
         <div class="head__actions">
           <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
@@ -240,9 +245,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   let suppressPointerOnce = false;
   let cardOpen = false;
 
-  // contatore “nascosto” di quante volte è stata aperta la card
-  let revealCount = 0;
-
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
@@ -255,17 +257,15 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     root.style.setProperty('--y', (y+dy) + 'px');
   }
 
-  // abilita lo switch SOLO se: card chiusa e revealCount === 1
-  function updateSwitchEnabled(){
-    const canEnable = !cardOpen && (revealCount === 1);
-    if (canEnable) switchB.removeAttribute('disabled');
-    else           switchB.setAttribute('disabled','true');
+  function setSwitchEnabled(enabled){
+    if(enabled) switchB.removeAttribute('disabled');
+    else        switchB.setAttribute('disabled','true');
   }
 
-  // Toggle blackout: solo se abilitato e card chiusa e revealCount === 1
+  // Toggle blackout: solo se card chiusa
   switchB.addEventListener('click', (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return;
+    if(cardOpen) return;
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -315,19 +315,12 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       document.body.classList.remove('blackout');
     }
     cardOpen = true;
-
-    // incrementa contatore all'apertura
-    revealCount += 1;
-
     card.classList.remove('is-hidden');
     card.setAttribute('aria-hidden','false');
     btnReveal.setAttribute('aria-expanded','true');
     btnReveal.style.display = 'none';   // bottone apre scompare
     try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-
-    // card aperta => switch disabilitato
-    updateSwitchEnabled();
-
+    setSwitchEnabled(false);            // interruttore disabilitato
     if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
   }
 
@@ -338,24 +331,15 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     btnReveal.setAttribute('aria-expanded','false');
     btnReveal.style.display = 'block';  // bottone ricompare
     try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-
-    // abilita lo switch SOLO se revealCount === 1
-    updateSwitchEnabled();
-
+    setSwitchEnabled(true);             // interruttore riabilitato
     btnReveal.focus();
   }
 
-  // Stato iniziale: card chiusa e switch DISABILITATO
+  // Stato iniziale: sempre card chiusa
   (function initReveal(){
-    // non chiamiamo hide() per evitare effetti collaterali;
-    // impostiamo lo stato iniziale direttamente:
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.style.display = 'block';
-    btnReveal.setAttribute('aria-expanded','false');
-    btnHide.style.display = 'none';
-    switchB.setAttribute('disabled','true'); // disabilitato di base
+    hide();
   })();
+
 
   btnReveal.addEventListener('click', reveal);
   btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
