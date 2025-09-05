@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (testo illuminato + tremolio)</title>
+<title>Enigma – Lanterna (card + regole blackout)</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:40px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
   body{ font-family: Georgia, "Times New Roman", serif; background:#000; color:#ddd; overflow:hidden; }
 
+  /* --- SCENA LANTERNA --- */
   .scene{
     position:relative; width:100%; height:100%;
     background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
@@ -19,7 +20,7 @@
     background: url('assets/stanza_buia.jpg') center/cover no-repeat #000;
   }
 
-  /* Interruttore invisibile */
+  /* Interruttore invisibile (disabilitabile) */
   .switch{
     position:absolute;
     left:92.56%; top:31.66%;
@@ -28,40 +29,41 @@
     background:transparent; border:none; padding:0; margin:0;
     opacity:0; cursor:pointer; z-index:30;
   }
+  .switch[disabled]{ pointer-events:none; }
 
-  /* Overlay con maschera torcia (buio) */
+  /* Buio con maschera torcia */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
     z-index:20;
   }
   body.blackout .dark{
     opacity:1;
-    animation: flicker 1.6s ease-in-out infinite; /* ← anim anche qui */
+    animation: flicker 1.6s ease-in-out infinite;
     background:
       radial-gradient(circle at var(--x) var(--y),
         rgba(0,0,0,0) 0,
-        rgba(0,0,0,0.1) calc(var(--r) - 20px),
-        rgba(0,0,0,0.23) var(--r),
-        rgba(0,0,0,0.36) calc(var(--r) + 65px),
+        rgba(0,0,0,0) calc(var(--r) - 30px),
+        rgba(0,0,0,0.1) var(--r),
+        rgba(0,0,0,0.72) calc(var(--r) + 100px),
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Spotlight che schiarisce l'area illuminata */
+  /* Spotlight che schiarisce davvero l'area della torcia */
   .spotlight{
     position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
   }
   body.blackout .spotlight{
     opacity:1;
-    animation: flicker 1.6s ease-in-out infinite; /* ← e anche qui */
+    animation: flicker 1.6s ease-in-out infinite;
     background:
       radial-gradient(circle at var(--x) var(--y),
         rgba(255,243,191,0.5) 0,
-        rgba(251,207,85,0.25) calc(var(--r) - 20px),
+        rgba(251,207,85,0.3) calc(var(--r) - 20px),
         rgba(213,140,18,0.0) calc(var(--r) + 65px));
-    mix-blend-mode: screen; /* schiarisce il contenuto sotto */
+    mix-blend-mode: screen;
   }
 
-  /* Tremolio centrato su 40px (escursione delicata) */
+  /* Tremolio centrato su 40px (delicato) */
   @keyframes flicker{
     0%   { --r:38px; }
     25%  { --r:41px; }
@@ -70,46 +72,133 @@
     100% { --r:40px; }
   }
 
-  /* Torcia */
+  /* Torcia PNG (come concordato) */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
-    transform:translate(-50%,-50%);
+    transform:translate(-50%, -50%);
     pointer-events:none; display:none;
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
     z-index:30;
   }
   body.blackout .torch{ display:block; }
 
-  /* Testo da illuminare */
+  /* Testo illuminabile */
   .blackout-text{
     position:absolute; top:25px; left:125px;
     font-size:10px; color:#090909;
-    z-index:10; /* sotto l’overlay scuro */
-    white-space:nowrap;
+    z-index:10; white-space:nowrap;
   }
   body:not(.blackout) .blackout-text{ display:none; }
+
+  /* --- CARD “Caccia al Tesoro” --- */
+  .card-toggle{
+    position:fixed; right:16px; bottom:16px; z-index:60;
+    cursor:pointer;
+    border:1px solid #8b6b1b; border-radius:8px; padding:0 16px;
+    font-weight:700; height:46px;
+    background: linear-gradient(180deg, #f5d76e, #d4a017);
+    color:#3b2c20; font-family:'Georgia', serif;
+    box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card-toggle:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+  .wrap{
+    position:fixed; left:50%; top:65svh; transform:translate(-50%, -50%);
+    width:min(560px, 92vw); padding:16px; z-index:55; display:none;
+  }
+  .wrap.show{ display:block; }
+  /* Card NON visibile in blackout */
+  body.blackout .wrap{ display:none !important; }
+
+  .card{
+    position:relative;
+    width:100%;
+    background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+    font-family:'Georgia', serif;
+    background-image:
+      radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+      radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+  }
+  .riddle{
+    background: rgba(255,255,255,.65);
+    border:1px dashed #b2926d; border-radius:8px; padding:14px 16px; margin:0 0 16px;
+    line-height:0.8; font-size:16px; color:#3b2c20; white-space:pre; word-break:keep-all;
+  }
+
+  .field{ display:flex; gap:10px; align-items:center; }
+  input[type="text"]{
+    flex:1 1 auto; min-width:0; background:#fff8e1;
+    border:1px solid #b2926d; color:#2e2e2e; border-radius:8px; padding:12px 14px;
+    outline:none; font-size:16px; height:46px; box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+  }
+  input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
+
+  .card button{
+    cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px;
+    font-weight:700; height:46px; background:linear-gradient(180deg, #f5d76e, #d4a017);
+    color:#3b2c20; font-family:'Georgia', serif;
+    box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+    transition: transform .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+  }
+  .card button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+  .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
+  .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
+  .ok{ color:#10b981; } .err{ color:#ef4444; }
+
+  .close-card{
+    position:absolute; right:22px; top:18px;
+    border:1px solid #8b6b1b; border-radius:8px; padding:0 10px; height:32px;
+    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-weight:700; cursor:pointer;
+  }
 </style>
 </head>
 <body>
+  <!-- SCENA -->
   <div class="scene" id="scene">
-    <!-- Interruttore -->
     <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
-    <!-- Testo nascosto dal buio, visibile solo nella torcia -->
     <div class="blackout-text">Sai cosa prendo?</div>
 
-    <!-- Overlay torcia (buio) -->
     <div class="dark" id="dark"></div>
-
-    <!-- Spotlight che schiarisce -->
     <div class="spotlight" id="spotlight"></div>
 
-    <!-- Torcia -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
   </div>
 
+  <!-- Bottone per aprire la card -->
+  <button class="card-toggle" id="btnOpenCard" type="button">Apri indovinello</button>
+
+  <!-- CARD -->
+  <main class="wrap" id="cardWrap" aria-hidden="true">
+    <section class="card">
+      <button class="close-card" id="btnCloseCard" type="button">Nascondi</button>
+
+      <div class="riddle" id="riddle">
+Barbuto signore di un epoca passata,<br>
+sognò nel caos un’armonia svelata,<br>
+orme vuote lasciò per i figli a venire,<br>
+trama silente che tutto può dire.
+        <p class="no-autolink" name="format-detection" content="telephone=no">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
+      </div>
+
+      <form id="solveForm" autocomplete="off">
+        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
+        <div class="field">
+          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
+          <button id="btnCheck" type="submit">Verifica</button>
+        </div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
 <script>
 (function(){
+  /* ------- LANTERNA ------- */
   const scene   = document.getElementById('scene');
   const switchB = document.getElementById('roomSwitch');
   const torch   = document.getElementById('torch');
@@ -119,31 +208,36 @@
 
   let blackout = false;
   let suppressPointerOnce = false;
+  let cardOpen = false;
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
   function setTorchPos(x, y){
-    // x,y = centro della PNG (come ora)
+    // posiziona l'immagine
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-  
-    // calcolo dell’offset: luce dalla parte superiore della torcia
+    // luce dalla parte superiore della PNG
     const h = torch.getBoundingClientRect().height || 0;
-    const dx = 0;           // se il “beccuccio” non è centrato, puoi mettere un offset orizzontale qui (es. +3 o -3)
-    const dy = -h/2 + 4;    // -h/2 = bordo superiore; +4px per non attaccarsi proprio al bordo
-  
+    const dx = 0;
+    const dy = -h/2 + 4;
     const lx = x + dx;
     const ly = y + dy;
-  
-    // posizione del gradiente (la luce)
-    document.documentElement.style.setProperty('--x', lx + 'px');
-    document.documentElement.style.setProperty('--y', ly + 'px');
+    root.style.setProperty('--x', lx + 'px');
+    root.style.setProperty('--y', ly + 'px');
   }
 
-  // Toggle blackout
+  function setSwitchEnabled(enabled){
+    if(enabled){
+      switchB.removeAttribute('disabled');
+    }else{
+      switchB.setAttribute('disabled','true');
+    }
+  }
+
+  // Toggle blackout: solo se la card è CHIUSA
   switchB.addEventListener('click', (e)=>{
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
+    if(cardOpen) return; // interruttore disabilitato quando card aperta
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -157,12 +251,11 @@
     }
   }, {passive:false});
 
-  // Movimento torcia
+  // Movimento luce
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
     if(e.target.closest('.switch')) return;
-
     const r = sceneRect();
     const x = clamp(e.clientX - r.left, 0, r.width);
     const y = clamp(e.clientY - r.top , 0, r.height);
@@ -172,7 +265,7 @@
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Resize
+  // Resize: ricalcola offset con altezza reale PNG
   window.addEventListener('resize', ()=>{
     if(blackout){
       const r = sceneRect();
@@ -181,6 +274,71 @@
       setTorchPos(x, y);
     }
   });
+
+  /* ------- CARD ------- */
+  const HASH_EXPECTED = "ee4db9c9644f23fdf8475f4d8ceb7e07eeb8d1da53538d37126c6fe4a26abed3";
+  const SUCCESS_URL   = "1isola2ar.html";
+
+  const wrap    = document.getElementById('cardWrap');
+  const btnOpen = document.getElementById('btnOpenCard');
+  const btnClose= document.getElementById('btnCloseCard');
+  const form    = document.getElementById('solveForm');
+  const input   = document.getElementById('answer');
+  const feedback= document.getElementById('feedback');
+
+  function showCard(){
+    // se eri in blackout, esci (card non deve essere visibile in blackout)
+    if(blackout){
+      blackout = false;
+      document.body.classList.remove('blackout');
+    }
+    cardOpen = true;
+    wrap.classList.add('show');
+    wrap.setAttribute('aria-hidden','false');
+    setSwitchEnabled(false); // disabilita interruttore
+    setTimeout(()=> input?.focus(), 50);
+  }
+  function hideCard(){
+    cardOpen = false;
+    wrap.classList.remove('show');
+    wrap.setAttribute('aria-hidden','true');
+    setSwitchEnabled(true); // riabilita interruttore
+  }
+
+  btnOpen.addEventListener('click', (e)=>{ e.preventDefault(); showCard(); });
+  btnClose.addEventListener('click', (e)=>{ e.preventDefault(); hideCard(); });
+
+  function normalize(str){
+    return str.trim().toLowerCase().normalize('NFKD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^\p{L}\p{N}]+/gu, '');
+  }
+  async function sha256Hex(input){
+    const enc = new TextEncoder().encode(input);
+    const digest = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    feedback.textContent = '';
+    const value = normalize(input.value);
+    if(!value) return;
+    const hash = await sha256Hex(value);
+    if(hash === HASH_EXPECTED){
+      feedback.textContent = '✅ Corretto!';
+      feedback.className = 'feedback ok';
+      if(SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
+    }else{
+      feedback.textContent = '❌ Errato. Riprova!';
+      feedback.className = 'feedback err';
+    }
+  });
+  input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') form.requestSubmit(); });
+
+  // Stato iniziale: card chiusa, interruttore abilitato
+  hideCard();
+  setSwitchEnabled(true);
 })();
 </script>
 </body>
