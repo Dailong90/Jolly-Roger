@@ -124,9 +124,20 @@
   const sceneRect = ()=> scene.getBoundingClientRect();
 
   function setTorchPos(x, y){
-    root.style.setProperty('--x', x + 'px');
-    root.style.setProperty('--y', y + 'px');
+    // x,y = centro della PNG (come ora)
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+  
+    // calcolo dell’offset: luce dalla parte superiore della torcia
+    const h = torch.getBoundingClientRect().height || 0;
+    const dx = 0;           // se il “beccuccio” non è centrato, puoi mettere un offset orizzontale qui (es. +3 o -3)
+    const dy = -h/2 + 4;    // -h/2 = bordo superiore; +4px per non attaccarsi proprio al bordo
+  
+    const lx = x + dx;
+    const ly = y + dy;
+  
+    // posizione del gradiente (la luce)
+    document.documentElement.style.setProperty('--x', lx + 'px');
+    document.documentElement.style.setProperty('--y', ly + 'px');
   }
 
   // Toggle blackout
