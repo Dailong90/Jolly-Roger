@@ -90,7 +90,7 @@
   }
   /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
-  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
+  /* Nasconde il bottone "Leggi la lettera" quando c'è il blackout */
   body.blackout #btnReveal { display: none !important; }
 
   .card{
@@ -137,8 +137,8 @@
   }
   .riddle__scroller{
     grid-area:1/1; overflow:auto; -webkit-overflow-scrolling:touch;
-    padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-    max-height:40svh;
+    padding:14px 16px 24px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+    max-height:32svh; /* ↓ ridotto per dare spazio al feedback */
   }
   .riddle__fade{
     grid-area:1/1; align-self:end; height:84px;
@@ -168,16 +168,14 @@
   .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
   .ok{ color:#10b981; } .err{ color:#ef4444; }
 
-  #btnReveal:focus {
-    outline: none;
-  }
-
+  #btnReveal:focus { outline: none; }
 </style>
 </head>
 <body>
   <!-- ===== SCENA ===== -->
   <div class="scene" id="scene">
-    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
+    <!-- disabilitato di base -->
+    <button id="roomSwitch" class="switch" aria-label="Interruttore" disabled></button>
 
     <div class="blackout-text">Sai cosa prendo?</div>
 
@@ -198,6 +196,7 @@
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Da Roger...</h2>
         <div class="head__actions">
+          <!-- 🔴 Lasciato il tasto Nascondi nella head, come richiesto -->
           <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
       </div>
@@ -218,6 +217,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
 -Dopo Tokyo ho visto Seattle.
         </div>
         <div class="riddle__fade" aria-hidden="true"></div>
+        <!-- Freccia ▼ invariata -->
         <div class="riddle__indicator" aria-hidden="true">▼</div>
       </div>
 
@@ -245,6 +245,9 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   let suppressPointerOnce = false;
   let cardOpen = false;
 
+  // Contatore nascosto: quante volte hai aperto la card
+  let revealCount = 0;
+
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
@@ -257,15 +260,25 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     root.style.setProperty('--y', (y+dy) + 'px');
   }
 
-  function setSwitchEnabled(enabled){
-    if(enabled) switchB.removeAttribute('disabled');
-    else        switchB.setAttribute('disabled','true');
+  // Abilita switch SOLO se card chiusa e revealCount === 1
+  function updateSwitchEnabled(){
+    const canEnable = (!cardOpen && revealCount === 1);
+    if (canEnable) {
+      switchB.removeAttribute('disabled');
+    } else {
+      switchB.setAttribute('disabled','true');
+      // sicurezza: se era attivo il blackout, spegnilo quando non è permesso
+      if (blackout){
+        blackout = false;
+        document.body.classList.remove('blackout');
+      }
+    }
   }
 
-  // Toggle blackout: solo se card chiusa
+  // Toggle blackout: solo se card chiusa E siamo al primo ciclo (revealCount === 1)
   switchB.addEventListener('click', (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if(cardOpen) return;
+    if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return;
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -302,44 +315,60 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   });
 
   /* ========= CARD (reveal/hide asciutta) ========= */
-  const REVEAL_KEY = 'card_revealed_v1';
   const btnReveal  = document.getElementById('btnReveal');
   const card       = document.getElementById('contentCard');
   const btnHide    = document.getElementById('btnHide');
   const title      = document.getElementById('titolo-regole');
 
   function reveal(){
-    // Card non visibile in blackout -> esci dal blackout se attivo
+    // Se eri in blackout, esci
     if(blackout){
       blackout = false;
       document.body.classList.remove('blackout');
     }
     cardOpen = true;
+
+    // incrementa il contatore all'apertura
+    revealCount += 1;
+
+    // mostra card
     card.classList.remove('is-hidden');
     card.setAttribute('aria-hidden','false');
     btnReveal.setAttribute('aria-expanded','true');
-    btnReveal.style.display = 'none';   // bottone apre scompare
-    try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-    setSwitchEnabled(false);            // interruttore disabilitato
+    btnReveal.style.display = 'none';
+
+    // card aperta => switch disabilitato
+    updateSwitchEnabled();
+
+    // accessibilità
     if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
   }
 
   function hide(){
     cardOpen = false;
+
+    // nascondi card
     card.classList.add('is-hidden');
     card.setAttribute('aria-hidden','true');
     btnReveal.setAttribute('aria-expanded','false');
-    btnReveal.style.display = 'block';  // bottone ricompare
-    try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-    setSwitchEnabled(true);             // interruttore riabilitato
+    btnReveal.style.display = 'block';
+
+    // abilita switch SOLO se è stata aperta esattamente una volta
+    updateSwitchEnabled();
+
     btnReveal.focus();
   }
 
-  // Stato iniziale: sempre card chiusa
+  // Stato iniziale: card chiusa e switch disabilitato
   (function initReveal(){
-    hide();
+    // NON chiamare hide() per evitare side-effect
+    card.classList.add('is-hidden');
+    card.setAttribute('aria-hidden','true');
+    btnReveal.style.display = 'block';
+    btnReveal.setAttribute('aria-expanded','false');
+    btnHide.style.display = ''; // resta visibile quando la card è aperta
+    switchB.setAttribute('disabled','true');
   })();
-
 
   btnReveal.addEventListener('click', reveal);
   btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
