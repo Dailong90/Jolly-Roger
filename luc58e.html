@@ -29,31 +29,14 @@
     opacity:0; cursor:pointer; z-index:30;
   }
 
-  /* Overlay con maschera torcia (valori originali) + tremolio leggero */
+  /* Overlay con maschera torcia (buio) */
   .dark{
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
     z-index:20;
   }
-
-  /* Spotlight che schiarisce l'area illuminata */
-  .spotlight{
-    position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
-  }
-  body.blackout .spotlight{
-    opacity:1;
-    /* luce che schiarisce davvero l’immagine sottostante */
-    background:
-      radial-gradient(circle at var(--x) var(--y),
-        rgba(255,243,191,0.5) 0,
-        rgba(251,207,85,0.3) calc(var(--r) - 20px),
-        rgba(213,140,18,0.0) calc(var(--r) + 65px));
-    mix-blend-mode: screen; /* magia: schiarisce il contenuto sotto */
-  }
-
-  
   body.blackout .dark{
     opacity:1;
-    animation: flicker 1.8s ease-in-out infinite;
+    animation: flicker 1.6s ease-in-out infinite; /* ← anim anche qui */
     background:
       radial-gradient(circle at var(--x) var(--y),
         rgba(0,0,0,0) 0,
@@ -63,16 +46,31 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Tremolio: escursione minima (+/- 3–4px) attorno a 120px */
-  @keyframes flicker{
-    0%   { --r:118px; }
-    25%  { --r:121px; }
-    50%  { --r:119px; }
-    75%  { --r:122px; }
-    100% { --r:120px; }
+  /* Spotlight che schiarisce l'area illuminata */
+  .spotlight{
+    position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
+  }
+  body.blackout .spotlight{
+    opacity:1;
+    animation: flicker 1.6s ease-in-out infinite; /* ← e anche qui */
+    background:
+      radial-gradient(circle at var(--x) var(--y),
+        rgba(255,243,191,0.5) 0,
+        rgba(251,207,85,0.3) calc(var(--r) - 20px),
+        rgba(213,140,18,0.0) calc(var(--r) + 65px));
+    mix-blend-mode: screen; /* schiarisce il contenuto sotto */
   }
 
-  /* Torcia (valori originali) */
+  /* Tremolio centrato su 40px (escursione delicata) */
+  @keyframes flicker{
+    0%   { --r:38px; }
+    25%  { --r:41px; }
+    50%  { --r:39px; }
+    75%  { --r:43px; }
+    100% { --r:40px; }
+  }
+
+  /* Torcia */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%);
@@ -82,7 +80,7 @@
   }
   body.blackout .torch{ display:block; }
 
-  /* Testo da illuminare (valori originali) */
+  /* Testo da illuminare */
   .blackout-text{
     position:absolute; top:25px; left:125px;
     font-size:10px; color:#090909;
@@ -100,7 +98,7 @@
     <!-- Testo nascosto dal buio, visibile solo nella torcia -->
     <div class="blackout-text">Sai cosa prendo?</div>
 
-    <!-- Overlay torcia -->
+    <!-- Overlay torcia (buio) -->
     <div class="dark" id="dark"></div>
 
     <!-- Spotlight che schiarisce -->
@@ -131,7 +129,7 @@
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
 
-  // Toggle blackout (identico all’originale)
+  // Toggle blackout
   switchB.addEventListener('click', (e)=>{
     e.preventDefault();
     e.stopPropagation();
@@ -148,7 +146,7 @@
     }
   }, {passive:false});
 
-  // Movimento torcia (identico all’originale)
+  // Movimento torcia
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -163,7 +161,7 @@
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Resize (identico all’originale)
+  // Resize
   window.addEventListener('resize', ()=>{
     if(blackout){
       const r = sceneRect();
