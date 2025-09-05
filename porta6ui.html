@@ -83,12 +83,14 @@
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
-  /* ===== CARD ===== */
+  /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
   .wrap{
     position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
     width:min(560px,92vw); padding:16px; z-index:55;
   }
+  /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
+  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
   body.blackout #btnReveal { display: none !important; }
 
   .card{
@@ -107,6 +109,7 @@
   }
   .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
+  /* Bottone grande per rivelare la card */
   .btn{
     cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
     background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
@@ -165,16 +168,22 @@
   .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
   .ok{ color:#10b981; } .err{ color:#ef4444; }
 
-  #btnReveal:focus { outline: none; }
+  #btnReveal:focus {
+    outline: none;
+  }
+
 </style>
 </head>
 <body>
   <!-- ===== SCENA ===== -->
   <div class="scene" id="scene">
-    <button id="roomSwitch" class="switch" aria-label="Interruttore" disabled></button>
+    <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
+
     <div class="blackout-text">Sai cosa prendo?</div>
+
     <div class="dark" id="dark"></div>
     <div class="spotlight" id="spotlight"></div>
+
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
   </div>
 
@@ -183,7 +192,7 @@
     A lume di candela
   </button>
 
-  <!-- ===== CARD ===== -->
+  <!-- ===== CARD asciutta (no bacheca) ===== -->
   <main class="wrap">
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
@@ -235,11 +244,11 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   let blackout = false;
   let suppressPointerOnce = false;
   let cardOpen = false;
-  let hasOpened = false; // <--- nuovo flag: card aperta almeno una volta
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
+  // luce dalla parte superiore della PNG
   function setTorchPos(x, y){
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
     const h = torch.getBoundingClientRect().height || 0;
@@ -248,17 +257,15 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     root.style.setProperty('--y', (y+dy) + 'px');
   }
 
-  // abilita lo switch solo se: richiesto, card chiusa e hasOpened === true
   function setSwitchEnabled(enabled){
-    const canEnable = enabled && !cardOpen && hasOpened;
-    if (canEnable) switchB.removeAttribute('disabled');
-    else           switchB.setAttribute('disabled','true');
+    if(enabled) switchB.removeAttribute('disabled');
+    else        switchB.setAttribute('disabled','true');
   }
 
-  // Toggle blackout: solo se card chiusa E dopo prima apertura
+  // Toggle blackout: solo se card chiusa
   switchB.addEventListener('click', (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if (switchB.hasAttribute('disabled') || cardOpen || !hasOpened) return; // guard "duro"
+    if(cardOpen) return;
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -294,7 +301,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     }
   });
 
-  /* ========= CARD (reveal/hide) ========= */
+  /* ========= CARD (reveal/hide asciutta) ========= */
   const REVEAL_KEY = 'card_revealed_v1';
   const btnReveal  = document.getElementById('btnReveal');
   const card       = document.getElementById('contentCard');
@@ -302,19 +309,18 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   const title      = document.getElementById('titolo-regole');
 
   function reveal(){
+    // Card non visibile in blackout -> esci dal blackout se attivo
     if(blackout){
       blackout = false;
       document.body.classList.remove('blackout');
     }
     cardOpen = true;
-    hasOpened = true;            // <--- segna che è stata aperta almeno una volta
-    setSwitchEnabled(false);     // card aperta => switch disabilitato
-
     card.classList.remove('is-hidden');
     card.setAttribute('aria-hidden','false');
     btnReveal.setAttribute('aria-expanded','true');
-    btnReveal.style.display = 'none';
+    btnReveal.style.display = 'none';   // bottone apre scompare
     try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+    setSwitchEnabled(false);            // interruttore disabilitato
     if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
   }
 
@@ -323,25 +329,17 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     card.classList.add('is-hidden');
     card.setAttribute('aria-hidden','true');
     btnReveal.setAttribute('aria-expanded','false');
-    btnReveal.style.display = 'block';
+    btnReveal.style.display = 'block';  // bottone ricompare
     try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-
-    setSwitchEnabled(true); // abilita solo se hasOpened === true
-
+    setSwitchEnabled(true);             // interruttore riabilitato
     btnReveal.focus();
   }
 
-  // Stato iniziale: card chiusa, switch DISABILITATO
+  // Stato iniziale: sempre card chiusa
   (function initReveal(){
-    // imposta esplicitamente lo switch disabilitato all'avvio
-    switchB.setAttribute('disabled','true');
-    // card chiusa senza abilitare lo switch (perché hasOpened=false)
-    card.classList.add('is-hidden');
-    card.setAttribute('aria-hidden','true');
-    btnReveal.style.display = 'block';
-    btnReveal.setAttribute('aria-expanded','false');
-    btnHide.style.display = 'none';
+    hide();
   })();
+
 
   btnReveal.addEventListener('click', reveal);
   btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
@@ -360,7 +358,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   window.addEventListener('load', ()=>{ requestAnimationFrame(updateOverlay); });
   window.addEventListener('resize', ()=>{ requestAnimationFrame(updateOverlay); });
 
-  /* ===== Verifica soluzione ===== */
+  /* ===== Verifica soluzione (hash esatto, senza normalize) ===== */
   const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
   const SUCCESS_URL   = "jr2025.html";
   const form     = document.getElementById('solveForm');
