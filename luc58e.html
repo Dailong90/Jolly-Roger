@@ -2,30 +2,28 @@
 <html lang="it">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Enigma – Lanterna (card + regole blackout)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Enigma – Lant</title>
 <style>
   :root{ --x:50vw; --y:50vh; --r:40px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ height:100%; margin:0; }
-  body{ font-family: Georgia, "Times New Roman", serif; background:#000; color:#ddd; overflow:hidden; }
+  html,body{ height:100%; margin:0; overflow:hidden; }
+  body{ font-family:Georgia,"Times New Roman",serif; color:#ddd; background:#000; }
 
-  /* --- SCENA LANTERNA --- */
+  /* ===== SCENA LANTERNA ===== */
   .scene{
     position:relative; width:100%; height:100%;
-    background: url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
-    user-select: none; touch-action: none;
+    background:url('assets/stanza.jpg') center/cover no-repeat #0b0b0b;
+    user-select:none; touch-action:none;
   }
   body.blackout .scene{
-    background: url('assets/stanza_buia.jpg') center/cover no-repeat #000;
+    background:url('assets/stanza_buia.jpg') center/cover no-repeat #000;
   }
 
   /* Interruttore invisibile (disabilitabile) */
   .switch{
-    position:absolute;
-    left:92.56%; top:31.66%;
-    width:30px; height:30px;
-    transform:translate(-50%,-50%);
+    position:absolute; left:92.56%; top:31.66%;
+    width:30px; height:30px; transform:translate(-50%,-50%);
     background:transparent; border:none; padding:0; margin:0;
     opacity:0; cursor:pointer; z-index:30;
   }
@@ -33,12 +31,11 @@
 
   /* Buio con maschera torcia */
   .dark{
-    position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
-    z-index:20;
+    position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease; z-index:20;
   }
   body.blackout .dark{
     opacity:1;
-    animation: flicker 1.6s ease-in-out infinite;
+    animation:flicker 1.6s ease-in-out infinite;
     background:
       radial-gradient(circle at var(--x) var(--y),
         rgba(0,0,0,0) 0,
@@ -48,22 +45,21 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Spotlight che schiarisce davvero l'area della torcia */
+  /* Spotlight che schiarisce davvero */
   .spotlight{
     position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
   }
   body.blackout .spotlight{
     opacity:1;
-    animation: flicker 1.6s ease-in-out infinite;
+    animation:flicker 1.6s ease-in-out infinite;
     background:
       radial-gradient(circle at var(--x) var(--y),
         rgba(255,243,191,0.5) 0,
-        rgba(251,207,85,0.3) calc(var(--r) - 20px),
-        rgba(213,140,18,0.0) calc(var(--r) + 65px));
-    mix-blend-mode: screen;
+        rgba(251,207,85,0.3)  calc(var(--r) - 20px),
+        rgba(213,140,18,0.0)  calc(var(--r) + 65px));
+    mix-blend-mode:screen;
   }
 
-  /* Tremolio centrato su 40px (delicato) */
   @keyframes flicker{
     0%   { --r:38px; }
     25%  { --r:41px; }
@@ -72,94 +68,107 @@
     100% { --r:40px; }
   }
 
-  /* Torcia PNG (come concordato) */
+  /* Torcia PNG (beccuccio in alto) */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
-    transform:translate(-50%, -50%);
-    pointer-events:none; display:none;
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
-    z-index:30;
+    transform:translate(-50%,-50%); pointer-events:none; display:none;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.6)); z-index:30;
   }
   body.blackout .torch{ display:block; }
 
   /* Testo illuminabile */
   .blackout-text{
-    position:absolute; top:25px; left:125px;
-    font-size:10px; color:#090909;
+    position:absolute; top:25px; left:125px; font-size:10px; color:#090909;
     z-index:10; white-space:nowrap;
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
-  /* --- CARD “Caccia al Tesoro” --- */
-  .card-toggle{
-    position:fixed; right:16px; bottom:16px; z-index:60;
-    cursor:pointer;
-    border:1px solid #8b6b1b; border-radius:8px; padding:0 16px;
-    font-weight:700; height:46px;
-    background: linear-gradient(180deg, #f5d76e, #d4a017);
-    color:#3b2c20; font-family:'Georgia', serif;
-    box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .card-toggle:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
-
+  /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
   .wrap{
-    position:fixed; left:50%; top:65svh; transform:translate(-50%, -50%);
-    width:min(560px, 92vw); padding:16px; z-index:55; display:none;
+    position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
+    width:min(560px,92vw); padding:16px; z-index:55;
   }
-  .wrap.show{ display:block; }
-  /* Card NON visibile in blackout */
+  /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
-  /* Bottone enigma NON visibile in blackout */
-  body.blackout .card-toggle{ display:none; }
 
   .card{
-    position:relative;
-    width:100%;
-    background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:20px;
+    display:flex; flex-direction:column; gap:10px;
+    background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
     box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-    font-family:'Georgia', serif;
     background-image:
       radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
       radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+    max-height:58svh;
+    transition:opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
   }
-  .riddle{
-    background: rgba(255,255,255,.65);
-    border:1px dashed #b2926d; border-radius:8px; padding:14px 16px; margin:0 0 16px;
-    line-height:0.8; font-size:16px; color:#3b2c20; white-space:pre; word-break:keep-all;
+  .card.is-hidden{
+    opacity:0; transform:translateY(10px) scale(.98);
+    pointer-events:none; visibility:hidden;
   }
+  .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
-  .field{ display:flex; gap:10px; align-items:center; }
-  input[type="text"]{
-    flex:1 1 auto; min-width:0; background:#fff8e1;
-    border:1px solid #b2926d; color:#2e2e2e; border-radius:8px; padding:12px 14px;
-    outline:none; font-size:16px; height:46px; box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-  }
-  input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
-
-  .card button{
-    cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px;
-    font-weight:700; height:46px; background:linear-gradient(180deg, #f5d76e, #d4a017);
-    color:#3b2c20; font-family:'Georgia', serif;
+  /* Bottone grande per rivelare la card */
+  .btn{
+    cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
+    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
     box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-    transition: transform .15s ease, box-shadow .15s ease;
-    white-space:nowrap;
+    transition:transform .15s, box-shadow .15s; white-space:nowrap;
   }
-  .card button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+  .btn--big{
+    position:fixed; left:16px; bottom:16px; width:auto; margin:0; text-align:center;
+    font-size:18px; padding:12px 16px; z-index:60;
+  }
+  .btn.btn--ghost{
+    background:#efe6c7; border-color:#b2926d;
+    box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
+  }
+
+  .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+  .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
+  .head__actions{ display:flex; gap:8px; }
+
+  .riddle{
+    position:relative; border:1px dashed #b2926d; border-radius:8px; background:rgba(255,255,255,.65);
+    display:grid;
+  }
+  .riddle__scroller{
+    grid-area:1/1; overflow:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+    max-height:40svh;
+  }
+  .riddle__fade{
+    grid-area:1/1; align-self:end; height:84px;
+    background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
+    border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
+  }
+  .riddle__indicator{
+    grid-area:1/1; justify-self:center; align-self:end; transform:translateY(-10px);
+    font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none; animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
+  }
+  @keyframes bounce{ 0%,100%{ transform:translateY(-10px);} 50%{ transform:translateY(-4px);} }
+  .riddle.--no-scroll .riddle__fade,
+  .riddle.--no-scroll .riddle__indicator,
+  .riddle.--at-bottom .riddle__fade,
+  .riddle.--at-bottom .riddle__indicator{ opacity:0; }
+
+  .field{ display:flex; gap:10px; }
+  #solveForm input[type="text"]{
+    flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
+    border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+  }
+  #solveForm input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
+  #solveForm button{ height:46px; }
 
   .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
   .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
   .ok{ color:#10b981; } .err{ color:#ef4444; }
-
-  .close-card{
-    position:absolute; right:22px; top:18px;
-    border:1px solid #8b6b1b; border-radius:8px; padding:0 10px; height:32px;
-    background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-weight:700; cursor:pointer;
-  }
 </style>
 </head>
 <body>
-  <!-- SCENA -->
+  <!-- ===== SCENA ===== -->
   <div class="scene" id="scene">
     <button id="roomSwitch" class="switch" aria-label="Interruttore"></button>
 
@@ -171,27 +180,44 @@
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
   </div>
 
-  <!-- Bottone per aprire la card -->
-  <button class="card-toggle" id="btnOpenCard" type="button">Apri indovinello</button>
+  <!-- Bottone grande per rivelare la card -->
+  <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+    Dannato vento!
+  </button>
 
-  <!-- CARD -->
-  <main class="wrap" id="cardWrap" aria-hidden="true">
-    <section class="card">
-      <button class="close-card" id="btnCloseCard" type="button">Nascondi</button>
+  <!-- ===== CARD asciutta (no bacheca) ===== -->
+  <main class="wrap">
+    <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
+      <div class="card__head">
+        <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
+        <div class="head__actions">
+          <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
+        </div>
+      </div>
 
-      <div class="riddle" id="riddle">
-Barbuto signore di un epoca passata,<br>
-sognò nel caos un’armonia svelata,<br>
-orme vuote lasciò per i figli a venire,<br>
-trama silente che tutto può dire.
-        <p class="no-autolink" name="format-detection" content="telephone=no">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
+      <div class="riddle" id="riddleBox">
+        <div class="riddle__scroller" id="riddleScroll">
+Cominciamo! Allora dobbiamo inserire la password... aspetta, non la ricordo! Tranquillo, ho un modo tutto mio per trovarla.
+Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
+Oh no, il vento ha staccato tutti i fogli! 
+<!-- Le città che ho visitato sono: Dakar, Katmandu, L'Avana, Montemiletto, Seattle, Teheran e Tokyo.  -->
+Rimetti i fogli al loro posto secondo queste indicazioni:
+
+-Teheran l'ho visitata dopo il 1991.
+-Ho visto Tokyo 4 anni dopo Katmandu.
+-A Dakar sono andato negli anni ’80.
+-Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
+-L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
+-Dopo Tokyo ho visto Seattle.
+        </div>
+        <div class="riddle__fade" aria-hidden="true"></div>
+        <div class="riddle__indicator" aria-hidden="true">▼</div>
       </div>
 
       <form id="solveForm" autocomplete="off">
-        <label for="answer" class="tip">Maiuscole, accenti e spazi non contano.</label>
         <div class="field">
-          <input id="answer" name="answer" type="text" placeholder="Soluzione…" required />
-          <button id="btnCheck" type="submit">Verifica</button>
+          <input id="answer" name="answer" type="text" placeholder="Password…" required />
+          <button id="btnCheck" type="submit" class="btn">Verifica</button>
         </div>
         <div id="feedback" class="feedback" aria-live="polite"></div>
       </form>
@@ -200,7 +226,7 @@ trama silente che tutto può dire.
 
 <script>
 (function(){
-  /* ------- LANTERNA ------- */
+  /* ========= LANTERNA ========= */
   const scene   = document.getElementById('scene');
   const switchB = document.getElementById('roomSwitch');
   const torch   = document.getElementById('torch');
@@ -215,31 +241,24 @@ trama silente che tutto può dire.
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
   const sceneRect = ()=> scene.getBoundingClientRect();
 
+  // luce dalla parte superiore della PNG
   function setTorchPos(x, y){
-    // posiziona l'immagine
     torch.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-    // luce dalla parte superiore della PNG
     const h = torch.getBoundingClientRect().height || 0;
-    const dx = 0;
-    const dy = -h/2 + 4;
-    const lx = x + dx;
-    const ly = y + dy;
-    root.style.setProperty('--x', lx + 'px');
-    root.style.setProperty('--y', ly + 'px');
+    const dx = 0, dy = -h/2 + 4;
+    root.style.setProperty('--x', (x+dx) + 'px');
+    root.style.setProperty('--y', (y+dy) + 'px');
   }
 
   function setSwitchEnabled(enabled){
-    if(enabled){
-      switchB.removeAttribute('disabled');
-    }else{
-      switchB.setAttribute('disabled','true');
-    }
+    if(enabled) switchB.removeAttribute('disabled');
+    else        switchB.setAttribute('disabled','true');
   }
 
-  // Toggle blackout: solo se la card è CHIUSA
+  // Toggle blackout: solo se card chiusa
   switchB.addEventListener('click', (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if(cardOpen) return; // interruttore disabilitato quando card aperta
+    if(cardOpen) return;
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -253,7 +272,6 @@ trama silente che tutto può dire.
     }
   }, {passive:false});
 
-  // Movimento luce
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -267,7 +285,6 @@ trama silente che tutto può dire.
   scene.addEventListener('pointerdown', pointerScene, {passive:true});
   scene.addEventListener('pointerenter', pointerScene, {passive:true});
 
-  // Resize: ricalcola offset con altezza reale PNG
   window.addEventListener('resize', ()=>{
     if(blackout){
       const r = sceneRect();
@@ -277,44 +294,70 @@ trama silente che tutto può dire.
     }
   });
 
-  /* ------- CARD ------- */
-  const HASH_EXPECTED = "ee4db9c9644f23fdf8475f4d8ceb7e07eeb8d1da53538d37126c6fe4a26abed3";
-  const SUCCESS_URL   = "1isola2ar.html";
+  /* ========= CARD (reveal/hide asciutta) ========= */
+  const REVEAL_KEY = 'card_revealed_v1';
+  const btnReveal  = document.getElementById('btnReveal');
+  const card       = document.getElementById('contentCard');
+  const btnHide    = document.getElementById('btnHide');
+  const title      = document.getElementById('titolo-regole');
 
-  const wrap    = document.getElementById('cardWrap');
-  const btnOpen = document.getElementById('btnOpenCard');
-  const btnClose= document.getElementById('btnCloseCard');
-  const form    = document.getElementById('solveForm');
-  const input   = document.getElementById('answer');
-  const feedback= document.getElementById('feedback');
-
-  function showCard(){
-    // se eri in blackout, esci (card non deve essere visibile in blackout)
+  function reveal(){
+    // Card non visibile in blackout -> esci dal blackout se attivo
     if(blackout){
       blackout = false;
       document.body.classList.remove('blackout');
     }
     cardOpen = true;
-    wrap.classList.add('show');
-    wrap.setAttribute('aria-hidden','false');
-    setSwitchEnabled(false); // disabilita interruttore
-    setTimeout(()=> input?.focus(), 50);
+    card.classList.remove('is-hidden');
+    card.setAttribute('aria-hidden','false');
+    btnReveal.setAttribute('aria-expanded','true');
+    btnReveal.style.display = 'none';   // bottone apre scompare
+    try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+    setSwitchEnabled(false);            // interruttore disabilitato
+    if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
   }
-  function hideCard(){
+
+  function hide(){
     cardOpen = false;
-    wrap.classList.remove('show');
-    wrap.setAttribute('aria-hidden','true');
-    setSwitchEnabled(true); // riabilita interruttore
+    card.classList.add('is-hidden');
+    card.setAttribute('aria-hidden','true');
+    btnReveal.setAttribute('aria-expanded','false');
+    btnReveal.style.display = 'block';  // bottone ricompare
+    try{ localStorage.removeItem(REVEAL_KEY); }catch{}
+    setSwitchEnabled(true);             // interruttore riabilitato
+    btnReveal.focus();
   }
 
-  btnOpen.addEventListener('click', (e)=>{ e.preventDefault(); showCard(); });
-  btnClose.addEventListener('click', (e)=>{ e.preventDefault(); hideCard(); });
+  // Stato iniziale coerente
+  (function initReveal(){
+    const was = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
+    if(was) reveal(); else hide();
+  })();
 
-  function normalize(str){
-    return str.trim().toLowerCase().normalize('NFKD')
-      .replace(/\p{Diacritic}/gu, '')
-      .replace(/[^\p{L}\p{N}]+/gu, '');
+  btnReveal.addEventListener('click', reveal);
+  btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
+  btnHide.addEventListener('click', hide);
+
+  // Effetti overlay scroller (freccia/fade)
+  const riddleBox = document.getElementById('riddleBox');
+  const scroller  = document.getElementById('riddleScroll');
+  function updateOverlay(){
+    const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
+    riddleBox.classList.toggle('--no-scroll', !canScroll);
+    const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+    riddleBox.classList.toggle('--at-bottom', atBottom);
   }
+  scroller.addEventListener('scroll', updateOverlay);
+  window.addEventListener('load', ()=>{ requestAnimationFrame(updateOverlay); });
+  window.addEventListener('resize', ()=>{ requestAnimationFrame(updateOverlay); });
+
+  /* ===== Verifica soluzione (hash esatto, senza normalize) ===== */
+  const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
+  const SUCCESS_URL   = "jr2025.html";
+  const form     = document.getElementById('solveForm');
+  const input    = document.getElementById('answer');
+  const feedback = document.getElementById('feedback');
+
   async function sha256Hex(input){
     const enc = new TextEncoder().encode(input);
     const digest = await crypto.subtle.digest('SHA-256', enc);
@@ -324,8 +367,8 @@ trama silente che tutto può dire.
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     feedback.textContent = '';
-    const value = normalize(input.value);
-    if(!value) return;
+    const value = input.value; // NIENTE normalize/trim
+    if(value.length === 0) return;
     const hash = await sha256Hex(value);
     if(hash === HASH_EXPECTED){
       feedback.textContent = '✅ Corretto!';
@@ -336,11 +379,8 @@ trama silente che tutto può dire.
       feedback.className = 'feedback err';
     }
   });
-  input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') form.requestSubmit(); });
+  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') form.requestSubmit(); });
 
-  // Stato iniziale: card chiusa, interruttore abilitato
-  hideCard();
-  setSwitchEnabled(true);
 })();
 </script>
 </body>
