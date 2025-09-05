@@ -45,7 +45,7 @@
         rgba(0,0,0,0.98) 100%);
   }
 
-  /* Spotlight che schiarisce davvero */
+  /* Spotlight */
   .spotlight{
     position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
   }
@@ -68,7 +68,7 @@
     100% { --r:40px; }
   }
 
-  /* Torcia PNG (beccuccio in alto) */
+  /* Torcia PNG */
   .torch{
     position:absolute; left:0; top:0; width:26px; height:auto;
     transform:translate(-50%,-50%); pointer-events:none; display:none;
@@ -83,14 +83,12 @@
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
-  /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
+  /* ===== CARD ===== */
   .wrap{
     position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
     width:min(560px,92vw); padding:16px; z-index:55;
   }
-  /* In blackout la card non deve essere visibile */
   body.blackout .wrap{ display:none !important; }
-  /* Nasconde il bottone "Dannato vento!" quando c'è il blackout */
   body.blackout #btnReveal { display: none !important; }
 
   .card{
@@ -109,7 +107,6 @@
   }
   .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
-  /* Bottone grande per rivelare la card */
   .btn{
     cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
     background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
@@ -190,7 +187,7 @@
     A lume di candela
   </button>
 
-  <!-- ===== CARD asciutta (no bacheca) ===== -->
+  <!-- ===== CARD ===== -->
   <main class="wrap">
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
@@ -243,7 +240,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   let suppressPointerOnce = false;
   let cardOpen = false;
 
-  // contatore “nascosto” di quante volte è stata aperta la card
+  // contatore di aperture card
   let revealCount = 0;
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max,v));
@@ -257,12 +254,10 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     root.style.setProperty('--y', (y+dy) + 'px');
   }
 
-  /* ========= abilita/disabilita switch attaccando o staccando il listener ========= */
+  /* ====== Click sullo switch: verrà ATTACCATO solo quando consentito ====== */
   function onSwitchClick(e){
     e.preventDefault(); e.stopPropagation();
-    // guard ridondante
-    if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return;
-
+    if (switchB.hasAttribute('disabled') || cardOpen || revealCount !== 1) return; // guard
     blackout = !blackout;
     document.body.classList.toggle('blackout', blackout);
 
@@ -276,17 +271,16 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     }
   }
 
-  function enableSwitch(){
-    switchB.removeAttribute('disabled');
-    // evita doppi listener
+  function enableSwitchOnce(){
+    // abilita e attacca il listener una sola volta
     switchB.removeEventListener('click', onSwitchClick);
     switchB.addEventListener('click', onSwitchClick, { passive:false });
+    switchB.removeAttribute('disabled');
   }
 
   function disableSwitch(){
     switchB.setAttribute('disabled','true');
     switchB.removeEventListener('click', onSwitchClick);
-    // se era attivo il blackout, spegnilo per coerenza
     if (blackout){
       blackout = false;
       document.body.classList.remove('blackout');
@@ -305,16 +299,14 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       document.body.classList.remove('blackout');
     }
     cardOpen = true;
-
-    // incrementa contatore all'apertura
-    revealCount += 1;
+    revealCount += 1;                  // aumenta il contatore
 
     card.classList.remove('is-hidden');
     card.setAttribute('aria-hidden','false');
     btnReveal.setAttribute('aria-expanded','true');
     btnReveal.style.display = 'none';
 
-    // card aperta => switch sempre disabilitato
+    // card aperta => switch sicuramente OFF
     disableSwitch();
 
     if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
@@ -327,9 +319,9 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     btnReveal.setAttribute('aria-expanded','false');
     btnReveal.style.display = 'block';
 
-    // abilita switch SOLO se la card è stata aperta esattamente 1 volta
+    // Abilita lo switch SOLO se siamo esattamente al primo ciclo (revealCount === 1)
     if (revealCount === 1){
-      enableSwitch();
+      enableSwitchOnce();
     } else {
       disableSwitch();
     }
@@ -337,21 +329,23 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     btnReveal.focus();
   }
 
-  // Stato iniziale: card chiusa, switch disabilitato e senza listener
-  (function initReveal(){
+  // ====== Stato iniziale pulito ======
+  (function init(){
+    // Card chiusa; non chiamare hide() per non attivare logiche collaterali.
     card.classList.add('is-hidden');
     card.setAttribute('aria-hidden','true');
     btnReveal.style.display = 'block';
     btnReveal.setAttribute('aria-expanded','false');
     btnHide.style.display = 'none';
-    disableSwitch(); // <--- disabilitato + niente listener
+    disableSwitch(); // niente listener + disabled
   })();
 
+  // ====== Eventi card ======
   btnReveal.addEventListener('click', reveal);
   btnReveal.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); reveal(); }});
   btnHide.addEventListener('click', hide);
 
-  /* ========= Torcia follow ========= */
+  // ====== Torcia follow ======
   function pointerScene(e){
     if(!blackout) return;
     if(suppressPointerOnce) return;
@@ -374,7 +368,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     }
   });
 
-  /* ===== Verifica soluzione (hash esatto, senza normalize) ===== */
+  /* ===== Verifica soluzione ===== */
   const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
   const SUCCESS_URL   = "jr2025.html";
   const form     = document.getElementById('solveForm');
@@ -390,7 +384,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     feedback.textContent = '';
-    const value = input.value; // NIENTE normalize/trim
+    const value = input.value;
     if(value.length === 0) return;
     const hash = await sha256Hex(value);
     if(hash === HASH_EXPECTED){
