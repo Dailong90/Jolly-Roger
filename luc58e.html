@@ -34,6 +34,23 @@
     position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s ease;
     z-index:20;
   }
+
+  /* Spotlight che schiarisce l'area illuminata */
+  .spotlight{
+    position:absolute; inset:0; pointer-events:none; opacity:0; z-index:25;
+  }
+  body.blackout .spotlight{
+    opacity:1;
+    /* luce che schiarisce davvero l’immagine sottostante */
+    background:
+      radial-gradient(circle at var(--x) var(--y),
+        rgba(255,255,255,0.75) 0,
+        rgba(255,255,255,0.55) calc(var(--r) - 10px),
+        rgba(255,255,255,0.00) calc(var(--r) + 120px));
+    mix-blend-mode: screen; /* magia: schiarisce il contenuto sotto */
+  }
+
+  
   body.blackout .dark{
     opacity:1;
     animation: flicker 1.8s ease-in-out infinite;
@@ -85,6 +102,9 @@
 
     <!-- Overlay torcia -->
     <div class="dark" id="dark"></div>
+
+    <!-- Spotlight che schiarisce -->
+    <div class="spotlight" id="spotlight"></div>
 
     <!-- Torcia -->
     <img id="torch" class="torch" src="assets/torcia.png" alt="Torcia" />
