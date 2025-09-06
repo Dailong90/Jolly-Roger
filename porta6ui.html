@@ -74,8 +74,6 @@
       transition-delay:0s;
     }
 
-
-    
     /* Campo soluzione */
     .field{ display:flex; gap:10px; }
     #solveForm input[type="text"]{
@@ -213,7 +211,6 @@
 Cominciamo! Allora dobbiamo inserire la password... aspetta, non la ricordo! Tranquillo, ho un modo tutto mio per trovarla.
 Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
 Oh no, il vento ha staccato tutti i fogli! 
-<!-- Le città che ho visitato sono: Dakar, Katmandu, L'Avana, Montemiletto, Seattle, Teheran e Tokyo.  -->
 Rimetti i fogli al loro posto secondo queste indicazioni:
 
 -Teheran l'ho visitata dopo il 1991.
@@ -452,25 +449,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         mapImg.addEventListener('load', () => requestAnimationFrame(doInit), { once:true });
       }
     }
-
-    // Su resize: ricalcolo la width e riposiziono
-    // window.addEventListener('resize', ()=>{
-    //   if(!initialized) return;
-    //   const w = computeStickerWidth();
-    
-    //   IMGS.forEach(({id})=>{
-    //     const el = document.getElementById(id);
-    //     if(el) el.style.setProperty('--sticker-w', `${w}px`); // <— QUI la differenza
-    //   });
-    
-    //   const saved = readSaved();
-    //   if(saved){
-    //     saved.forEach(({id,xPct,yPct})=>{
-    //       const el = document.getElementById(id);
-    //       if(el) placeByPercent(el, xPct ?? 0, yPct ?? 0);
-    //     });
-    //   }
-    // });
 
 
     // Init overlay after load
