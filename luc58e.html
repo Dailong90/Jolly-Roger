@@ -235,7 +235,7 @@ Ma ricorda: affinché la luce possa risplendere, deve esserci l'oscurità!
 
       <form id="solveForm" autocomplete="off">
         <div class="field">
-          <input id="answer" name="answer" type="text" placeholder="Password…" required />
+          <input id="answer" name="answer" type="text" placeholder="Tutto in maiuscolo…" required />
           <button id="btnCheck" type="submit" class="btn">Verifica</button>
         </div>
         <div id="feedback" class="feedback" aria-live="polite"></div>
@@ -400,7 +400,7 @@ Ma ricorda: affinché la luce possa risplendere, deve esserci l'oscurità!
   window.addEventListener('resize', ()=>{ requestAnimationFrame(updateOverlay); });
 
   /* ===== Verifica soluzione (hash esatto, senza normalize) ===== */
-  const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
+  const HASH_EXPECTED = "713d02e51a1efb1f4c3088a07ad9f5b8a0f8ac70280446ff49a6a12dd0baf789";
   const SUCCESS_URL   = "jr2025.html";
   const form     = document.getElementById('solveForm');
   const input    = document.getElementById('answer');
