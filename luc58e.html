@@ -84,6 +84,22 @@
   }
   body:not(.blackout) .blackout-text{ display:none; }
 
+    /* Testo illuminabile 2 */
+  .blackout-text2{
+    position:absolute; top:10px; left:425px; font-size:10px; color:#070707;
+    z-index:10; white-space:nowrap;
+  }
+  body:not(.blackout) .blackout-text{ display:none; }
+  
+    /* Testo illuminabile 3 */
+  .blackout-text3{
+    position:absolute; top:500px; left:15px; font-size:10px; color:#070707;
+    z-index:10; white-space:nowrap;
+  }
+  body:not(.blackout) .blackout-text{ display:none; }
+
+  
+  
   /* ===== CARD (asciutta, come il tuo pattern reveal/hide) ===== */
   .wrap{
     position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
@@ -178,7 +194,9 @@
     <!-- disabilitato di base -->
     <button id="roomSwitch" class="switch" aria-label="Interruttore" disabled></button>
 
-    <div class="blackout-text">Sai cosa prendo?</div>
+    <div class="blackout-text">Montagna a spigoli</div>
+    <div class="blackout-text2">Università in una parola</div>
+    <div class="blackout-text3">Scritto in poche righe</div>
 
     <div class="dark" id="dark"></div>
     <div class="spotlight" id="spotlight"></div>
@@ -204,18 +222,11 @@
 
       <div class="riddle" id="riddleBox">
         <div class="riddle__scroller" id="riddleScroll">
-Cominciamo! Allora dobbiamo inserire la password... aspetta, non la ricordo! Tranquillo, ho un modo tutto mio per trovarla.
-Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
-Oh no, il vento ha staccato tutti i fogli! 
-
-Rimetti i fogli al loro posto secondo queste indicazioni:
-
--Teheran l'ho visitata dopo il 1991.
--Ho visto Tokyo 4 anni dopo Katmandu.
--A Dakar sono andato negli anni ’80.
--Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
--L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
--Dopo Tokyo ho visto Seattle.
+Se stai leggendo queste righe, significa che hai scoperto la password. Niente male.
+Per proseguire nella tua ricerca, dovrai imparare a guardare oltre le cose.
+Occulta ciò che vedi e trova ciò che è celato.
+Solo le prime tre serviranno, messe insieme in un sola.
+Ma ricorda: affinché la luce possa risplendere, deve esserci l'oscurità!
         </div>
         <div class="riddle__fade" aria-hidden="true"></div>
         <!-- Freccia ▼ invariata -->
