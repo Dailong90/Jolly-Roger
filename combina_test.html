@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Forziere a combinazione</title>
+  <title>Forziere a combinazione (rulli trascinabili)</title>
   <style>
     :root{
       --bg:#0b0e13;
       --fg:#f0f0f0;
       --accent:#f59e0b;    /* oro */
-      --accent-2:#374151;  /* grigio scuro */
       --ok:#10b981;
       --err:#ef4444;
 
@@ -19,32 +18,27 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans"; }
     body { display: grid; place-items: center; overflow: hidden; }
 
     .wrap { width: min(900px, 100vw); padding: 16px; }
     .chest {
       position: relative;
       width: 100%;
-      aspect-ratio: 16/9;                 /* proporzioni comode per smartphone in orizzontale/verticale */
+      aspect-ratio: 16/9;
       background-image: var(--img-closed);
       background-size: cover;
       background-position: center;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,.45);
-      transition: filter .3s ease, transform .2s ease, background-image .25s ease-in-out;
+      transition: background-image .25s ease-in-out, transform .2s ease, filter .25s ease;
       display: grid;
       place-items: center;
       padding: clamp(8px, 2vw, 20px);
     }
-    .chest.unlocked {
-      background-image: var(--img-open);
-      animation: pop .35s ease-out;
-      filter: none;
-    }
-    @keyframes pop { from{ transform: scale(.98) } to{ transform: scale(1) } }
+    .chest.unlocked { background-image: var(--img-open); animation: pop .35s ease-out; }
+    @keyframes pop { from { transform: scale(.98) } to { transform: scale(1) } }
 
-    /* Maschera semi-trasparente per contrasto sul forziere chiuso */
     .chest:not(.unlocked)::after{
       content:"";
       position:absolute; inset:0;
@@ -67,7 +61,7 @@
     }
 
     .panel__title{
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       text-align: center;
       font-weight: 700;
       letter-spacing:.5px;
@@ -80,48 +74,57 @@
       align-items: stretch;
     }
 
+    /* Singolo rullo */
     .dial{
+      position: relative;
       background: linear-gradient(#111826,#0f141b);
       border: 1px solid #0b0f15;
       outline: 1px solid rgba(255,255,255,.06);
       border-radius: 14px;
-      box-shadow: 0 8px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      text-align: center;
+      height: clamp(120px, 24vw, 160px);
+      overflow: hidden;
       user-select: none;
-      touch-action: manipulation;
+      touch-action: none; /* per gestire drag verticale senza scroll pagina */
+      box-shadow: 0 8px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
     }
 
-    .btn{
-      appearance: none;
-      border: 0;
-      border-top-left-radius: 14px;
-      border-top-right-radius: 14px;
-      border-bottom-left-radius: 14px;
-      border-bottom-right-radius: 14px;
-      background: linear-gradient(#1f2937,#111827);
-      color: var(--fg);
-      font-size: clamp(18px, 4vw, 22px);
-      padding: 10px 6px;
-      cursor: pointer;
+    /* finestra di visualizzazione centrale (maschera) */
+    .dial::before, .dial::after{
+      content:"";
+      position:absolute; left:0; right:0; height:32%;
+      pointer-events:none;
+      z-index: 2;
     }
-    .btn:active{ transform: translateY(1px); }
-    .btn--up{ border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-    .btn--down{ border-top-left-radius: 0; border-top-right-radius: 0; }
+    .dial::before{
+      top:0;
+      background: linear-gradient(to bottom, rgba(0,0,0,.65), rgba(0,0,0,0));
+    }
+    .dial::after{
+      bottom:0;
+      background: linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0));
+    }
 
-    .digit{
-      display: grid;
-      place-items: center;
-      height: clamp(44px, 9vw, 58px);
-      font-weight: 800;
+    .reel{
+      position: absolute; left:0; right:0; top:0;
+      will-change: transform;
+    }
+
+    .cell{
+      height: clamp(40px, 8vw, 52px);
+      display: grid; place-items: center;
       font-variant-numeric: tabular-nums;
+      font-weight: 800;
       font-size: clamp(28px, 7vw, 36px);
       color: var(--accent);
       text-shadow: 0 0 12px rgba(245,158,11,.25);
-      border-top: 1px solid rgba(255,255,255,.06);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      background: radial-gradient(ellipse at center, rgba(255, 204, 102, .06), rgba(0,0,0,0) 60%);
+    }
+
+    /* bordini sottili sul numero centrale */
+    .dial .center-line{
+      position: absolute; left: 8px; right: 8px; top: 50%;
+      height: 0; border-top:1px dashed rgba(255,255,255,.12);
+      transform: translateY(-50%);
+      z-index: 3;
     }
 
     .status{
@@ -133,13 +136,7 @@
     .status .ok{ color: var(--ok); font-weight:700; }
     .status .no{ color: var(--err); font-weight:700; }
 
-    /* Accessibilità focus */
-    .btn:focus-visible{
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    /* Layout stretto: impilo due righe di 3 */
+    /* Layout stretto: 2 righe da 3 rulli */
     @media (max-width: 420px){
       .dials{ grid-template-columns: repeat(3, 1fr); }
     }
@@ -149,39 +146,33 @@
   <main class="wrap">
     <section class="chest" id="chest">
       <div class="panel" role="group" aria-label="Lucchetto a combinazione">
-        <h2 class="panel__title">Inserisci la combinazione</h2>
+        <h2 class="panel__title">Trascina i rulli per inserire la combinazione</h2>
 
         <div class="dials" id="dials">
-          <!-- 6 cilindri -->
-          <div class="dial" data-index="0">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <!-- 6 rulli -->
+          <div class="dial" data-index="0" aria-label="Cifra 1">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
-          <div class="dial" data-index="1">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <div class="dial" data-index="1" aria-label="Cifra 2">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
-          <div class="dial" data-index="2">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <div class="dial" data-index="2" aria-label="Cifra 3">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
-          <div class="dial" data-index="3">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <div class="dial" data-index="3" aria-label="Cifra 4">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
-          <div class="dial" data-index="4">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <div class="dial" data-index="4" aria-label="Cifra 5">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
-          <div class="dial" data-index="5">
-            <button class="btn btn--up" aria-label="Aumenta">▲</button>
-            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
-            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          <div class="dial" data-index="5" aria-label="Cifra 6">
+            <div class="reel"></div>
+            <div class="center-line"></div>
           </div>
         </div>
 
@@ -193,74 +184,218 @@
   </main>
 
   <script>
-    // --- CONFIGURAZIONE ---
-    const CORRECT_CODE = "602915"; // <-- imposta qui la combinazione a 6 cifre
+    // -----------------------
+    // CONFIGURAZIONE
+    // -----------------------
+    const CORRECT_CODE = "319204"; // Imposta qui la combinazione a 6 cifre
     const vibrateSupported = 'vibrate' in navigator;
 
-    // --- LOGICA ---
-    const dials = [...document.querySelectorAll('.dial')];
+    // -----------------------
+    // COSTRUZIONE RULLI
+    // -----------------------
     const chest = document.getElementById('chest');
     const statusEl = document.getElementById('status');
+    const dialEls = [...document.querySelectorAll('.dial')];
 
+    // Stato: valori correnti (0..9) per ciascun rullo
     const values = Array(6).fill(0);
 
-    function updateDigit(idx, nextVal){
-      values[idx] = ( (nextVal % 10) + 10 ) % 10; // modulo positivo 0..9
-      dials[idx].querySelector('.digit').textContent = values[idx];
+    // Per ottenere un "loop" morbido, duplico la sequenza 0..9 tre volte → 30 celle
+    const baseDigits = Array.from({length:10}, (_,i)=>i);
+    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits]; // 30
 
-      // Feedback aptico leggero su cambio (mobile)
-      if (vibrateSupported) navigator.vibrate(12);
+    // Costruisco le celle all'interno di ogni reel
+    dialEls.forEach(dial => {
+      const reel = dial.querySelector('.reel');
+      reel.innerHTML = loopDigits.map(d => `<div class="cell">${d}</div>`).join('');
+    });
 
-      checkCode();
+    // Dopo il layout, misuro l'altezza della cella per calcolare gli scatti
+    let CELL_H = null;
+    function measureCellHeight(){
+      const anyCell = document.querySelector('.cell');
+      CELL_H = anyCell ? anyCell.getBoundingClientRect().height : 48;
+    }
+    measureCellHeight();
+    window.addEventListener('resize', measureCellHeight, {passive:true});
+
+    // Inizializzo la posizione dei reel in modo che il "numero attivo" sia la banda centrale
+    // Centro = seconda copia (indici 10..19). Posiziono ogni rullo sul suo valore nello "slot" centrale.
+    function positionReelAtValue(dialIndex, value){
+      const dial = dialEls[dialIndex];
+      const reel = dial.querySelector('.reel');
+      const targetIndex = 10 + value; // fascia centrale
+      const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
+      reel.style.transform = `translateY(${translateY}px)`;
+      reel.dataset.offset = translateY; // salvo offset corrente
+      values[dialIndex] = value;
     }
 
-    function checkCode(){
-      const current = values.join('');
-      if(current === CORRECT_CODE){
-        chest.classList.add('unlocked');
-        statusEl.innerHTML = 'Stato: <span class="ok">Sbloccato</span>';
-        // disabilita i pulsanti
-        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-        if (vibrateSupported) navigator.vibrate([30, 30, 50]);
-      } else {
-        chest.classList.remove('unlocked');
-        statusEl.innerHTML = 'Stato: <span class="no">Bloccato</span>';
-      }
-    }
+    // All'avvio, tutti a 0
+    dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
+    updateStatus();
 
-    // Eventi click su ▲/▼
-    dials.forEach((dial, idx) => {
-      const up = dial.querySelector('.btn--up');
-      const down = dial.querySelector('.btn--down');
-      up.addEventListener('click', () => updateDigit(idx, values[idx] + 1));
-      down.addEventListener('click', () => updateDigit(idx, values[idx] - 1));
+    // -----------------------
+    // INTERAZIONE (Pointer Events)
+    // -----------------------
+    dialEls.forEach((dial, idx) => {
+      const reel = dial.querySelector('.reel');
 
-      // Swipe verticale rapido per incrementare/decrementare
-      let startY = null;
-      dial.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, {passive:true});
-      dial.addEventListener('touchend', (e) => {
-        if(startY === null) return;
-        const endY = e.changedTouches[0].clientY;
-        const delta = endY - startY;
-        if(Math.abs(delta) > 20){
-          if(delta < 0) updateDigit(idx, values[idx] + 1);  // swipe up => +1
-          else          updateDigit(idx, values[idx] - 1);  // swipe down => -1
-        }
-        startY = null;
+      let startY = 0;
+      let startOffset = 0;
+      let lastY = 0;
+      let lastTime = 0;
+      let velocity = 0; // px/ms per piccolo "inerzia"
+      let dragging = false;
+
+      // abilito focus tastiera
+      dial.tabIndex = 0;
+
+      // mouse wheel (desktop)
+      dial.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        nudge(idx, Math.sign(e.deltaY)); // deltaY>0 → giù (+1), <0 → su (-1)
+      }, {passive:false});
+
+      dial.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        dial.setPointerCapture(e.pointerId);
+        dragging = true;
+        startY = e.clientY;
+        startOffset = Number(reel.dataset.offset || 0);
+        lastY = startY;
+        lastTime = performance.now();
+        velocity = 0;
       });
 
-      // Tastiera: frecce ↑/↓ sul dial attivo
-      dial.tabIndex = 0;
+      dial.addEventListener('pointermove', (e) => {
+        if(!dragging) return;
+        const y = e.clientY;
+        const dy = y - startY;
+        const next = startOffset + dy;
+        setReelOffset(idx, next);
+
+        // stima veloce della velocità per piccola inerzia
+        const now = performance.now();
+        const dt = now - lastTime;
+        if (dt > 0) velocity = (y - lastY) / dt; // px/ms
+        lastY = y;
+        lastTime = now;
+      });
+
+      dial.addEventListener('pointerup', (e) => {
+        if(!dragging) return;
+        dragging = false;
+
+        // Piccola inerzia: aggiungo un offset extra proporzionale alla velocità
+        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2; // max ~2 "mezzi scatti"
+        const finalOffset = Number(reel.dataset.offset || 0) + inertial;
+        snapToNearest(idx, finalOffset);
+      });
+
+      dial.addEventListener('pointercancel', () => {
+        if (!dragging) return;
+        dragging = false;
+        snapToNearest(idx, Number(reel.dataset.offset || 0));
+      });
+
+      // Tastiera ↑/↓, Home/End
       dial.addEventListener('keydown', (e) => {
-        if(e.key === 'ArrowUp'){ e.preventDefault(); updateDigit(idx, values[idx] + 1); }
-        if(e.key === 'ArrowDown'){ e.preventDefault(); updateDigit(idx, values[idx] - 1); }
-        if(e.key === 'Home'){ e.preventDefault(); updateDigit(idx, 0); }
-        if(e.key === 'End'){ e.preventDefault(); updateDigit(idx, 9); }
+        if(e.key === 'ArrowUp'){ e.preventDefault(); nudge(idx, -1); }
+        if(e.key === 'ArrowDown'){ e.preventDefault(); nudge(idx, +1); }
+        if(e.key === 'Home'){ e.preventDefault(); setValue(idx, 0); }
+        if(e.key === 'End'){ e.preventDefault(); setValue(idx, 9); }
       });
     });
 
-    // Inizializza stato coerente
-    checkCode();
+    // -----------------------
+    // FUNZIONI DI SUPPORTO
+    // -----------------------
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function setReelOffset(dialIndex, offset){
+      const dial = dialEls[dialIndex];
+      const reel = dial.querySelector('.reel');
+      reel.style.transform = `translateY(${offset}px)`;
+      reel.dataset.offset = offset;
+    }
+
+    function snapToNearest(dialIndex, offset){
+      // Calcolo l'indice "float" attuale rispetto all'inizio del reel
+      const dial = dialEls[dialIndex];
+      const reel = dial.querySelector('.reel');
+      const dialH = dial.getBoundingClientRect().height;
+
+      // posizione 0 del reel corrisponde alla cella[0] allineata in alto;
+      // voglio centrare una cella nella metà del dial
+      const centerY = dialH/2 - CELL_H/2;
+      const rawIndex = -(offset - centerY) / CELL_H; // indice cella (float)
+
+      // porto nella fascia centrale (10..19) per avere sempre wrap "pulito"
+      // trasformo l'indice in un valore 0..9 e poi lo rimappo nella fascia centrale
+      const value = mod(Math.round(rawIndex), 10);
+      const targetIndex = 10 + value;
+      const targetOffset = -targetIndex * CELL_H + centerY;
+
+      // Animo lo snap con una transizione breve
+      reel.style.transition = 'transform .12s ease-out';
+      requestAnimationFrame(() => {
+        setReelOffset(dialIndex, targetOffset);
+        setTimeout(() => { reel.style.transition = ''; }, 140);
+      });
+
+      // Aggiorno stato e controllo codice
+      values[dialIndex] = value;
+      if (vibrateSupported) navigator.vibrate(10);
+      updateStatus();
+    }
+
+    function nudge(dialIndex, delta){
+      // delta: +1 verso il basso (numero successivo), -1 verso l'alto
+      const current = values[dialIndex];
+      const nextVal = mod(current + delta, 10);
+      setValue(dialIndex, nextVal, true);
+    }
+
+    function setValue(dialIndex, value, animate = true){
+      const dial = dialEls[dialIndex];
+      const reel = dial.querySelector('.reel');
+      const dialH = dial.getBoundingClientRect().height;
+      const centerY = dialH/2 - CELL_H/2;
+      const targetIndex = 10 + value;
+      const targetOffset = -targetIndex * CELL_H + centerY;
+
+      if(animate){
+        reel.style.transition = 'transform .12s ease-out';
+        requestAnimationFrame(() => {
+          setReelOffset(dialIndex, targetOffset);
+          setTimeout(() => { reel.style.transition = ''; }, 140);
+        });
+      } else {
+        setReelOffset(dialIndex, targetOffset);
+      }
+
+      values[dialIndex] = value;
+      updateStatus();
+      if (vibrateSupported) navigator.vibrate(10);
+    }
+
+    function mod(n, m){ return ((n % m) + m) % m; }
+
+    function updateStatus(){
+      const code = values.join('');
+      if(code === CORRECT_CODE){
+        chest.classList.add('unlocked');
+        statusEl.innerHTML = 'Stato: <span class="ok">Sbloccato</span>';
+        if (vibrateSupported) navigator.vibrate([30, 30, 50]);
+        // Disabilitare l’interazione? Se vuoi bloccare i rulli:
+        // dialEls.forEach(d => d.style.pointerEvents = 'none');
+      } else {
+        chest.classList.remove('unlocked');
+        statusEl.innerHTML = 'Stato: <span class="no">Bloccato</span>';
+        // dialEls.forEach(d => d.style.pointerEvents = '');
+      }
+    }
   </script>
 </body>
 </html>
