@@ -16,12 +16,12 @@
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
       color:#2e2e2e;
-      min-height: 100svh;                 /* stabile su mobile */
+      min-height: 100svh;
       background:#000;
       position: relative;
     }
 
-    /* Sfondo nitido + overlay leggero (STESSO DELLE ALTRE PAGINE) */
+    /* Sfondo nitido + overlay */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -35,76 +35,66 @@
       z-index:-1;
     }
 
-    /* Bottone grande centrato per rivelare la card */
+    /* Bottone grande rivelazione: fisso nel viewport */
     .btn--big{
-      display: fixed;
+      position: fixed;          /* <-- fix */
       left: 16px;
-      bottom: 10px; 
+      bottom: 16px;
       width: auto;
-      margin: 0 auto 10px;
+      margin: 0;
       text-align:center;
       font-size:16px;
       padding:12px 16px;
-    }
-    
-    /* Contenitore azioni in testata (Bacheca + Nascondi) */
-    .head__actions{
-      display:flex;
-      gap:20px;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    
-    /* Bottone ghost (secondario) */
-    .btn.btn--ghost{
-      background:#efe6c7;
-      border-color:#b2926d;
-      box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
-    }
-    
-    /* Card nascosta (stato iniziale) */
-    .card.is-hidden{
-      opacity:0;
-      transform: translateY(10px) scale(.98);
-      pointer-events:none;
-      visibility:hidden;
-    }
-    
-    /* Animazione di ingresso */
-    .card{
-      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
-    }
-    .card:not(.is-hidden){
-      opacity:1;
-      transform:none;
-      visibility:visible;
-      transition-delay:0s;
+      z-index: 1000;
     }
 
-
-    
-    /* CARD FISSA: coerente con le altre schermate */
+    /* CARD FISSA */
     .wrap {
       position: fixed;
       left: 50%;
-      top: 70svh;                         /* stessa quota della card enigmi */
+      top: 65svh;                          /* come le altre schermate */
       transform: translate(-50%, -50%);
       width: min(560px, 92vw);
       padding: 16px;
     }
 
     .card{
+      display:flex;                        /* <-- colonna flessibile */
+      flex-direction:column;
+      gap:12px;
       width:100%;
-      background: #fdf6e3;                /* pergamena */
+      background: #fdf6e3;
       border: 2px solid #d6c29e;
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
       font-family: 'Georgia', serif;
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height: 58svh;                   /* limite “soft” */
+      overflow: hidden;                     /* evita overflow dei figli */
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+    }
+
+    /* Stato nascosto + animazione ingresso */
+    .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
+    .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
+
+    /* Testata card */
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .card__title{ margin:0; font-size:20px; line-height:1.2; color:#3b2c20; }
+
+    /* Corpo scrollabile (intro + dettagli) */
+    .card__body{
+      flex:1;               /* prende lo spazio elastico */
+      min-height:0;         /* fondamentale per lo scroll interno */
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding-right:2px;    /* micro padding anti scrollbar overlay */
     }
 
     .intro-text{
@@ -112,15 +102,25 @@
       border:1px dashed #b2926d;
       border-radius:8px;
       padding:14px 16px;
-      margin: 0 0 16px;
       line-height:1.55;
       font-size:16px;
       color:#3b2c20;
     }
 
-    .actions{ display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap }
+    details > summary.tip{
+      list-style:none;
+    }
+    details > summary.tip::-webkit-details-marker{ display:none; }
+    .tip { font-size:16px; color: #6b5b4b; cursor:pointer; font-style:italic; }
+    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; background:#efe7d3; border:1px solid #d6c29e; padding:2px 6px; border-radius:6px }
 
-    /* Bottone giallo antichizzato (stesso stile) */
+    /* Footer azioni: non scrolla, resta sempre visibile */
+    .actions{
+      display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap;
+      padding-top:2px;
+    }
+
+    /* Bottoni */
     .btn{
       cursor:pointer;
       border:1px solid #8b6b1b;
@@ -134,19 +134,27 @@
       box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
       transition: transform .15s ease, box-shadow .15s ease;
       text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+      white-space:nowrap;
     }
     .btn:hover{ transform: translateY(-1px); box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
-
-    .tip { font-size:16px; color: #6b5b4b; margin:6px 2px 0; font-style:italic; }
-    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; background:#efe7d3; border:1px solid #d6c29e; padding:2px 6px; border-radius:6px }
-
-    #btnReveal {
-      position: fixed !important;   /* forza posizione assoluta nel viewport */
-      left: 16px !important;        /* distanza dal bordo sinistro */
-      bottom: 16px !important;      /* distanza dal fondo */
-      margin: 0 !important;         /* annulla i margini centranti */
+    .btn.btn--ghost{
+      background:#efe6c7;
+      border-color:#b2926d;
+      box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
     }
-  
+
+    /* Accessibilità/Responsive per schermi bassi */
+    @media (max-height: 640px){
+      .wrap{ top:62svh; }
+      .card{ max-height:64svh; padding:14px; gap:10px; }
+      .card__title{ font-size:18px; }
+      .intro-text{ font-size:15px; padding:12px 14px; }
+      .btn{ height:42px; }
+    }
+    @media (max-height: 520px){
+      .wrap{ top:60svh; }
+      .card{ max-height:68svh; }
+    }
   </style>
 </head>
 <body>
@@ -156,67 +164,68 @@
     </button>
 
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo">
-      <header class="head__actions flex justify-content:center justify-between">
-        <h1 id="titolo" style="margin:0 0 6px;">L'oro di Roger</h1>
+      <header class="card__head">
+        <h1 id="titolo" class="card__title" style="margin:0">L'oro di Roger</h1>
         <button id="btnHide" type="button" class="btn btn--ghost">Nascondi</button>
       </header>
 
-      <div class="intro-text">
-        <p>
-          State forse cercando il mio oro? Credete di esserne in grado? Ok, vi metterò alla prova, vediamo cosa sapete fare...
-        </p>
-      </div>
+      <!-- Corpo scrollabile -->
+      <div class="card__body">
+        <div class="intro-text">
+          <p>
+            State forse cercando il mio oro? Credete di esserne in grado? Ok, vi metterò alla prova, vediamo cosa sapete fare...
+          </p>
+        </div>
 
-      <div class="actions">
         <details>
-          <summary class="tip" style="cursor:pointer">Codice piratesco!</summary>
+          <summary class="tip">Codice piratesco!</summary>
           <ul style="margin:8px 0 0; padding-left:18px">
             <li>Ogni enigma conduce al successivo.</li>
             <li>Un pirata torna sempre sui suoi passi.</li>
             <li>Se venite mangiati da uno squalo non sono affari miei.</li>
-            <li>Datevi un mossa! Stando li impalati vi farete fregare il tesoro da sotto il naso!</li>
+            <li>Datevi un mossa! Stando lì impalati vi farete fregare il tesoro da sotto il naso!</li>
           </ul>
         </details>
-        <!-- 🔗 Modifica l'href se la prima pagina cambia -->
+      </div>
+
+      <!-- Footer azioni, sempre visibile -->
+      <div class="actions">
+        <span class="tip">Premi <span class="kbd">Invio</span> per iniziare</span>
         <a class="btn" id="startBtn" href="porta6ui.html">Inizia ora</a>
       </div>
     </section>
   </main>
 
   <script>
-
     /* ===== Reveal/Hide card ===== */
     (function(){
       const REVEAL_KEY = 'card_revealed_v1_index';
       const btnReveal = document.getElementById('btnReveal');
       const card = document.getElementById('contentCard');
       const btnHide = document.getElementById('btnHide');
-      const title = document.getElementById('Enigma – Caccia al Tesoro');
-    
+      const title = document.getElementById('titolo');  // <-- fix id corretto
+
       function reveal(){
         card.classList.remove('is-hidden');
         card.setAttribute('aria-hidden','false');
         btnReveal.setAttribute('aria-expanded','true');
         btnReveal.style.display = 'none';
-        btnHide.style.display = ''; // mostra il tasto Nascondi
+        btnHide.style.display = '';
         try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-        // focus accessibile sull’intestazione
         if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
       }
-    
+
       function hide(){
         card.classList.add('is-hidden');
         card.setAttribute('aria-hidden','true');
         btnReveal.setAttribute('aria-expanded','false');
         btnReveal.style.display = 'block';
-        btnHide.style.display = 'none'; // nasconde il tasto Nascondi
+        btnHide.style.display = 'none';
         try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-        // torna il focus al bottone reveal
         btnReveal.focus();
       }
-    
+
       function init(){
-        // stato iniziale coerente
         const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
         if(wasRevealed){
           card.classList.remove('is-hidden');
@@ -231,19 +240,16 @@
           btnReveal.setAttribute('aria-expanded','false');
           btnHide.style.display = 'none';
         }
-    
-        // eventi
+
         btnReveal.addEventListener('click', reveal);
         btnReveal.addEventListener('keydown', (e)=>{
           if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); }
         });
         btnHide.addEventListener('click', hide);
       }
-    
       init();
     })();
 
-    
     // Accessibilità: Enter per iniziare
     const start = document.getElementById('startBtn');
     window.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && start){ start.click(); } });
