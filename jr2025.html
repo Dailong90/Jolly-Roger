@@ -81,6 +81,10 @@
     .feedback { margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
     .ok { color: var(--ok); } .err { color: var(--err); }
 
+    /* Stringi lo spazio sopra al titolo */
+    .card { padding-top: 12px; }           /* prima era 20px */
+    .card__title { margin: 0 0 6px; }      /* elimina il margin-top default dell'h2 */
+
     /* 🔽 Viewport bassi */
     @media (max-height:640px){
       .wrap{ top:62svh; }
