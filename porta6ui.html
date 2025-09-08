@@ -23,58 +23,52 @@
     }
 
     .card{
-      display:flex; flex-direction:column; gap:10px;
+      display:flex;               /* ⬅️ colonna flessibile */
+      flex-direction:column;
+      gap:10px;
       background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
       box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height:58svh;
+      max-height:58svh;           /* altezza massima “soft” */
+      overflow:hidden;            /* evita che figli escano */
     }
 
-    /* Bottone grande centrato per rivelare la card */
+    /* Bottone grande rivelazione: fisso in viewport */
     .btn--big{
-      display: fixed;
+      position: fixed;        /* ⬅️ fix: prima c'era display: fixed */
       left: 16px;
-      bottom: 16px; 
+      bottom: 16px;
       width: auto;
       margin: 0;
       text-align:center;
       font-size:18px;
       padding:12px 16px;
-      z-index: 1000; 
+      z-index: 1000;
     }
-    
-    /* Contenitore azioni in testata (Bacheca + Nascondi) */
+
     .head__actions{ display:flex; gap:8px; }
-    
-    /* Bottone ghost (secondario) */
+
     .btn.btn--ghost{
       background:#efe6c7;
       border-color:#b2926d;
       box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
     }
-    
-    /* Card nascosta (stato iniziale) */
+
     .card.is-hidden{
       opacity:0;
       transform: translateY(10px) scale(.98);
       pointer-events:none;
       visibility:hidden;
     }
-    
-    /* Animazione di ingresso */
     .card{
       transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
     }
     .card:not(.is-hidden){
-      opacity:1;
-      transform:none;
-      visibility:visible;
-      transition-delay:0s;
+      opacity:1; transform:none; visibility:visible; transition-delay:0s;
     }
 
-    /* Campo soluzione */
     .field{ display:flex; gap:10px; }
     #solveForm input[type="text"]{
       flex:1; background:#fff8e1;
@@ -100,22 +94,28 @@
     }
     .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
     .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok{ color:#10b981; }  /* fallback se non usi --ok */
-    .err{ color:#ef4444; } /* fallback se non usi --err */
+    .ok{ color:#10b981; }
+    .err{ color:#ef4444; }
 
-    
     .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
 
+    /* L’enigma occupa lo spazio elastico della card */
     .riddle{
-      position:relative; border:1px dashed #b2926d; border-radius:8px;
+      position:relative;
+      border:1px dashed #b2926d; border-radius:8px;
       background:rgba(255,255,255,.65);
       display:grid;
+      flex:1;            /* ⬅️ prende lo spazio rimanente */
+      min-height:0;      /* ⬅️ fondamentale per far scorrere bene */
     }
     .riddle__scroller{
-      grid-area:1 / 1; overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
-      max-height:40svh;
+      grid-area:1 / 1;
+      overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px;
+      line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap;
+      /* niente max-height qui: scorre dentro lo spazio della card */
+      min-height:0;
     }
     .riddle__fade{
       grid-area:1 / 1; align-self:end; height:84px;
@@ -148,7 +148,6 @@
     .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
     .modal__close:hover{ background:#2f2f2f; }
 
-    /* Stage: mappa + layer adesivi */
     .stage { position:relative; width:100%; height:auto; }
     .modal__img{ display:block; width:100%; height:auto; max-height:92vh; object-fit:contain; background:#000; }
 
@@ -156,7 +155,7 @@
 
     .sticker{
       position:absolute;
-      width: var(--sticker-w, 22px) !important; /* <— controllo via CSS var */
+      width: var(--sticker-w, 22px) !important;
       height:auto;
       user-select:none; -webkit-user-drag:none; touch-action:none;
       cursor:grab; z-index:5;
@@ -172,26 +171,34 @@
       pointer-events:none; z-index:1;
     }
 
-    /* Centra il contenuto (stage) dentro la finestra della modale */
-    .modal__inner{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+    .modal__inner{ display:flex; align-items:center; justify-content:center; }
 
     #btnReveal {
-      position: fixed !important;   /* forza posizione assoluta nel viewport */
-      left: 16px !important;        /* distanza dal bordo sinistro */
-      bottom: 16px !important;      /* distanza dal fondo */
-      margin: 0 !important;         /* annulla i margini centranti */
-      width: auto !important;       /* larghezza solo quanto serve */
+      position: fixed !important;
+      left: 16px !important;
+      bottom: 16px !important;
+      margin: 0 !important;
+      width: auto !important;
       text-align:center;
       font-size:18px;
       padding:12px 16px;
-      z-index: 1000;                /* sopra la mappa/card */
+      z-index: 1000;
     }
 
-    
+    /* 🔽 Media: schermi bassi */
+    @media (max-height: 640px) {
+      .wrap { top: 62svh; }
+      .card { max-height: 64svh; padding:10px; }
+      .riddle__scroller { padding:12px 12px 28px; font-size:15px; }
+      .card__title { font-size:16px; }
+      #solveForm input[type="text"]{ height:42px; font-size:15px; padding:10px 12px; }
+      #solveForm button{ height:42px; }
+    }
+
+    @media (max-height: 520px) {
+      .wrap { top: 60svh; }
+      .card { max-height: 68svh; }
+    }
   </style>
 </head>
 <body>
@@ -199,11 +206,14 @@
     <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
       Dannato vento!
     </button>
+
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
-        <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
-        <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
+        <div class="head__actions">
+          <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Bacheca</button>
+          <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
+        </div>
       </div>
 
       <div class="riddle" id="riddleBox">
@@ -219,12 +229,12 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
 -Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
 -L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
 -Dopo Tokyo ho visto Seattle.
-          
         </div>
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
-       <!-- Soluzione  -->
+
+      <!-- Soluzione -->
       <form id="solveForm" autocomplete="off">
         <div class="field">
           <input id="answer" name="answer" type="text" placeholder="Password…" required />
@@ -258,8 +268,8 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       modal.setAttribute('aria-hidden','false'); 
       btnClose && btnClose.focus(); 
       ensureStickersInitialized();
-    
-      // 🔒 BLOCCA le dimensioni visibili attuali (aggiunta)
+
+      // 🔒 Blocca le dimensioni visibili attuali della mappa
       const w = mapImg.getBoundingClientRect().width;
       const h = mapImg.getBoundingClientRect().height;
       mapImg.style.width = w + 'px';
@@ -268,9 +278,8 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       mapImg.style.maxHeight = 'none';
       stage.style.width = w + 'px';
       stage.style.height = 'auto';
-      stage.style.margin = '0 auto';  // centra orizzontalmente
+      stage.style.margin = '0 auto';
     }
-
     function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); btnMap && btnMap.focus(); }
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
@@ -326,22 +335,18 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       el.style.top  = `${top}px`;
     }
 
-    // Calcola una larghezza che consenta 7 sticker in fila con gap
     function computeStickerWidth(){
       const rect = stage.getBoundingClientRect();
       const gap = 12;
       const n = IMGS.length;
-      // un piccolo padding di sicurezza ai lati
       const safe = 16;
       const w = Math.floor((rect.width - safe*2 - gap*(n-1)) / n);
-      // limiti ragionevoli (min 64px, max 160px)
       return Math.max(22, Math.min(22, w));
     }
 
     function initialDockLayout(){
       const gap = 12;
       const w = computeStickerWidth();
-      // imposta la width coerente per tutte le pergamene
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
         el.style.setProperty('--sticker-w', `${w}px`);
@@ -350,7 +355,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       const rect = stage.getBoundingClientRect();
       const totalW = w*IMGS.length + gap*(IMGS.length-1);
       let curX = Math.max(8, Math.floor((rect.width - totalW)/2));
-      const y = Math.max(0, rect.height - (w * 0.75) - 12); // poco sopra il bordo
+      const y = Math.max(0, rect.height - (w * 0.75) - 12);
 
       IMGS.forEach(({id})=>{
         const el = document.getElementById(id);
@@ -450,32 +455,30 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       }
     }
 
-
     // Init overlay after load
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
 
     /* ===== Verifica soluzione (hash) */
     const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
-    // Se vuoi un redirect al successo, metti qui l'URL (altrimenti stringa vuota):
     const SUCCESS_URL = "luc58e.html";
-    
+
     async function sha256Hex(input) {
       const enc = new TextEncoder().encode(input);
       const digest = await crypto.subtle.digest('SHA-256', enc);
       return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
     }
-    
+
     const form = document.getElementById('solveForm');
     const input = document.getElementById('answer');
     const feedback = document.getElementById('feedback');
-    
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       feedback.textContent = '';
-      const value = input.value;            // ← NIENTE normalize/trim
+      const value = input.value;
       if (value.length === 0) return;
-    
-      const hash = await sha256Hex(value);  // hash del valore esatto
+
+      const hash = await sha256Hex(value);
       if (hash === HASH_EXPECTED) {
         feedback.textContent = '✅ Corretto!';
         feedback.className = 'feedback ok';
@@ -493,31 +496,28 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       const card = document.getElementById('contentCard');
       const btnHide = document.getElementById('btnHide');
       const title = document.getElementById('titolo-regole');
-    
+
       function reveal(){
         card.classList.remove('is-hidden');
         card.setAttribute('aria-hidden','false');
         btnReveal.setAttribute('aria-expanded','true');
         btnReveal.style.display = 'none';
-        btnHide.style.display = ''; // mostra il tasto Nascondi
+        btnHide.style.display = '';
         try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
-        // focus accessibile sull’intestazione
         if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
       }
-    
+
       function hide(){
         card.classList.add('is-hidden');
         card.setAttribute('aria-hidden','true');
         btnReveal.setAttribute('aria-expanded','false');
         btnReveal.style.display = 'block';
-        btnHide.style.display = 'none'; // nasconde il tasto Nascondi
+        btnHide.style.display = 'none';
         try{ localStorage.removeItem(REVEAL_KEY); }catch{}
-        // torna il focus al bottone reveal
         btnReveal.focus();
       }
-    
+
       function init(){
-        // stato iniziale coerente
         const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
         if(wasRevealed){
           card.classList.remove('is-hidden');
@@ -532,24 +532,18 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
           btnReveal.setAttribute('aria-expanded','false');
           btnHide.style.display = 'none';
         }
-    
-        // eventi
+
         btnReveal.addEventListener('click', reveal);
         btnReveal.addEventListener('keydown', (e)=>{
           if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); }
         });
         btnHide.addEventListener('click', hide);
       }
-    
       init();
     })();
 
-    
-    
-    // Invio con Enter
+    // Invio con Enter dentro l’input
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
-
-    
   </script>
 </body>
 </html>
