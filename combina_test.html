@@ -3,120 +3,180 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Forziere a combinazione — rulli 3D con suoni</title>
+  <title>Forziere a combinazione — stile antico</title>
   <style>
     :root{
-      --bg:#0b0e13; --fg:#f0f0f0; --accent:#f59e0b; --ok:#10b981; --err:#ef4444;
+      /* Palette “pirata” */
+      --wood:#1b140c;          /* legno scuro */
+      --paper:#d7c6a5;         /* pergamena */
+      --ink:#2b2115;           /* inchiostro scuro */
+      --brass:#b88a2a;         /* ottone caldo */
+      --brass-deep:#8a6a1f;    /* ottone ombra */
+      --ok:#10b981; --err:#ef4444;
+
+      /* Immagini (modifica i percorsi) */
       --img-closed: url('assets/chest_closed.png');
       --img-open:   url('assets/chest_open.png');
+      --tex-wood:   url('assets/wood_planks.jpg');  /* opzionale */
+      --tex-paper:  url('assets/paper.jpg');        /* opzionale */
+      --tex-brass:  url('assets/brass.jpg');        /* opzionale */
     }
+
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html,body{ height:100%; margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,"Noto Sans"; }
+    html,body{ height:100%; margin:0; background:#0d0b09; color:var(--ink);
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif; }
     body{ display:grid; place-items:center; overflow:hidden; }
-    .wrap{ width:min(900px,100vw); padding:16px; }
+
+    /* Sfondo legno nave + vignetta */
+    body::before{
+      content:""; position:fixed; inset:0; z-index:-2;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(0,0,0,.35), rgba(0,0,0,.75) 70%),
+        var(--tex-wood);
+      background-size:cover;
+      filter:saturate(.8) contrast(1.05);
+    }
+
+    .wrap{ width:min(920px,100vw); padding:16px; }
 
     .chest{
       position:relative; width:100%; aspect-ratio:16/9;
-      background-image:var(--img-closed); background-size:cover; background-position:center;
-      border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45);
+      background-image: var(--img-closed);
+      background-size:cover; background-position:center;
+      border-radius:18px;
+      box-shadow:
+        0 20px 40px rgba(0,0,0,.55),
+        inset 0 0 0 2px rgba(0,0,0,.35);
+      display:grid; place-items:center; padding:clamp(8px,2vw,22px);
       transition: background-image .25s ease-in-out, transform .2s ease, filter .25s ease;
-      display:grid; place-items:center; padding:clamp(8px,2vw,20px);
     }
-    .chest.unlocked{ background-image:var(--img-open); animation:pop .35s ease-out; }
-    @keyframes pop{ from{transform:scale(.98)} to{transform:scale(1)} }
+    .chest.unlocked{ background-image: var(--img-open); animation: pop .35s ease-out; }
+    @keyframes pop{ from{ transform:scale(.985) } to{ transform:scale(1) } }
+
+    /* Patina scura sul forziere chiuso */
     .chest:not(.unlocked)::after{
-      content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0), rgba(0,0,0,.38) 60%, rgba(0,0,0,.55));
+      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0), rgba(0,0,0,.40) 62%, rgba(0,0,0,.65));
     }
 
+    /* Placca in ottone con pergamena interna */
     .panel{
-      position:relative; z-index:1; width:min(680px,96%);
-      background:rgba(20,24,32,.76); backdrop-filter:blur(4px);
-      border:1px solid #111827; outline:1px solid rgba(255,255,255,.06);
-      border-radius:18px; padding:16px;
-      box-shadow:0 12px 30px rgba(0,0,0,.35) inset, 0 8px 20px rgba(0,0,0,.25);
+      position:relative; z-index:1; width:min(720px,96%);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.18), rgba(255,255,255,.02)),
+        var(--tex-brass);
+      background-size: cover;
+      border-radius:20px;
+      padding:12px; /* bordo ottone */
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.5),
+        inset 0 0 0 2px rgba(0,0,0,.35),
+        inset 0 0 60px rgba(0,0,0,.25);
+      outline: 1px solid rgba(255,255,255,.12);
     }
-    .panel__title{ margin:0 0 12px; text-align:center; font-weight:700; letter-spacing:.5px; }
+    /* Rivetti agli angoli */
+    .panel::before{
+      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+      background:
+        radial-gradient(circle at 20px 20px, #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
+        radial-gradient(circle at calc(100% - 20px) 20px, #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
+        radial-gradient(circle at 20px calc(100% - 20px), #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
+        radial-gradient(circle at calc(100% - 20px) calc(100% - 20px), #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px);
+      mix-blend-mode: normal;
+    }
+    .panel__inner{
+      border-radius:16px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.12)),
+        var(--tex-paper);
+      background-size: cover;
+      padding:16px;
+      box-shadow: inset 0 0 80px rgba(0,0,0,.25), inset 0 0 0 1px rgba(0,0,0,.2);
+    }
+
+    .panel__title{
+      margin:0 0 12px; text-align:center; letter-spacing:.4px;
+      font-weight:700; color:#2a2015;
+      text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    }
 
     .dials{
-      display:grid; grid-template-columns:repeat(6,1fr); gap:12px; align-items:stretch;
+      display:grid; grid-template-columns:repeat(6,1fr); gap:12px;
     }
 
-    /* --- DIAL 3D --- */
+    /* Singolo rullo (cornice ottone + finestra) */
     .dial{
-      position:relative; height:clamp(130px,26vw,170px);
-      background:linear-gradient(#111826,#0f141b);
-      border:1px solid #0b0f15; outline:1px solid rgba(255,255,255,.06);
-      border-radius:14px; overflow:hidden; user-select:none; touch-action:none;
-      box-shadow:0 8px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
-
-      /* prospettiva per la curvatura del “tamburo” */
-      perspective: 600px;
-      transform-style: preserve-3d;
-    }
-
-    /* “finestra” con vignettatura */
-    .dial::before, .dial::after{
-      content:""; position:absolute; left:0; right:0; height:30%; z-index:3; pointer-events:none;
-    }
-    .dial::before{ top:0;    background:linear-gradient(to bottom, rgba(0,0,0,.65), rgba(0,0,0,0)); }
-    .dial::after{  bottom:0; background:linear-gradient(to top,   rgba(0,0,0,.65), rgba(0,0,0,0)); }
-
-    /* Highlight curvo per simulare cilindro */
-    .dial .cylinder-gloss{
-      content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+      position:relative;
+      height:clamp(124px, 24vw, 164px);
+      border-radius:14px;
       background:
-        radial-gradient(120% 60% at 50% 40%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
-        radial-gradient(120% 60% at 50% 60%, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
-      mix-blend-mode: screen;
-    }
-
-    /* tamburo numeri, leggermente curvato con rotateX */
-    .reel{
-      position:absolute; left:0; right:36px; /* lascia spazio alla rotellina */
-      top:0; will-change:transform; z-index:2;
-      transform: translateZ(0) rotateX(8deg);  /* piccola curvatura */
-      transform-origin: center center;
-    }
-
-    .cell{
-      height:clamp(42px,8.4vw,56px);
-      display:grid; place-items:center;
-      font-variant-numeric:tabular-nums; font-weight:800; font-size:clamp(28px,7vw,36px);
-      color:var(--accent); text-shadow:0 0 12px rgba(245,158,11,.25);
-      /* lieve sfumato per “curvatura” sulle cifre stesse */
-      background: radial-gradient(50% 200% at 50% 50%, rgba(255,255,255,.04), rgba(0,0,0,0) 60%);
-    }
-
-    .center-line{
-      position:absolute; left:8px; right:44px; top:50%; transform:translateY(-50%);
-      height:0; border-top:1px dashed rgba(255,255,255,.12); z-index:4;
-    }
-
-    /* --- Rotellina zigrinata laterale --- */
-    .knurl{
-      position:absolute; top:0; right:0; width:36px; height:100%; z-index:4; cursor:ns-resize; touch-action:none;
-      background:
-        repeating-linear-gradient(135deg, #1d2632 0 6px, #0f141b 6px 12px);
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(255,255,255,.06)),
+        var(--tex-brass);
+      background-size: cover;
       box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.05),
-        inset 0 0 18px rgba(0,0,0,.5);
-      border-left:1px solid #0b0f15;
+        inset 0 0 0 2px rgba(0,0,0,.35),
+        0 6px 14px rgba(0,0,0,.4);
+      overflow:hidden;
+      user-select:none;
+      touch-action:none; /* drag verticale senza scroll */
     }
-    .knurl::after{
-      content:""; position:absolute; left:6px; right:6px; top:0; bottom:0; pointer-events:none;
-      background: linear-gradient(to right, rgba(0,0,0,.35), rgba(255,255,255,.04) 40%, rgba(0,0,0,.4));
-      border-radius:8px;
+    /* Cornice lucida + vignetta */
+    .dial::before, .dial::after{
+      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    }
+    .dial::before{
+      background:
+        radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
+        radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.20), rgba(0,0,0,0) 60%);
+      mix-blend-mode: screen;
+      z-index: 1;
+    }
+    .dial::after{
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35));
+      z-index: 3;
     }
 
-    .status{ margin-top:12px; text-align:center; font-size:.95rem; color:#cbd5e1; }
+    /* Tamburo numeri su pergamena */
+    .reel{
+      position:absolute; left:0; right:0; top:0; z-index:2;
+      will-change: transform;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(255,255,255,.04)),
+        var(--tex-paper);
+      background-size: cover;
+    }
+    .cell{
+      height:clamp(42px, 8vw, 56px);
+      display:grid; place-items:center;
+      font-weight:800; font-variant-numeric: tabular-nums;
+      font-size: clamp(28px, 7vw, 36px);
+      color:#3b2b1a;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,.55),
+        0 2px 2px rgba(0,0,0,.15);
+      border-top: 1px dashed rgba(43,33,21,.15);
+      border-bottom: 1px dashed rgba(43,33,21,.15);
+    }
+
+    /* Riga guida centrale */
+    .center-line{
+      position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%);
+      height:0; border-top:1px dashed rgba(43,33,21,.35); z-index:4;
+    }
+
+    .status{
+      margin-top:12px; text-align:center; font-size:.95rem; color:#3a2b1b;
+    }
     .status .ok{ color:var(--ok); font-weight:700; }
     .status .no{ color:var(--err); font-weight:700; }
 
-    @media (max-width:420px){ .dials{ grid-template-columns:repeat(3,1fr); } }
+    @media (max-width: 420px){
+      .dials{ grid-template-columns: repeat(3, 1fr); }
+    }
 
     @media (prefers-reduced-motion: reduce){
-      *{ scroll-behavior:auto !important; transition:none !important; animation:none !important; }
+      *{ transition:none !important; animation:none !important; }
     }
   </style>
 </head>
@@ -124,50 +184,40 @@
   <main class="wrap">
     <section class="chest" id="chest">
       <div class="panel" role="group" aria-label="Lucchetto a combinazione">
-        <h2 class="panel__title">Trascina i rulli per inserire la combinazione</h2>
+        <div class="panel__inner">
+          <h2 class="panel__title">Inserisci la combinazione</h2>
 
-        <div class="dials" id="dials">
-          <!-- 6 rulli identici -->
-          <div class="dial" data-index="0" aria-label="Cifra 1">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
+          <div class="dials" id="dials">
+            <!-- 6 rulli identici -->
+            <div class="dial" data-index="0" aria-label="Cifra 1">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
+            <div class="dial" data-index="1" aria-label="Cifra 2">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
+            <div class="dial" data-index="2" aria-label="Cifra 3">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
+            <div class="dial" data-index="3" aria-label="Cifra 4">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
+            <div class="dial" data-index="4" aria-label="Cifra 5">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
+            <div class="dial" data-index="5" aria-label="Cifra 6">
+              <div class="reel"></div>
+              <div class="center-line"></div>
+            </div>
           </div>
-          <div class="dial" data-index="1" aria-label="Cifra 2">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
-          </div>
-          <div class="dial" data-index="2" aria-label="Cifra 3">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
-          </div>
-          <div class="dial" data-index="3" aria-label="Cifra 4">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
-          </div>
-          <div class="dial" data-index="4" aria-label="Cifra 5">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
-          </div>
-          <div class="dial" data-index="5" aria-label="Cifra 6">
-            <div class="reel"></div>
-            <div class="cylinder-gloss"></div>
-            <div class="center-line"></div>
-            <div class="knurl" aria-hidden="true"></div>
-          </div>
-        </div>
 
-        <div class="status" id="status" aria-live="polite">
-          Stato: <span class="no">Bloccato</span>
+          <div class="status" id="status" aria-live="polite">
+            Stato: <span class="no">Bloccato</span>
+          </div>
         </div>
       </div>
     </section>
@@ -178,111 +228,130 @@
   <audio id="sndUnlock" src="assets/unlock.mp3" preload="auto"></audio>
 
   <script>
-    // ---------------- CONFIG ----------------
-    const CORRECT_CODE = "602915";
+    // -----------------------
+    // CONFIGURAZIONE
+    // -----------------------
+    const CORRECT_CODE = "602915"; // <-- imposta qui la combinazione
     const vibrateSupported = 'vibrate' in navigator;
 
-    // ---------------- BUILD REELS -----------
+    // -----------------------
+    // COSTRUZIONE RULLI
+    // -----------------------
     const chest = document.getElementById('chest');
     const statusEl = document.getElementById('status');
     const dialEls = [...document.querySelectorAll('.dial')];
     const sndClick = document.getElementById('sndClick');
     const sndUnlock = document.getElementById('sndUnlock');
 
+    // Stato: valori correnti (0..9) per ciascun rullo
     const values = Array(6).fill(0);
-    const baseDigits = Array.from({length:10}, (_,i)=>i);
-    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits]; // 30 celle per loop morbido
 
+    // Per un loop morbido: 0..9 ripetuti 3 volte → 30 celle
+    const baseDigits = Array.from({length:10}, (_,i)=>i);
+    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits];
+
+    // Inserisco le celle
     dialEls.forEach(dial => {
       const reel = dial.querySelector('.reel');
       reel.innerHTML = loopDigits.map(d => `<div class="cell">${d}</div>`).join('');
     });
 
-    let CELL_H = null;
+    // Misuro l'altezza di una cella per calcolare gli scatti
+    let CELL_H = 50;
     function measureCellHeight(){
-      const any = document.querySelector('.cell');
-      CELL_H = any ? any.getBoundingClientRect().height : 50;
+      const anyCell = document.querySelector('.cell');
+      if(anyCell) CELL_H = anyCell.getBoundingClientRect().height;
     }
     measureCellHeight();
     addEventListener('resize', measureCellHeight, {passive:true});
 
+    // Posiziono ogni rullo sul valore nella fascia centrale (indici 10..19)
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.reel');
-      const targetIndex = 10 + value; // fascia centrale
+      const targetIndex = 10 + value;
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
-      reel.style.transform = `translateY(${translateY}px) rotateX(8deg)`;
+      reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
       values[dialIndex] = value;
     }
-    dialEls.forEach((_, i)=>positionReelAtValue(i, 0));
+    dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
     updateStatus(false);
 
-    // ---------------- INTERACTION -----------
+    // -----------------------
+    // INTERAZIONE (drag, wheel, tastiera)
+    // -----------------------
     dialEls.forEach((dial, idx) => {
       const reel = dial.querySelector('.reel');
-      const knurl = dial.querySelector('.knurl');
 
       let startY = 0, startOffset = 0, lastY = 0, lastTime = 0, velocity = 0, dragging = false;
 
-      const begin = (y) => {
+      // Drag (touch/mouse)
+      dial.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        dial.setPointerCapture(e.pointerId);
         dragging = true;
-        startY = y; startOffset = Number(reel.dataset.offset||0);
-        lastY = startY; lastTime = performance.now(); velocity = 0;
-      };
-      const move = (y) => {
+        startY = e.clientY;
+        startOffset = Number(reel.dataset.offset || 0);
+        lastY = startY;
+        lastTime = performance.now();
+        velocity = 0;
+      });
+      dial.addEventListener('pointermove', (e) => {
         if(!dragging) return;
+        const y = e.clientY;
         const dy = y - startY;
         const next = startOffset + dy;
         setReelOffset(idx, next);
-        const now = performance.now(), dt = now - lastTime;
-        if(dt>0) velocity = (y - lastY)/dt;
+
+        // stima velocità per piccola inerzia
+        const now = performance.now();
+        const dt = now - lastTime;
+        if(dt > 0) velocity = (y - lastY) / dt; // px/ms
         lastY = y; lastTime = now;
-      };
-      const end = () => {
+      });
+      dial.addEventListener('pointerup', () => {
         if(!dragging) return;
         dragging = false;
-        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2;
-        snapToNearest(idx, Number(reel.dataset.offset||0) + inertial, true);
-      };
-
-      // Area rullo
-      dial.addEventListener('pointerdown', e => { e.preventDefault(); dial.setPointerCapture(e.pointerId); begin(e.clientY); });
-      dial.addEventListener('pointermove',  e => move(e.clientY));
-      dial.addEventListener('pointerup',    end);
-      dial.addEventListener('pointercancel',end);
-
-      // Rotellina (stessa logica, ma trascinando solo la fascia destra)
-      knurl.addEventListener('pointerdown', e => { e.preventDefault(); knurl.setPointerCapture(e.pointerId); begin(e.clientY); });
-      knurl.addEventListener('pointermove',  e => move(e.clientY));
-      knurl.addEventListener('pointerup',    end);
-      knurl.addEventListener('pointercancel',end);
+        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2; // ~inerzia leggera
+        snapToNearest(idx, Number(reel.dataset.offset || 0) + inertial, true);
+      });
+      dial.addEventListener('pointercancel', () => {
+        if(!dragging) return;
+        dragging = false;
+        snapToNearest(idx, Number(reel.dataset.offset || 0), true);
+      });
 
       // Scroll (desktop)
-      dial.addEventListener('wheel', (e) => { e.preventDefault(); nudge(idx, Math.sign(e.deltaY)); }, {passive:false});
+      dial.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        nudge(idx, Math.sign(e.deltaY));
+      }, {passive:false});
 
       // Tastiera
       dial.tabIndex = 0;
       dial.addEventListener('keydown', (e) => {
-        if(e.key==='ArrowUp'){ e.preventDefault(); nudge(idx,-1); }
-        if(e.key==='ArrowDown'){ e.preventDefault(); nudge(idx,+1); }
-        if(e.key==='Home'){ e.preventDefault(); setValue(idx,0,true,true); }
-        if(e.key==='End'){  e.preventDefault(); setValue(idx,9,true,true); }
+        if(e.key === 'ArrowUp'){ e.preventDefault(); nudge(idx, -1); }
+        if(e.key === 'ArrowDown'){ e.preventDefault(); nudge(idx, +1); }
+        if(e.key === 'Home'){ e.preventDefault(); setValue(idx, 0, true, true); }
+        if(e.key === 'End'){ e.preventDefault(); setValue(idx, 9, true, true); }
       });
     });
 
-    // --------------- HELPERS ----------------
-    function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
-    function mod(n,m){ return ((n % m) + m) % m; }
+    // -----------------------
+    // FUNZIONI DI SUPPORTO
+    // -----------------------
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function mod(n, m){ return ((n % m) + m) % m; }
 
     function setReelOffset(dialIndex, offset){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.reel');
-      reel.style.transform = `translateY(${offset}px) rotateX(8deg)`;
+      reel.style.transform = `translateY(${offset}px)`;
       reel.dataset.offset = offset;
     }
 
-    function snapToNearest(dialIndex, offset, play=true){
+    function snapToNearest(dialIndex, offset, playSound){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.reel');
       const dialH = dial.getBoundingClientRect().height;
@@ -294,15 +363,15 @@
       const targetOffset = -targetIndex * CELL_H + centerY;
 
       reel.style.transition = 'transform .12s ease-out';
-      requestAnimationFrame(()=>{
+      requestAnimationFrame(() => {
         setReelOffset(dialIndex, targetOffset);
-        setTimeout(()=>{ reel.style.transition=''; },140);
+        setTimeout(() => { reel.style.transition = ''; }, 140);
       });
 
       const changed = values[dialIndex] !== value;
       values[dialIndex] = value;
 
-      if (play && changed) tick();
+      if (changed && playSound) tick();
       updateStatus(true);
     }
 
@@ -311,7 +380,7 @@
       setValue(dialIndex, nextVal, true, true);
     }
 
-    function setValue(dialIndex, value, animate=true, play=true){
+    function setValue(dialIndex, value, animate=true, playSound=true){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.reel');
       const dialH = dial.getBoundingClientRect().height;
@@ -321,9 +390,9 @@
 
       if(animate){
         reel.style.transition = 'transform .12s ease-out';
-        requestAnimationFrame(()=>{
+        requestAnimationFrame(() => {
           setReelOffset(dialIndex, targetOffset);
-          setTimeout(()=>{ reel.style.transition=''; },140);
+          setTimeout(() => { reel.style.transition = ''; }, 140);
         });
       } else {
         setReelOffset(dialIndex, targetOffset);
@@ -332,17 +401,17 @@
       const changed = values[dialIndex] !== value;
       values[dialIndex] = value;
 
-      if(play && changed) tick();
+      if (changed && playSound) tick();
       updateStatus(true);
     }
 
     function tick(){
       if(vibrateSupported) navigator.vibrate(10);
-      try { sndClick.currentTime = 0; sndClick.play(); } catch(e){}
+      try{ sndClick.currentTime = 0; sndClick.play(); }catch(e){}
     }
 
     let unlockedOnce = false;
-    function updateStatus(withSound=true){
+    function updateStatus(withSound){
       const code = values.join('');
       if(code === CORRECT_CODE){
         chest.classList.add('unlocked');
@@ -350,7 +419,7 @@
         if(!unlockedOnce && withSound){
           unlockedOnce = true;
           if(vibrateSupported) navigator.vibrate([30,30,60]);
-          try { sndUnlock.currentTime = 0; sndUnlock.play(); } catch(e){}
+          try{ sndUnlock.currentTime = 0; sndUnlock.play(); }catch(e){}
         }
       } else {
         chest.classList.remove('unlocked');
