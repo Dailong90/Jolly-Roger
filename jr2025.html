@@ -6,133 +6,111 @@
   <meta name="format-detection" content="telephone=no">
   <title>Enigma – Caccia al Tesoro</title>
   <style>
-    :root {
-      --bg-url: url('assets/jolly_bay.jpg'); /* usa il .jpg come nel repo */
-      --ok:#10b981; --err:#ef4444;
-    }
+    :root { --bg-url: url('assets/jolly_bay.jpg'); --ok:#10b981; --err:#ef4444; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* Blocca lo scroll della pagina */
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
-      color:#2e2e2e;
-      min-height: 100svh;                 /* stabile su mobile */
-      background:#000;
-      position: relative;
+      color:#2e2e2e; min-height: 100svh; background:#000; position: relative;
     }
+    body::before{ content:""; position:fixed; inset:0; background: var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after{ content:""; position:fixed; inset:0; background: rgba(0,0,0,.25); z-index:-1; }
 
-    /* Sfondo nitido + overlay leggero */
-    body::before{
-      content:"";
-      position:fixed; inset:0;
-      background: var(--bg-url) center / cover no-repeat;
-      z-index:-2;
-    }
-    body::after{
-      content:"";
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.25);
-      z-index:-1;
-    }
-
-    /* CARD FISSA: resta ferma mentre la pagina non scorre */
     .wrap {
-      position: fixed;
-      left: 50%;
-      top: 65svh;                         /* abbassa/aumenta qui la quota */
-      transform: translate(-50%, -50%);
-      width: min(560px, 92vw);
-      padding: 16px;
+      position: fixed; left: 50%; top: 65svh; transform: translate(-50%, -50%);
+      width: min(560px, 92vw); padding: 16px;
     }
 
+    .btn--big{
+      position: fixed; left: 16px; bottom: 16px; width: auto; margin: 0; text-align:center;
+      font-size:18px; padding:12px 16px; z-index: 1000;
+    }
+
+    .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
     .card{
+      display:flex;                /* ⬅️ colonna flessibile */
+      flex-direction:column;
+      gap:12px;
       width:100%;
-      background: #fdf6e3;                /* pergamena */
-      border: 2px solid #d6c29e;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-      font-family: 'Georgia', serif;
+      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:20px;
+      box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      font-family:'Georgia', serif;
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height:58svh;            /* ⬅️ limite “soft” */
+      overflow:hidden;             /* ⬅️ evita che i figli escano */
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
     }
+    .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
     .riddle{
       background: rgba(255,255,255,.65);
-      border:1px dashed #b2926d;
-      border-radius:8px;
-      padding:14px 16px;
-      margin: 0 0 16px;
-      line-height:0.8;
-      font-size:16px;
-      color:#3b2c20;
-      white-space: pre;    /* rispetta solo gli <br> */
-      word-break: keep-all;
+      border:1px dashed #b2926d; border-radius:8px;
+      padding:14px 16px; margin:0 0 4px;
+      line-height:0.8; font-size:16px; color:#3b2c20;
+      white-space: pre; word-break: keep-all;
+      flex:1;              /* ⬅️ occupa spazio elastico */
+      min-height:0;        /* ⬅️ consente lo scroll interno */
+      overflow:auto;       /* ⬅️ solo il testo scorre */
+      -webkit-overflow-scrolling:touch;
     }
 
     .field{ display:flex; gap:10px; }
     input[type="text"]{
-      flex:1; background:#fff8e1;
-      border:1px solid #b2926d; color:#2e2e2e;
-      border-radius:8px; padding:12px 14px;
-      outline:none; font-size:16px; height:46px;
+      flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
+      border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
       box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
     }
-    input[type="text"]:focus{ border-color: #c9a85b; box-shadow: 0 0 6px rgba(201,168,91,.6); }
+    input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
 
-    .field {
-      display: flex;
-      gap: 10px;
-      align-items: center; /* allinea verticalmente input e bottone */
-    }
-    
-    .field input[type="text"] {
-      flex: 1 1 auto;   /* si adatta alla larghezza disponibile */
-      min-width: 0;     /* importantissimo: impedisce che forzi larghezze minime */
-    }
-    
-    .field button {
-      flex: 0 0 auto;   /* resta della sua dimensione naturale */
-      white-space: nowrap; /* impedisce di spezzare il testo del bottone */
-    }
+    .field{ display:flex; gap:10px; align-items:center; }
+    .field input[type="text"]{ flex:1 1 auto; min-width:0; }
+    .field button{ flex:0 0 auto; white-space:nowrap; }
 
-
-    /* Bottone giallo antichizzato */
     button{
-      cursor:pointer;
-      border:1px solid #8b6b1b;
-      border-radius:8px;
-      padding:0 16px;
-      font-weight:700;
-      height:46px;
-      background: linear-gradient(180deg, #f5d76e, #d4a017);
-      color:#3b2c20;
-      font-family: 'Georgia', serif;
-      box-shadow: 0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px; font-weight:700; height:46px;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia', serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
       transition: transform .15s ease, box-shadow .15s ease;
     }
-    button:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5);
-    }
+    button:hover{ transform: translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
-    .tip { font-size:12px; color: #6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .tip { font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
     .feedback { margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok { color: var(--ok); }
-    .err { color: var(--err); }
+    .ok { color: var(--ok); } .err { color: var(--err); }
+
+    /* 🔽 Viewport bassi */
+    @media (max-height:640px){
+      .wrap{ top:62svh; }
+      .card{ max-height:64svh; padding:16px; gap:10px; }
+      .btn--big{ font-size:16px; padding:10px 14px; }
+      input[type="text"]{ height:42px; font-size:15px; padding:10px 12px; }
+      button{ height:42px; }
+    }
+    @media (max-height:520px){
+      .wrap{ top:60svh; }
+      .card{ max-height:68svh; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="card">
-      <div class="riddle" id="riddle">
+    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+      Si salpa!
+    </button>
+    
+    <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
+      <div class="card__head">
+        <h2 id="titolo-regole" class="card__title">Si salpa!</h2>
+        <div class="riddle" id="riddle">
 Barbuto signore di un epoca passata,<br>
 sognò nel caos un’armonia svelata,<br>
 orme vuote lasciò per i figli a venire,<br>
 trama silente che tutto può dire.
-        <p class="no-autolink" name="format-detection" content="telephone=no">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
+          <p class="no-autolink">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
+        </div>
       </div>
 
       <form id="solveForm" autocomplete="off">
@@ -150,39 +128,59 @@ trama silente che tutto può dire.
     const HASH_EXPECTED = "ee4db9c9644f23fdf8475f4d8ceb7e07eeb8d1da53538d37126c6fe4a26abed3";
     const SUCCESS_URL = "1isola2ar.html";
 
-    function normalize(str) {
+    function normalize(str){
       return str.trim().toLowerCase().normalize('NFKD')
-        .replace(/\p{Diacritic}/gu, '')
-        .replace(/[^\p{L}\p{N}]+/gu, '');
+        .replace(/\p{M}+/gu,'')           // rimuove diacritici
+        .replace(/[^\p{L}\p{N}]+/gu,'');  // tiene solo lettere/numeri
     }
-
-    async function sha256Hex(input) {
+    async function sha256Hex(input){
       const enc = new TextEncoder().encode(input);
       const digest = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+      return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
     }
 
     const form = document.getElementById('solveForm');
     const input = document.getElementById('answer');
     const feedback = document.getElementById('feedback');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       feedback.textContent = '';
       const value = normalize(input.value);
-      if (!value) return;
+      if(!value) return;
       const hash = await sha256Hex(value);
-      if (hash === HASH_EXPECTED) {
-        feedback.textContent = '✅ Corretto!';
-        feedback.className = 'feedback ok';
-        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
-      } else {
-        feedback.textContent = '❌ Errato. Riprova!';
-        feedback.className = 'feedback err';
+      if(hash === HASH_EXPECTED){
+        feedback.textContent = '✅ Corretto!'; feedback.className = 'feedback ok';
+        if(SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
+      }else{
+        feedback.textContent = '❌ Errato. Riprova!'; feedback.className = 'feedback err';
       }
     });
 
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') form.requestSubmit(); });
+
+    // Reveal/Hide card
+    (function(){
+      const btnReveal = document.getElementById('btnReveal');
+      const card = document.getElementById('contentCard');
+      function reveal(){
+        card.classList.remove('is-hidden');
+        card.setAttribute('aria-hidden','false');
+        btnReveal.setAttribute('aria-expanded','true');
+        btnReveal.style.display = 'none';
+      }
+      function hide(){
+        card.classList.add('is-hidden');
+        card.setAttribute('aria-hidden','true');
+        btnReveal.setAttribute('aria-expanded','false');
+        btnReveal.style.display = 'block';
+        btnReveal.focus();
+      }
+      btnReveal.addEventListener('click', reveal);
+      document.addEventListener('keydown', e=>{
+        if(e.key === 'Escape' && !card.classList.contains('is-hidden')) hide();
+      });
+    })();
   </script>
 </body>
 </html>
