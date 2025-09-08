@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Forziere a combinazione</title>
+  <style>
+    :root{
+      --bg:#0b0e13;
+      --fg:#f0f0f0;
+      --accent:#f59e0b;    /* oro */
+      --accent-2:#374151;  /* grigio scuro */
+      --ok:#10b981;
+      --err:#ef4444;
+
+      /* Sostituisci i percorsi qui */
+      --img-closed: url('assets/chest_closed.png');
+      --img-open:   url('assets/chest_open.png');
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    body { display: grid; place-items: center; overflow: hidden; }
+
+    .wrap { width: min(900px, 100vw); padding: 16px; }
+    .chest {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;                 /* proporzioni comode per smartphone in orizzontale/verticale */
+      background-image: var(--img-closed);
+      background-size: cover;
+      background-position: center;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      transition: filter .3s ease, transform .2s ease, background-image .25s ease-in-out;
+      display: grid;
+      place-items: center;
+      padding: clamp(8px, 2vw, 20px);
+    }
+    .chest.unlocked {
+      background-image: var(--img-open);
+      animation: pop .35s ease-out;
+      filter: none;
+    }
+    @keyframes pop { from{ transform: scale(.98) } to{ transform: scale(1) } }
+
+    /* Maschera semi-trasparente per contrasto sul forziere chiuso */
+    .chest:not(.unlocked)::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,.0), rgba(0,0,0,.38) 60%, rgba(0,0,0,.55));
+      border-radius: inherit;
+      pointer-events:none;
+    }
+
+    .panel {
+      position: relative;
+      z-index: 1;
+      background: rgba(20,24,32,.76);
+      backdrop-filter: blur(4px);
+      border: 1px solid #111827;
+      outline: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding: 16px;
+      width: min(680px, 96%);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35) inset, 0 8px 20px rgba(0,0,0,.25);
+    }
+
+    .panel__title{
+      margin: 0 0 10px;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing:.5px;
+    }
+
+    .dials{
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .dial{
+      background: linear-gradient(#111826,#0f141b);
+      border: 1px solid #0b0f15;
+      outline: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      text-align: center;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .btn{
+      appearance: none;
+      border: 0;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      background: linear-gradient(#1f2937,#111827);
+      color: var(--fg);
+      font-size: clamp(18px, 4vw, 22px);
+      padding: 10px 6px;
+      cursor: pointer;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn--up{ border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .btn--down{ border-top-left-radius: 0; border-top-right-radius: 0; }
+
+    .digit{
+      display: grid;
+      place-items: center;
+      height: clamp(44px, 9vw, 58px);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(28px, 7vw, 36px);
+      color: var(--accent);
+      text-shadow: 0 0 12px rgba(245,158,11,.25);
+      border-top: 1px solid rgba(255,255,255,.06);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: radial-gradient(ellipse at center, rgba(255, 204, 102, .06), rgba(0,0,0,0) 60%);
+    }
+
+    .status{
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+    .status .ok{ color: var(--ok); font-weight:700; }
+    .status .no{ color: var(--err); font-weight:700; }
+
+    /* Accessibilità focus */
+    .btn:focus-visible{
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Layout stretto: impilo due righe di 3 */
+    @media (max-width: 420px){
+      .dials{ grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="chest" id="chest">
+      <div class="panel" role="group" aria-label="Lucchetto a combinazione">
+        <h2 class="panel__title">Inserisci la combinazione</h2>
+
+        <div class="dials" id="dials">
+          <!-- 6 cilindri -->
+          <div class="dial" data-index="0">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+          <div class="dial" data-index="1">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+          <div class="dial" data-index="2">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+          <div class="dial" data-index="3">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+          <div class="dial" data-index="4">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+          <div class="dial" data-index="5">
+            <button class="btn btn--up" aria-label="Aumenta">▲</button>
+            <div class="digit" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn btn--down" aria-label="Diminuisci">▼</button>
+          </div>
+        </div>
+
+        <div class="status" id="status" aria-live="polite">
+          Stato: <span class="no">Bloccato</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- CONFIGURAZIONE ---
+    const CORRECT_CODE = "602915"; // <-- imposta qui la combinazione a 6 cifre
+    const vibrateSupported = 'vibrate' in navigator;
+
+    // --- LOGICA ---
+    const dials = [...document.querySelectorAll('.dial')];
+    const chest = document.getElementById('chest');
+    const statusEl = document.getElementById('status');
+
+    const values = Array(6).fill(0);
+
+    function updateDigit(idx, nextVal){
+      values[idx] = ( (nextVal % 10) + 10 ) % 10; // modulo positivo 0..9
+      dials[idx].querySelector('.digit').textContent = values[idx];
+
+      // Feedback aptico leggero su cambio (mobile)
+      if (vibrateSupported) navigator.vibrate(12);
+
+      checkCode();
+    }
+
+    function checkCode(){
+      const current = values.join('');
+      if(current === CORRECT_CODE){
+        chest.classList.add('unlocked');
+        statusEl.innerHTML = 'Stato: <span class="ok">Sbloccato</span>';
+        // disabilita i pulsanti
+        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+        if (vibrateSupported) navigator.vibrate([30, 30, 50]);
+      } else {
+        chest.classList.remove('unlocked');
+        statusEl.innerHTML = 'Stato: <span class="no">Bloccato</span>';
+      }
+    }
+
+    // Eventi click su ▲/▼
+    dials.forEach((dial, idx) => {
+      const up = dial.querySelector('.btn--up');
+      const down = dial.querySelector('.btn--down');
+      up.addEventListener('click', () => updateDigit(idx, values[idx] + 1));
+      down.addEventListener('click', () => updateDigit(idx, values[idx] - 1));
+
+      // Swipe verticale rapido per incrementare/decrementare
+      let startY = null;
+      dial.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, {passive:true});
+      dial.addEventListener('touchend', (e) => {
+        if(startY === null) return;
+        const endY = e.changedTouches[0].clientY;
+        const delta = endY - startY;
+        if(Math.abs(delta) > 20){
+          if(delta < 0) updateDigit(idx, values[idx] + 1);  // swipe up => +1
+          else          updateDigit(idx, values[idx] - 1);  // swipe down => -1
+        }
+        startY = null;
+      });
+
+      // Tastiera: frecce ↑/↓ sul dial attivo
+      dial.tabIndex = 0;
+      dial.addEventListener('keydown', (e) => {
+        if(e.key === 'ArrowUp'){ e.preventDefault(); updateDigit(idx, values[idx] + 1); }
+        if(e.key === 'ArrowDown'){ e.preventDefault(); updateDigit(idx, values[idx] - 1); }
+        if(e.key === 'Home'){ e.preventDefault(); updateDigit(idx, 0); }
+        if(e.key === 'End'){ e.preventDefault(); updateDigit(idx, 9); }
+      });
+    });
+
+    // Inizializza stato coerente
+    checkCode();
+  </script>
+</body>
+</html>
