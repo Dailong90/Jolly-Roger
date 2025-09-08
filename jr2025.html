@@ -10,82 +10,63 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      color:#2e2e2e; min-height: 100svh; background:#000; position: relative;
-    }
-    body::before{ content:""; position:fixed; inset:0; background: var(--bg-url) center/cover no-repeat; z-index:-2; }
-    body::after{ content:""; position:fixed; inset:0; background: rgba(0,0,0,.25); z-index:-1; }
+    body { font-family:'Georgia','Times New Roman',serif; color:#2e2e2e; min-height:100svh; background:#000; position:relative; }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
-    .wrap {
-      position: fixed; left: 50%; top: 65svh; transform: translate(-50%, -50%);
-      width: min(560px, 92vw); padding: 16px;
-    }
+    .wrap { position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%); width:min(560px,92vw); padding:16px; }
+    .btn--big{ position:fixed; left:16px; bottom:16px; width:auto; margin:0; text-align:center; font-size:18px; padding:12px 16px; z-index:1000; }
 
-    .btn--big{
-      position: fixed; left: 16px; bottom: 16px; width: auto; margin: 0; text-align:center;
-      font-size:18px; padding:12px 16px; z-index: 1000;
-    }
-
-    .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
+    .card.is-hidden{ opacity:0; transform:translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
     .card{
-      display:flex;                /* ⬅️ colonna flessibile */
-      flex-direction:column;
-      gap:12px;
-      width:100%;
+      display:flex; flex-direction:column; gap:12px; width:100%;
       background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:20px;
       box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
-      font-family:'Georgia', serif;
+      font-family:'Georgia',serif;
       background-image:
         radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
         radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
-      max-height:58svh;            /* ⬅️ limite “soft” */
-      overflow:hidden;             /* ⬅️ evita che i figli escano */
-      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+      max-height:58svh; overflow:hidden;
+      transition:opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
     }
     .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
+    /* Header card + titolo + Nascondi */
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .card__title{ margin:0 0 6px; font-size:20px; line-height:1.2; color:#3b2c20; }
+    .btn--ghost{ background:#efe6c7; border-color:#b2926d; box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35); }
+
     .riddle{
-      background: rgba(255,255,255,.65);
+      background:rgba(255,255,255,.65);
       border:1px dashed #b2926d; border-radius:8px;
       padding:14px 16px; margin:0 0 4px;
       line-height:0.8; font-size:16px; color:#3b2c20;
-      white-space: pre; word-break: keep-all;
-      flex:1;              /* ⬅️ occupa spazio elastico */
-      min-height:0;        /* ⬅️ consente lo scroll interno */
-      overflow:auto;       /* ⬅️ solo il testo scorre */
-      -webkit-overflow-scrolling:touch;
+      white-space:pre; word-break:keep-all;
+      flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch;
     }
 
-    .field{ display:flex; gap:10px; }
+    .field{ display:flex; gap:10px; align-items:center; }
     input[type="text"]{
       flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
       border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+      box-shadow:inset 0 1px 3px rgba(0,0,0,.2);
     }
     input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
-
-    .field{ display:flex; gap:10px; align-items:center; }
-    .field input[type="text"]{ flex:1 1 auto; min-width:0; }
     .field button{ flex:0 0 auto; white-space:nowrap; }
 
     button{
       cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px; font-weight:700; height:46px;
-      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia', serif;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
       box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition: transform .15s ease, box-shadow .15s ease;
+      transition:transform .15s ease, box-shadow .15s ease;
     }
-    button:hover{ transform: translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+    button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
-    .tip { font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
-    .feedback { margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok { color: var(--ok); } .err { color: var(--err); }
+    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
+    .ok{ color:var(--ok); } .err{ color:var(--err); }
 
-    /* Stringi lo spazio sopra al titolo */
-    .card { padding-top: 12px; }           /* prima era 20px */
-    .card__title { margin: 0 0 6px; }      /* elimina il margin-top default dell'h2 */
-
-    /* 🔽 Viewport bassi */
+    /* Viewport bassi */
     @media (max-height:640px){
       .wrap{ top:62svh; }
       .card{ max-height:64svh; padding:16px; gap:10px; }
@@ -101,20 +82,20 @@
 </head>
 <body>
   <main class="wrap">
-    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
-      Si salpa!
-    </button>
-    
+    <button id="btnReveal" class="btn--big" aria-controls="contentCard" aria-expanded="false">Si salpa!</button>
+
     <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Si salpa!</h2>
-        <div class="riddle" id="riddle">
+        <button id="btnHide" type="button" class="btn--ghost">Nascondi</button>
+      </div>
+
+      <div class="riddle" id="riddle">
 Barbuto signore di un epoca passata,<br>
 sognò nel caos un’armonia svelata,<br>
 orme vuote lasciò per i figli a venire,<br>
 trama silente che tutto può dire.
-          <p class="no-autolink">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
-        </div>
+        <p class="no-autolink">20 - 88 - 5 - 53 - 28 - 68 - 53</p>
       </div>
 
       <form id="solveForm" autocomplete="off">
@@ -163,10 +144,12 @@ trama silente che tutto può dire.
 
     input.addEventListener('keydown', e => { if(e.key === 'Enter') form.requestSubmit(); });
 
-    // Reveal/Hide card
+    // Reveal/Hide card (con Nascondi nell'header)
     (function(){
       const btnReveal = document.getElementById('btnReveal');
-      const card = document.getElementById('contentCard');
+      const btnHide   = document.getElementById('btnHide');
+      const card      = document.getElementById('contentCard');
+
       function reveal(){
         card.classList.remove('is-hidden');
         card.setAttribute('aria-hidden','false');
@@ -180,7 +163,9 @@ trama silente che tutto può dire.
         btnReveal.style.display = 'block';
         btnReveal.focus();
       }
+
       btnReveal.addEventListener('click', reveal);
+      btnHide.addEventListener('click', hide);
       document.addEventListener('keydown', e=>{
         if(e.key === 'Escape' && !card.classList.contains('is-hidden')) hide();
       });
