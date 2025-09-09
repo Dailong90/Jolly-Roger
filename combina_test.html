@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Enigma – Regole mappa mondo</title>
+  <title>Enigma – Combinazione</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
     :root { --bg-url: url('assets/cambusa_cap.png'); --ok:#10b981; --err:#ef4444; }
@@ -43,29 +43,17 @@
 
     .head__actions{ display:flex; gap:8px; }
 
+    .btn{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s; white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
     .btn.btn--ghost{
       background:#efe6c7; border-color:#b2926d;
       box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
     }
-
-    .field{ display:flex; gap:10px; }
-    #solveForm input[type="text"]{
-      flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
-      border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-    }
-    #solveForm input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
-    #solveForm button{
-      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px; font-weight:700; height:46px;
-      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia', serif;
-      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition:transform .15s, box-shadow .15s;
-    }
-    #solveForm button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
-
-    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
-    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
-    .ok{ color:var(--ok); } .err{ color:#ef4444; }
 
     .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
     .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
@@ -92,14 +80,6 @@
     .riddle.--no-scroll .riddle__indicator,
     .riddle.--at-bottom .riddle__fade,
     .riddle.--at-bottom .riddle__indicator { opacity:0; }
-
-    .btn{
-      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
-      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
-      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
-      transition:transform .15s, box-shadow .15s; white-space:nowrap;
-    }
-    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
 
     /* ===== Modale ===== */
     .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
@@ -132,14 +112,22 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 80px rgba(0,0,0,.25);
     }
 
-    .lock-dials{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
-    @media (max-width: 520px){ .lock-dials{ grid-template-columns:repeat(3,1fr); } }
+    /* *** SEMPRE UNA SOLA RIGA *** */
+    .lock-dials{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr)); /* 6 colonne fisse */
+      gap:12px;
+      width:100%;
+    }
 
     .lock-dial{
-      position:relative; height:clamp(124px, 24vw, 164px); border-radius:14px;
+      position:relative;
+      height:clamp(110px, 20vw, 150px); /* ⬅️ più compatto su smartphone */
+      border-radius:14px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 6px 14px rgba(0,0,0,.45);
       overflow:hidden; user-select:none; touch-action:none;
+      min-width:0;
     }
     .lock-dial::before, .lock-dial::after{
       content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
@@ -166,10 +154,10 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 30px rgba(0,0,0,.25);
     }
     .lock-cell{
-      height:clamp(42px, 8vw, 56px);
+      height:clamp(38px, 6.5vw, 52px); /* ⬅️ leggermente più bassa per stare comoda */
       display:grid; place-items:center;
       font-weight:800; font-variant-numeric: tabular-nums;
-      font-size: clamp(28px, 7vw, 36px);
+      font-size: clamp(24px, 6.2vw, 34px); /* ⬅️ font un filo più flessibile */
       color:#0f141a;
       text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 2px 2px rgba(0,0,0,.15);
       border-top: 1px dashed rgba(15,20,26,.22);
@@ -184,19 +172,8 @@
     .lock-status .ok{ color:var(--ok); font-weight:700; }
     .lock-status .no{ color:var(--err); font-weight:700; }
 
-    /* 🔽 Media altezze ridotte */
-    @media (max-height: 640px) {
-      .wrap { top: 62svh; }
-      .card { max-height: 64svh; padding:10px; }
-      .riddle__scroller { padding:12px 12px 28px; font-size:15px; }
-      .card__title { font-size:16px; }
-      #solveForm input[type="text"]{ height:42px; font-size:15px; padding:10px 12px; }
-      #solveForm button{ height:42px; }
-    }
-    @media (max-height: 520px) {
-      .wrap { top: 60svh; }
-      .card { max-height: 68svh; }
-    }
+    .lock-actions{ margin-top:12px; text-align:center; }
+    .lock-actions .btn{ min-width: 160px; }
   </style>
 </head>
 <body>
@@ -209,7 +186,7 @@
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
         <div class="head__actions">
-          <!-- Solo il testo cambia da Bacheca → Codice -->
+          <!-- Testo aggiornato: Bacheca → Codice -->
           <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Codice</button>
           <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
@@ -233,14 +210,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
 
-      <!-- Soluzione -->
-      <form id="solveForm" autocomplete="off">
-        <div class="field">
-          <input id="answer" name="answer" type="text" placeholder="Password…" required />
-          <button id="btnCheck" type="submit">Verifica</button>
-        </div>
-        <div id="feedback" class="feedback" aria-live="polite"></div>
-      </form>
+      <!-- Campo soluzione rimosso come richiesto -->
     </section>
   </main>
 
@@ -249,7 +219,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
 
-      <!-- Contenuto: lock -->
       <div class="lock-panel">
         <div id="lockCard" class="lock-card">
           <div class="lock-card__inner">
@@ -262,10 +231,12 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
               <div class="lock-dial" data-index="5"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
             </div>
             <div id="lockStatus" class="lock-status" aria-live="polite">Stato: <span class="no">Bloccato</span></div>
+            <div class="lock-actions">
+              <a id="btnNext" class="btn" href="luc58e.html" style="display:none;">Prosegui</a>
+            </div>
           </div>
         </div>
       </div>
-      <!-- /contenuto lock -->
     </div>
   </div>
 
@@ -291,7 +262,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-    /* ===== Overlay scroll ===== */
+    /* ===== Overlay scroll (card) ===== */
     const riddleBox = document.getElementById('riddleBox');
     const scroller  = document.getElementById('riddleScroll');
     function updateOverlay(){
@@ -303,35 +274,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     scroller.addEventListener('scroll', updateOverlay);
     window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
     window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
-
-    /* ===== Verifica soluzione (hash testuale) ===== */
-    const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
-    const SUCCESS_URL   = "luc58e.html";
-
-    async function sha256Hex(input) {
-      const enc = new TextEncoder().encode(input);
-      const digest = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
-    }
-    const form = document.getElementById('solveForm');
-    const input = document.getElementById('answer');
-    const feedback = document.getElementById('feedback');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      feedback.textContent = '';
-      const value = input.value;
-      if (value.length === 0) return;
-      const hash = await sha256Hex(value);
-      if (hash === HASH_EXPECTED) {
-        feedback.textContent = '✅ Corretto!';
-        feedback.className = 'feedback ok';
-        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
-      } else {
-        feedback.textContent = '❌ Errato. Riprova!';
-        feedback.className = 'feedback err';
-      }
-    });
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
 
     /* ===== Reveal/Hide card ===== */
     (function(){
@@ -381,7 +323,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       init();
     })();
 
-    /* ======== MODALE: logica del lucchetto (SHA-256, niente codice in chiaro) ======== */
+    /* ======== MODALE: lucchetto (SHA-256, nessun codice in chiaro) ======== */
     // Hash target (SHA-256 base64), spezzato e ricomposto:
     const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
     // Pepper e firma ricostruiti a runtime:
@@ -390,7 +332,8 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
 
     const lockCard   = document.getElementById('lockCard');
     const lockStatus = document.getElementById('lockStatus');
-    const dialEls    = []; // verrà popolato in init
+    const btnNext    = document.getElementById('btnNext');
+    const dialEls    = [];
     let lockInited   = false;
 
     // Stato rulli
@@ -399,7 +342,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
     let verifySeq = 0;
 
     function initLockOnce(){
-      if(lockInited){ // se già inizializzato, ricalcola misure e verifica
+      if(lockInited){
         measureCellHeight();
         positionAllToCurrent();
         queueVerify();
@@ -409,7 +352,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       const dials = [...container.querySelectorAll('.lock-dial')];
       dials.forEach(d => dialEls.push(d));
 
-      // build celle (0..9 ripetuti 3 volte)
       const baseDigits = Array.from({length:10}, (_,i)=>i);
       const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits];
       dialEls.forEach(dial => {
@@ -421,7 +363,6 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
       values = Array(6).fill(0);
       dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
 
-      // eventi
       dialEls.forEach((dial, idx) => {
         const reel = dial.querySelector('.lock-reel');
         let startY=0, startOffset=0, lastY=0, lastTime=0, velocity=0, dragging=false;
@@ -463,14 +404,20 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         });
       });
 
-      // prima verifica
       queueVerify();
       lockInited = true;
 
-      // ridimensionamento
       window.addEventListener('resize', () => {
         if(!modal.classList.contains('open')) return;
         measureCellHeight(); positionAllToCurrent(); queueVerify();
+      });
+
+      // 👉 Chiudi modale automaticamente al click su "Prosegui", poi naviga
+      btnNext.addEventListener('click', (e) => {
+        if(!btnNext.href) return;
+        e.preventDefault();
+        closeModal();
+        setTimeout(()=>{ window.location.href = btnNext.href; }, 220);
       });
     }
 
@@ -559,6 +506,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
         if(seq !== verifySeq) return;
         lockCard.classList.toggle('unlocked', ok);
         lockStatus.innerHTML = ok ? 'Stato: <span class="ok">Sbloccato</span>' : 'Stato: <span class="no">Bloccato</span>';
+        btnNext.style.display = ok ? 'inline-block' : 'none';
       });
     }
     async function verifyCurrentCode(){
