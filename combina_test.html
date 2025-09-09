@@ -3,98 +3,83 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Forziere a combinazione — stile antico (rulli affidabili)</title>
+  <title>Forziere a combinazione — rulli trascinabili (acciaio)</title>
   <style>
     :root{
-      /* Palette “pirata” */
-      --wood:#1b140c;          /* legno scuro */
-      --paper:#d7c6a5;         /* pergamena */
-      --ink:#2b2115;           /* inchiostro scuro */
       --ok:#10b981; --err:#ef4444;
-
-      /* Immagini (modifica i percorsi) */
-      --img-closed: url('assets/chest_closed.png');
-      --img-open:   url('assets/chest_open.png');
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{
-      height:100%; margin:0; background:#0d0b09; color:var(--ink);
+      height:100%; margin:0; background:#0d0f12; color:#e5e7eb;
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
       overscroll-behavior: none;
     }
     body{ display:grid; place-items:center; overflow:hidden; }
 
-    /* Sfondo legno nave + vignetta */
+    /* sfondo scuro con vignetta */
     body::before{
       content:""; position:fixed; inset:0; z-index:-2;
       background:
-        radial-gradient(ellipse at 50% 20%, rgba(0,0,0,.35), rgba(0,0,0,.75) 70%),
-        linear-gradient(90deg, #1d140d 0%, #140e09 100%);
-      background-size:cover;
-      filter:saturate(.8) contrast(1.05);
+        radial-gradient(ellipse at 50% 20%, rgba(0,0,0,.35), rgba(0,0,0,.8) 70%),
+        linear-gradient(90deg, #0c0f14, #0b0d11);
     }
 
     .wrap{ width:min(920px,100vw); padding:16px; }
 
+    /* contenitore generale (prima aveva immagini del forziere) */
     .chest{
       position:relative; width:100%; aspect-ratio:16/9;
-      background-image: var(--img-closed);
-      background-size:cover; background-position:center;
       border-radius:18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.55), inset 0 0 0 2px rgba(0,0,0,.35);
+      box-shadow: 0 20px 40px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.03);
       display:grid; place-items:center; padding:clamp(8px,2vw,22px);
-      transition: background-image .25s ease-in-out, transform .2s ease, filter .25s ease;
-    }
-    .chest.unlocked{ background-image: var(--img-open); animation: pop .35s ease-out; }
-    @keyframes pop{ from{ transform:scale(.985) } to{ transform:scale(1) } }
-
-    /* Patina scura sul forziere chiuso */
-    .chest:not(.unlocked)::after{
-      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0), rgba(0,0,0,.40) 62%, rgba(0,0,0,.65));
+      background:
+        radial-gradient(120% 100% at 50% 50%, rgba(255,255,255,.05), rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, #1a1f26, #101419);
+      transition: transform .2s ease, filter .25s ease;
     }
 
-    /* Placca ottone + pergamena */
+    /* pannello “card”: acciaio più scuro del tamburo */
     .panel{
       position:relative; z-index:1; width:min(720px,96%);
-      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(255,255,255,.02));
       border-radius:20px; padding:12px;
-      box-shadow: 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 2px rgba(0,0,0,.35), inset 0 0 60px rgba(0,0,0,.25);
-      outline: 1px solid rgba(255,255,255,.12);
-    }
-    .panel::before{
-      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
       background:
-        radial-gradient(circle at 20px 20px, #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
-        radial-gradient(circle at calc(100% - 20px) 20px, #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
-        radial-gradient(circle at 20px calc(100% - 20px), #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px),
-        radial-gradient(circle at calc(100% - 20px) calc(100% - 20px), #e6d2a0 0 6px, #7a6120 7px 9px, transparent 10px);
-    }
-    .panel__inner{
-      border-radius:16px;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.12)),
-        repeating-linear-gradient(0deg, #e7d8bb 0 3px, #e2d1ad 3px 6px);
-      padding:16px;
-      box-shadow: inset 0 0 80px rgba(0,0,0,.25), inset 0 0 0 1px rgba(0,0,0,.2);
+        linear-gradient(180deg, #4b525b, #2f353d), /* base acciaio scuro */
+        repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 1px 4px), /* spazzolato */
+        radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.07), rgba(255,255,255,0) 60%),
+        radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.25), rgba(0,0,0,0) 60%);
+      background-blend-mode: overlay, normal, screen, multiply;
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.5),
+        inset 0 0 0 1px rgba(255,255,255,.06),
+        inset 0 0 60px rgba(0,0,0,.25);
+      outline: 1px solid rgba(255,255,255,.08);
     }
 
-    /* TITOLO RIMOSSO
-    .panel__title{ ... } 
-    */
+    .panel__inner{
+      border-radius:16px;
+      padding:16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12));
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.06),
+        inset 0 0 80px rgba(0,0,0,.25);
+    }
 
     .dials{
       display:grid; grid-template-columns:repeat(6,1fr); gap:12px;
     }
 
-    /* Singolo rullo (cornice) */
+    /* rullo singolo con cornice acciaio */
     .dial{
       position:relative;
       height:clamp(124px, 24vw, 164px);
       border-radius:14px;
-      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(255,255,255,.06));
-      box-shadow: inset 0 0 0 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.4);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.07),
+        0 6px 14px rgba(0,0,0,.45);
       overflow:hidden;
       user-select:none;
       touch-action:none; /* drag verticale senza scroll */
@@ -104,7 +89,7 @@
     }
     .dial::before{
       background:
-        radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
+        radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.20), rgba(0,0,0,0) 60%);
       mix-blend-mode: screen; z-index: 1;
     }
@@ -114,14 +99,13 @@
       z-index: 3;
     }
 
-    /* >>> Tamburo numeri con EFFETTO ACCIAIO ANTICO <<< */
+    /* >>> tamburo numeri (acciaio chiaro) <<< */
     .reel{
       position:absolute; left:0; right:0; top:0; z-index:2;
       will-change: transform;
-      /* base acciaio + effetto “spazzolato” + luce morbida */
       background:
-        linear-gradient(180deg, #767b84, #4e545c), /* sfumatura grigio acciaio */
-        repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,0) 1px 3px), /* spazzolatura */
+        linear-gradient(180deg, #767b84, #4e545c), /* base acciaio (più chiaro dei bordi) */
+        repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,0) 1px 4px),
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
       background-blend-mode: overlay, normal, screen, multiply;
@@ -133,20 +117,19 @@
       display:grid; place-items:center;
       font-weight:800; font-variant-numeric: tabular-nums;
       font-size: clamp(28px, 7vw, 36px);
-      color:#1e2329; /* cifre scure su acciaio */
+      color:#0f141a;
       text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 2px 2px rgba(0,0,0,.15);
-      border-top: 1px dashed rgba(30,35,41,.2);
-      border-bottom: 1px dashed rgba(30,35,41,.2);
+      border-top: 1px dashed rgba(15,20,26,.22);
+      border-bottom: 1px dashed rgba(15,20,26,.22);
     }
 
-    /* Riga guida centrale */
     .center-line{
       position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%);
-      height:0; border-top:1px dashed rgba(20,25,30,.35); z-index:4;
+      height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4;
     }
 
     .status{
-      margin-top:12px; text-align:center; font-size:.95rem; color:#3a2b1b;
+      margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb;
     }
     .status .ok{ color:var(--ok); font-weight:700; }
     .status .no{ color:var(--err); font-weight:700; }
@@ -164,36 +147,24 @@
     <section class="chest" id="chest">
       <div class="panel" role="group" aria-label="Lucchetto a combinazione">
         <div class="panel__inner">
-
-          <!-- TITOLO RIMOSSO
-          <h2 class="panel__title">Inserisci la combinazione</h2>
-          -->
-
           <div class="dials" id="dials">
-            <!-- 6 rulli identici -->
             <div class="dial" data-index="0" aria-label="Cifra 1">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
             <div class="dial" data-index="1" aria-label="Cifra 2">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
             <div class="dial" data-index="2" aria-label="Cifra 3">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
             <div class="dial" data-index="3" aria-label="Cifra 4">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
             <div class="dial" data-index="4" aria-label="Cifra 5">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
             <div class="dial" data-index="5" aria-label="Cifra 6">
-              <div class="reel"></div>
-              <div class="center-line"></div>
+              <div class="reel"></div><div class="center-line"></div>
             </div>
           </div>
 
@@ -206,33 +177,24 @@
   </main>
 
   <script>
-    // -----------------------
-    // CONFIGURAZIONE
-    // -----------------------
-    const CORRECT_CODE = "602915"; // <-- imposta qui la combinazione
+    // --- CONFIG ---
+    const CORRECT_CODE = "602915";  // cambia qui la combinazione
     const vibrateSupported = 'vibrate' in navigator;
 
-    // -----------------------
-    // COSTRUZIONE RULLI
-    // -----------------------
+    // --- BUILD ---
     const chest = document.getElementById('chest');
     const statusEl = document.getElementById('status');
     const dialEls = [...document.querySelectorAll('.dial')];
 
-    // Stato: valori correnti (0..9) per ciascun rullo
     const values = Array(6).fill(0);
-
-    // Loop morbido: 0..9 ripetuti 3 volte → 30 celle
     const baseDigits = Array.from({length:10}, (_,i)=>i);
-    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits];
+    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits]; // 30 celle
 
-    // Inserisco le celle
     dialEls.forEach(dial => {
       const reel = dial.querySelector('.reel');
       reel.innerHTML = loopDigits.map(d => `<div class="cell">${d}</div>`).join('');
     });
 
-    // Misuro l'altezza di una cella per calcolare gli scatti
     let CELL_H = 50;
     function measureCellHeight(){
       const anyCell = document.querySelector('.cell');
@@ -241,11 +203,10 @@
     measureCellHeight();
     addEventListener('resize', measureCellHeight, {passive:true});
 
-    // Posiziono ogni rullo sul valore nella fascia centrale (indici 10..19)
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.reel');
-      const targetIndex = 10 + value;
+      const targetIndex = 10 + value; // fascia centrale (10..19)
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
       reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
@@ -254,15 +215,12 @@
     dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
     updateStatus(false);
 
-    // -----------------------
-    // INTERAZIONE (drag, wheel, tastiera)
-    // -----------------------
+    // --- INTERACTION ---
     dialEls.forEach((dial, idx) => {
       const reel = dial.querySelector('.reel');
 
       let startY = 0, startOffset = 0, lastY = 0, lastTime = 0, velocity = 0, dragging = false;
 
-      // Drag (touch/mouse)
       dial.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         dial.setPointerCapture(e.pointerId);
@@ -280,16 +238,15 @@
         const next = startOffset + dy;
         setReelOffset(idx, next);
 
-        // stima velocità per inerzia leggera
         const now = performance.now();
         const dt = now - lastTime;
-        if(dt > 0) velocity = (y - lastY) / dt; // px/ms
+        if(dt > 0) velocity = (y - lastY) / dt;
         lastY = y; lastTime = now;
       });
       dial.addEventListener('pointerup', () => {
         if(!dragging) return;
         dragging = false;
-        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2; // ~inerzia leggera
+        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2;
         snapToNearest(idx, Number(reel.dataset.offset || 0) + inertial);
       });
       dial.addEventListener('pointercancel', () => {
@@ -298,13 +255,11 @@
         snapToNearest(idx, Number(reel.dataset.offset || 0));
       });
 
-      // Scroll (desktop)
       dial.addEventListener('wheel', (e) => {
         e.preventDefault();
         nudge(idx, Math.sign(e.deltaY));
       }, {passive:false});
 
-      // Tastiera
       dial.tabIndex = 0;
       dial.addEventListener('keydown', (e) => {
         if(e.key === 'ArrowUp'){ e.preventDefault(); nudge(idx, -1); }
@@ -314,11 +269,9 @@
       });
     });
 
-    // -----------------------
-    // FUNZIONI DI SUPPORTO
-    // -----------------------
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-    function mod(n, m){ return ((n % m) + m) % m; }
+    // --- HELPERS ---
+    function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
+    function mod(n,m){ return ((n % m) + m) % m; }
 
     function setReelOffset(dialIndex, offset){
       const dial = dialEls[dialIndex];
@@ -345,7 +298,7 @@
       });
 
       values[dialIndex] = value;
-      if (vibrateSupported) navigator.vibrate(10); // vibrazione leggera opzionale
+      if ('vibrate' in navigator) navigator.vibrate(8); // leggerissima vibrazione (opzionale)
       updateStatus(true);
     }
 
@@ -373,7 +326,7 @@
       }
 
       values[dialIndex] = value;
-      if (vibrateSupported) navigator.vibrate(10);
+      if ('vibrate' in navigator) navigator.vibrate(8);
       updateStatus(true);
     }
 
