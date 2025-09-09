@@ -3,116 +3,169 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Forziere a combinazione — rulli trascinabili (acciaio, SHA)</title>
+  <title>Enigma – Regole mappa mondo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
-    :root{ --ok:#10b981; --err:#ef4444; }
+    :root { --bg-url: url('assets/cambusa_cap.png'); --ok:#10b981; --err:#ef4444; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html,body{
-      height:100%; margin:0; background:#0d0f12; color:#e5e7eb;
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      overscroll-behavior: none;
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+    body{
+      font-family:'Georgia','Times New Roman',serif; color:#2e2e2e;
+      background:#000; min-height:100svh; position:relative;
     }
-    body{ display:grid; place-items:center; overflow:hidden; }
+    body::before{ content:""; position:fixed; inset:0; background:var(--bg-url) center/cover no-repeat; z-index:-2; }
+    body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:-1; }
 
-    /* sfondo scuro con vignetta */
-    body::before{
-      content:""; position:fixed; inset:0; z-index:-2;
-      background:
-        radial-gradient(ellipse at 50% 20%, rgba(0,0,0,.35), rgba(0,0,0,.8) 70%),
-        linear-gradient(90deg, #0c0f14, #0b0d11);
+    .wrap{
+      position:fixed; left:50%; top:65svh; transform:translate(-50%,-50%);
+      width:min(560px,92vw); padding:16px;
     }
 
-    .wrap{ width:min(920px,100vw); padding:16px; }
-
-    /* contenitore generale */
-    .chest{
-      position:relative; width:100%; aspect-ratio:16/9;
-      border-radius:18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.03);
-      display:grid; place-items:center; padding:clamp(8px,2vw,22px);
-      background:
-        radial-gradient(120% 100% at 50% 50%, rgba(255,255,255,.05), rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, #1a1f26, #101419);
-      transition: transform .2s ease, filter .25s ease;
+    .card{
+      display:flex; flex-direction:column; gap:10px;
+      background:#fdf6e3; border:2px solid #d6c29e; border-radius:12px; padding:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 40px rgba(139,69,19,.25);
+      background-image:
+        radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 70%);
+      max-height:58svh; overflow:hidden;
+      transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
     }
-    .chest.unlocked{
-      box-shadow:
-        0 24px 50px rgba(0,0,0,.6),
-        0 0 0 2px rgba(16,185,129,.28),
-        inset 0 0 0 2px rgba(255,255,255,.05);
-      filter: drop-shadow(0 0 24px rgba(16,185,129,.3));
+    .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
+    .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
+
+    /* Bottone grande */
+    .btn--big{
+      position: fixed; left:16px; bottom:16px; width:auto; margin:0;
+      text-align:center; font-size:18px; padding:12px 16px; z-index:1000;
     }
 
-    /* card acciaio più scuro dei rulli */
-    .panel{
-      position:relative; z-index:1; width:min(720px,96%);
-      border-radius:20px; padding:12px;
-      background:
-        linear-gradient(180deg, #4b525b, #2f353d), /* base acciaio scuro */
+    .head__actions{ display:flex; gap:8px; }
+
+    .btn.btn--ghost{
+      background:#efe6c7; border-color:#b2926d;
+      box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 2px 3px rgba(255,255,255,.35);
+    }
+
+    .field{ display:flex; gap:10px; }
+    #solveForm input[type="text"]{
+      flex:1; background:#fff8e1; border:1px solid #b2926d; color:#2e2e2e;
+      border-radius:8px; padding:12px 14px; outline:none; font-size:16px; height:46px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+    }
+    #solveForm input[type="text"]:focus{ border-color:#c9a85b; box-shadow:0 0 6px rgba(201,168,91,.6); }
+    #solveForm button{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:0 16px; font-weight:700; height:46px;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia', serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s;
+    }
+    #solveForm button:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+    .tip{ font-size:12px; color:#6b5b4b; margin:6px 2px 0; font-style:italic; }
+    .feedback{ margin-top:10px; font-weight:700; min-height:1.4em; text-align:center; }
+    .ok{ color:var(--ok); } .err{ color:#ef4444; }
+
+    .card__head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 4px 0; }
+    .card__title{ margin:0; font-size:18px; line-height:1.2; color:#3b2c20; }
+
+    .riddle{
+      position:relative; border:1px dashed #b2926d; border-radius:8px; background:rgba(255,255,255,.65);
+      display:grid; flex:1; min-height:0;
+    }
+    .riddle__scroller{
+      grid-area:1 / 1; overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px 32px; line-height:1.5; font-size:16px; color:#3b2c20; white-space:pre-wrap; min-height:0;
+    }
+    .riddle__fade{
+      grid-area:1 / 1; align-self:end; height:84px;
+      background:linear-gradient(to top, rgba(253,246,227,0.96), rgba(253,246,227,0));
+      border-radius:0 0 8px 8px; pointer-events:none; z-index:2; opacity:1; transition:opacity .2s ease;
+    }
+    .riddle__indicator{
+      grid-area:1 / 1; justify-self:center; align-self:end; transform:translateY(-10px);
+      font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none; animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
+    }
+    @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
+    .riddle.--no-scroll .riddle__fade,
+    .riddle.--no-scroll .riddle__indicator,
+    .riddle.--at-bottom .riddle__fade,
+    .riddle.--at-bottom .riddle__indicator { opacity:0; }
+
+    .btn{
+      cursor:pointer; border:1px solid #8b6b1b; border-radius:8px; padding:10px 14px; font-weight:700;
+      background:linear-gradient(180deg,#f5d76e,#d4a017); color:#3b2c20; font-family:'Georgia',serif;
+      box-shadow:0 3px 6px rgba(0,0,0,.4), inset 0 2px 4px rgba(255,255,255,.4);
+      transition:transform .15s, box-shadow .15s; white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 5px 8px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.5); }
+
+    /* ===== Modale ===== */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
+    .modal.open{ display:flex; }
+    .modal__inner{ position:relative; max-width:92vw; max-height:92vh; width:1200px; background:#111; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.6); }
+    .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
+    .modal__close:hover{ background:#2f2f2f; }
+
+    /* ====== CONTENUTO MODALE: lucchetto in acciaio ====== */
+    .lock-panel{
+      position:relative; width:100%; padding:16px; background:#0e1216;
+      display:grid; place-items:center; min-height:60vh;
+    }
+    .lock-card{
+      width:min(760px,92%); border-radius:20px; padding:12px; background:
+        linear-gradient(180deg, #4b525b, #2f353d),
         repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 1px 4px),
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.07), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.25), rgba(0,0,0,0) 60%);
       background-blend-mode: overlay, normal, screen, multiply;
-      box-shadow:
-        0 18px 40px rgba(0,0,0,.5),
-        inset 0 0 0 1px rgba(255,255,255,.06),
-        inset 0 0 60px rgba(0,0,0,.25);
+      box-shadow: 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
       outline: 1px solid rgba(255,255,255,.08);
     }
-    .panel__inner{
-      border-radius:16px;
-      padding:16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12));
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.06),
-        inset 0 0 80px rgba(0,0,0,.25);
+    .lock-card.unlocked{
+      box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(16,185,129,.28), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
+      filter: drop-shadow(0 0 24px rgba(16,185,129,.25));
+    }
+    .lock-card__inner{
+      border-radius:16px; padding:16px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 80px rgba(0,0,0,.25);
     }
 
-    .dials{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+    .lock-dials{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+    @media (max-width: 520px){ .lock-dials{ grid-template-columns:repeat(3,1fr); } }
 
-    /* rullo singolo con cornice acciaio */
-    .dial{
-      position:relative;
-      height:clamp(124px, 24vw, 164px);
-      border-radius:14px;
+    .lock-dial{
+      position:relative; height:clamp(124px, 24vw, 164px); border-radius:14px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.07),
-        0 6px 14px rgba(0,0,0,.45);
-      overflow:hidden;
-      user-select:none;
-      touch-action:none; /* drag verticale senza scroll */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 6px 14px rgba(0,0,0,.45);
+      overflow:hidden; user-select:none; touch-action:none;
     }
-    .dial::before, .dial::after{
+    .lock-dial::before, .lock-dial::after{
       content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
     }
-    .dial::before{
+    .lock-dial::before{
       background:
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.20), rgba(0,0,0,0) 60%);
       mix-blend-mode: screen; z-index: 1;
     }
-    .dial::after{
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35));
+    .lock-dial::after{
+      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35));
       z-index: 3;
     }
 
-    /* >>> tamburo numeri (acciaio chiaro) <<< */
-    .reel{
-      position:absolute; left:0; right:0; top:0; z-index:2;
-      will-change: transform;
+    .lock-reel{
+      position:absolute; left:0; right:0; top:0; z-index:2; will-change: transform;
       background:
-        linear-gradient(180deg, #767b84, #4e545c), /* base acciaio (più chiaro dei bordi) */
+        linear-gradient(180deg, #767b84, #4e545c),
         repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,0) 1px 4px),
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
       background-blend-mode: overlay, normal, screen, multiply;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 30px rgba(0,0,0,.25);
     }
-
-    .cell{
+    .lock-cell{
       height:clamp(42px, 8vw, 56px);
       display:grid; place-items:center;
       font-weight:800; font-variant-numeric: tabular-nums;
@@ -122,159 +175,333 @@
       border-top: 1px dashed rgba(15,20,26,.22);
       border-bottom: 1px dashed rgba(15,20,26,.22);
     }
-
-    .center-line{
+    .lock-centerline{
       position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%);
       height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4;
     }
 
-    .status{ margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb; }
-    .status .ok{ color:var(--ok); font-weight:700; }
-    .status .no{ color:var(--err); font-weight:700; }
+    .lock-status{ margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb; }
+    .lock-status .ok{ color:var(--ok); font-weight:700; }
+    .lock-status .no{ color:var(--err); font-weight:700; }
 
-    @media (max-width: 420px){ .dials{ grid-template-columns: repeat(3, 1fr); } }
-    @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+    /* 🔽 Media altezze ridotte */
+    @media (max-height: 640px) {
+      .wrap { top: 62svh; }
+      .card { max-height: 64svh; padding:10px; }
+      .riddle__scroller { padding:12px 12px 28px; font-size:15px; }
+      .card__title { font-size:16px; }
+      #solveForm input[type="text"]{ height:42px; font-size:15px; padding:10px 12px; }
+      #solveForm button{ height:42px; }
+    }
+    @media (max-height: 520px) {
+      .wrap { top: 60svh; }
+      .card { max-height: 68svh; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="chest" id="chest">
-      <div class="panel" role="group" aria-label="Lucchetto a combinazione">
-        <div class="panel__inner">
-          <div class="dials" id="dials">
-            <div class="dial" data-index="0" aria-label="Cifra 1"><div class="reel"></div><div class="center-line"></div></div>
-            <div class="dial" data-index="1" aria-label="Cifra 2"><div class="reel"></div><div class="center-line"></div></div>
-            <div class="dial" data-index="2" aria-label="Cifra 3"><div class="reel"></div><div class="center-line"></div></div>
-            <div class="dial" data-index="3" aria-label="Cifra 4"><div class="reel"></div><div class="center-line"></div></div>
-            <div class="dial" data-index="4" aria-label="Cifra 5"><div class="reel"></div><div class="center-line"></div></div>
-            <div class="dial" data-index="5" aria-label="Cifra 6"><div class="reel"></div><div class="center-line"></div></div>
-          </div>
+    <button id="btnReveal" class="btn btn--big" aria-controls="contentCard" aria-expanded="false">
+      Dannato vento!
+    </button>
 
-          <div class="status" id="status" aria-live="polite">
-            Stato: <span class="no">Bloccato</span>
-          </div>
+    <section class="card is-hidden" id="contentCard" aria-hidden="true" aria-labelledby="titolo-regole">
+      <div class="card__head">
+        <h2 id="titolo-regole" class="card__title">Dannato vento!</h2>
+        <div class="head__actions">
+          <!-- Solo il testo cambia da Bacheca → Codice -->
+          <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Codice</button>
+          <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
       </div>
+
+      <div class="riddle" id="riddleBox">
+        <div class="riddle__scroller" id="riddleScroll">
+Cominciamo! Allora dobbiamo inserire la password... aspetta, non la ricordo! Tranquillo, ho un modo tutto mio per trovarla.
+Nella mia cambusa ho una bacheca sul muro dove appendo le date in cui ho fatto i miei viaggi.
+Oh no, il vento ha staccato tutti i fogli! 
+Rimetti i fogli al loro posto secondo queste indicazioni:
+
+-Teheran l'ho visitata dopo il 1991.
+-Ho visto Tokyo 4 anni dopo Katmandu.
+-A Dakar sono andato negli anni ’80.
+-Tra Teheran e Tokyo, c'è solo una tappa in mezzo.
+-L’Avana l'ho visitata dopo Teheran, ma non è negli anni 2000.
+-Dopo Tokyo ho visto Seattle.
+        </div>
+        <div class="riddle__fade" aria-hidden="true"></div>
+        <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
+      </div>
+
+      <!-- Soluzione -->
+      <form id="solveForm" autocomplete="off">
+        <div class="field">
+          <input id="answer" name="answer" type="text" placeholder="Password…" required />
+          <button id="btnCheck" type="submit">Verifica</button>
+        </div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+      </form>
     </section>
   </main>
 
+  <!-- Modale con il LUCCCHETTO -->
+  <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Inserisci il codice" aria-hidden="true">
+    <div class="modal__inner">
+      <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
+
+      <!-- Contenuto: lock -->
+      <div class="lock-panel">
+        <div id="lockCard" class="lock-card">
+          <div class="lock-card__inner">
+            <div id="lockDials" class="lock-dials">
+              <div class="lock-dial" data-index="0"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+              <div class="lock-dial" data-index="1"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+              <div class="lock-dial" data-index="2"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+              <div class="lock-dial" data-index="3"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+              <div class="lock-dial" data-index="4"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+              <div class="lock-dial" data-index="5"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
+            </div>
+            <div id="lockStatus" class="lock-status" aria-live="polite">Stato: <span class="no">Bloccato</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- /contenuto lock -->
+    </div>
+  </div>
+
   <script>
-    // ===============================
-    //  Config "segreta" (derivata)
-    // ===============================
-    // Hash target (SHA-256 base64) spezzato:
-    const H = (() => [
-      'YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='
-    ].join(''))();
+    /* ===== Modale ===== */
+    const btnMap   = document.getElementById('btnMap');
+    const modal    = document.getElementById('modalMap');
+    const btnClose = document.getElementById('btnClose');
 
-    // Pepper e "sig" ricostruiti a runtime (non in chiaro in un'unica costante):
-    const P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // "GALLEON-1492-ROGER"
-    const S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // "BLACKPEARL"
-
-    // ===============================
-    //  UI: rulli trascinabili
-    // ===============================
-    const chest   = document.getElementById('chest');
-    const statusEl= document.getElementById('status');
-    const dialEls = [...document.querySelectorAll('.dial')];
-
-    const values = Array(6).fill(0);
-    const baseDigits = Array.from({length:10}, (_,i)=>i);
-    const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits]; // 30 celle
-
-    dialEls.forEach(dial => {
-      const reel = dial.querySelector('.reel');
-      reel.innerHTML = loopDigits.map(d => `<div class="cell">${d}</div>`).join('');
-    });
-
-    let CELL_H = 50;
-    function measureCellHeight(){
-      const anyCell = document.querySelector('.cell');
-      if(anyCell) CELL_H = anyCell.getBoundingClientRect().height;
+    function openModal(){
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      btnClose && btnClose.focus();
+      initLockOnce(); // inizializza i rulli quando la modale è visibile
     }
-    measureCellHeight();
-    addEventListener('resize', measureCellHeight, {passive:true});
+    function closeModal(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+      btnMap && btnMap.focus();
+    }
+    btnMap.addEventListener('click', openModal);
+    btnClose?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    /* ===== Overlay scroll ===== */
+    const riddleBox = document.getElementById('riddleBox');
+    const scroller  = document.getElementById('riddleScroll');
+    function updateOverlay(){
+      const canScroll = scroller.scrollHeight > scroller.clientHeight + 1;
+      riddleBox.classList.toggle('--no-scroll', !canScroll);
+      const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+      riddleBox.classList.toggle('--at-bottom', atBottom);
+    }
+    scroller.addEventListener('scroll', updateOverlay);
+    window.addEventListener('load', () => { requestAnimationFrame(updateOverlay); });
+    window.addEventListener('resize', () => { requestAnimationFrame(updateOverlay); });
+
+    /* ===== Verifica soluzione (hash testuale) ===== */
+    const HASH_EXPECTED = "c7cf3eceaa976b81bbdcccaf70937a47a8f3906971534c2579a09d41724344c5";
+    const SUCCESS_URL   = "luc58e.html";
+
+    async function sha256Hex(input) {
+      const enc = new TextEncoder().encode(input);
+      const digest = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    const form = document.getElementById('solveForm');
+    const input = document.getElementById('answer');
+    const feedback = document.getElementById('feedback');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      feedback.textContent = '';
+      const value = input.value;
+      if (value.length === 0) return;
+      const hash = await sha256Hex(value);
+      if (hash === HASH_EXPECTED) {
+        feedback.textContent = '✅ Corretto!';
+        feedback.className = 'feedback ok';
+        if (SUCCESS_URL) setTimeout(()=>{ window.location.href = SUCCESS_URL; }, 600);
+      } else {
+        feedback.textContent = '❌ Errato. Riprova!';
+        feedback.className = 'feedback err';
+      }
+    });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') form.requestSubmit(); });
+
+    /* ===== Reveal/Hide card ===== */
+    (function(){
+      const REVEAL_KEY = 'card_revealed_v1';
+      const btnReveal = document.getElementById('btnReveal');
+      const card = document.getElementById('contentCard');
+      const btnHide = document.getElementById('btnHide');
+      const title = document.getElementById('titolo-regole');
+
+      function reveal(){
+        card.classList.remove('is-hidden');
+        card.setAttribute('aria-hidden','false');
+        btnReveal.setAttribute('aria-expanded','true');
+        btnReveal.style.display = 'none';
+        btnHide.style.display = '';
+        try{ localStorage.setItem(REVEAL_KEY, '1'); }catch{}
+        if(title){ title.setAttribute('tabindex','-1'); title.focus(); }
+      }
+      function hide(){
+        card.classList.add('is-hidden');
+        card.setAttribute('aria-hidden','true');
+        btnReveal.setAttribute('aria-expanded','false');
+        btnReveal.style.display = 'block';
+        btnHide.style.display = 'none';
+        try{ localStorage.removeItem(REVEAL_KEY); }catch{}
+        btnReveal.focus();
+      }
+      function init(){
+        const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
+        if(wasRevealed){
+          card.classList.remove('is-hidden');
+          card.setAttribute('aria-hidden','false');
+          btnReveal.style.display = 'none';
+          btnReveal.setAttribute('aria-expanded','true');
+          btnHide.style.display = '';
+        }else{
+          card.classList.add('is-hidden');
+          card.setAttribute('aria-hidden','true');
+          btnReveal.style.display = 'block';
+          btnReveal.setAttribute('aria-expanded','false');
+          btnHide.style.display = 'none';
+        }
+        btnReveal.addEventListener('click', reveal);
+        btnReveal.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); } });
+        btnHide.addEventListener('click', hide);
+      }
+      init();
+    })();
+
+    /* ======== MODALE: logica del lucchetto (SHA-256, niente codice in chiaro) ======== */
+    // Hash target (SHA-256 base64), spezzato e ricomposto:
+    const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
+    // Pepper e firma ricostruiti a runtime:
+    const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // GALLEON-1492-ROGER
+    const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // BLACKPEARL
+
+    const lockCard   = document.getElementById('lockCard');
+    const lockStatus = document.getElementById('lockStatus');
+    const dialEls    = []; // verrà popolato in init
+    let lockInited   = false;
+
+    // Stato rulli
+    let values = Array(6).fill(0);
+    let CELL_H = 50;
+    let verifySeq = 0;
+
+    function initLockOnce(){
+      if(lockInited){ // se già inizializzato, ricalcola misure e verifica
+        measureCellHeight();
+        positionAllToCurrent();
+        queueVerify();
+        return;
+      }
+      const container = document.getElementById('lockDials');
+      const dials = [...container.querySelectorAll('.lock-dial')];
+      dials.forEach(d => dialEls.push(d));
+
+      // build celle (0..9 ripetuti 3 volte)
+      const baseDigits = Array.from({length:10}, (_,i)=>i);
+      const loopDigits = [...baseDigits, ...baseDigits, ...baseDigits];
+      dialEls.forEach(dial => {
+        const reel = dial.querySelector('.lock-reel');
+        reel.innerHTML = loopDigits.map(d => `<div class="lock-cell">${d}</div>`).join('');
+      });
+
+      measureCellHeight();
+      values = Array(6).fill(0);
+      dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
+
+      // eventi
+      dialEls.forEach((dial, idx) => {
+        const reel = dial.querySelector('.lock-reel');
+        let startY=0, startOffset=0, lastY=0, lastTime=0, velocity=0, dragging=false;
+
+        dial.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          dial.setPointerCapture(e.pointerId);
+          dragging = true;
+          startY = e.clientY;
+          startOffset = Number(reel.dataset.offset || 0);
+          lastY = startY; lastTime = performance.now(); velocity = 0;
+        });
+        dial.addEventListener('pointermove', (e) => {
+          if(!dragging) return;
+          const y = e.clientY;
+          const dy = y - startY;
+          const next = startOffset + dy;
+          setReelOffset(idx, next);
+          const now = performance.now(), dt = now - lastTime;
+          if(dt>0) velocity = (y - lastY) / dt;
+          lastY = y; lastTime = now;
+        });
+        dial.addEventListener('pointerup', () => {
+          if(!dragging) return; dragging = false;
+          const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2;
+          snapToNearest(idx, Number(reel.dataset.offset || 0) + inertial);
+        });
+        dial.addEventListener('pointercancel', () => {
+          if(!dragging) return; dragging = false;
+          snapToNearest(idx, Number(reel.dataset.offset || 0));
+        });
+        dial.addEventListener('wheel', (e) => { e.preventDefault(); nudge(idx, Math.sign(e.deltaY)); }, {passive:false});
+        dial.tabIndex = 0;
+        dial.addEventListener('keydown', (e) => {
+          if(e.key==='ArrowUp'){ e.preventDefault(); nudge(idx,-1); }
+          if(e.key==='ArrowDown'){ e.preventDefault(); nudge(idx,+1); }
+          if(e.key==='Home'){ e.preventDefault(); setValue(idx,0,true); }
+          if(e.key==='End'){  e.preventDefault(); setValue(idx,9,true); }
+        });
+      });
+
+      // prima verifica
+      queueVerify();
+      lockInited = true;
+
+      // ridimensionamento
+      window.addEventListener('resize', () => {
+        if(!modal.classList.contains('open')) return;
+        measureCellHeight(); positionAllToCurrent(); queueVerify();
+      });
+    }
+
+    function measureCellHeight(){
+      const any = document.querySelector('.lock-cell');
+      if(any) CELL_H = any.getBoundingClientRect().height || 50;
+    }
+    function positionAllToCurrent(){ dialEls.forEach((_, i)=>positionReelAtValue(i, values[i] || 0)); }
 
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
-      const reel = dial.querySelector('.reel');
-      const targetIndex = 10 + value; // fascia centrale (10..19)
+      const reel = dial.querySelector('.lock-reel');
+      const targetIndex = 10 + value; // fascia centrale
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
       reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
       values[dialIndex] = value;
     }
-    dialEls.forEach((_, idx) => positionReelAtValue(idx, 0));
-
-    // Interazione
-    dialEls.forEach((dial, idx) => {
-      const reel = dial.querySelector('.reel');
-
-      let startY = 0, startOffset = 0, lastY = 0, lastTime = 0, velocity = 0, dragging = false;
-
-      dial.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        dial.setPointerCapture(e.pointerId);
-        dragging = true;
-        startY = e.clientY;
-        startOffset = Number(reel.dataset.offset || 0);
-        lastY = startY;
-        lastTime = performance.now();
-        velocity = 0;
-      });
-      dial.addEventListener('pointermove', (e) => {
-        if(!dragging) return;
-        const y = e.clientY;
-        const dy = y - startY;
-        const next = startOffset + dy;
-        setReelOffset(idx, next);
-
-        const now = performance.now();
-        const dt = now - lastTime;
-        if(dt > 0) velocity = (y - lastY) / dt;
-        lastY = y; lastTime = now;
-      });
-      dial.addEventListener('pointerup', () => {
-        if(!dragging) return;
-        dragging = false;
-        const inertial = clamp(velocity, -0.9, 0.9) * CELL_H * 2;
-        snapToNearest(idx, Number(reel.dataset.offset || 0) + inertial);
-      });
-      dial.addEventListener('pointercancel', () => {
-        if(!dragging) return;
-        dragging = false;
-        snapToNearest(idx, Number(reel.dataset.offset || 0));
-      });
-
-      dial.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        nudge(idx, Math.sign(e.deltaY));
-      }, {passive:false});
-
-      dial.tabIndex = 0;
-      dial.addEventListener('keydown', (e) => {
-        if(e.key === 'ArrowUp'){ e.preventDefault(); nudge(idx, -1); }
-        if(e.key === 'ArrowDown'){ e.preventDefault(); nudge(idx, +1); }
-        if(e.key === 'Home'){ e.preventDefault(); setValue(idx, 0, true); }
-        if(e.key === 'End'){ e.preventDefault(); setValue(idx, 9, true); }
-      });
-    });
-
     function setReelOffset(dialIndex, offset){
       const dial = dialEls[dialIndex];
-      const reel = dial.querySelector('.reel');
+      const reel = dial.querySelector('.lock-reel');
       reel.style.transform = `translateY(${offset}px)`;
       reel.dataset.offset = offset;
     }
-
     function nudge(dialIndex, delta){
       const nextVal = mod(values[dialIndex] + delta, 10);
       setValue(dialIndex, nextVal, true);
     }
-
     function setValue(dialIndex, value, animate=true){
       const dial = dialEls[dialIndex];
-      const reel = dial.querySelector('.reel');
+      const reel = dial.querySelector('.lock-reel');
       const dialH = dial.getBoundingClientRect().height;
       const centerY = dialH/2 - CELL_H/2;
       const targetIndex = 10 + value;
@@ -289,14 +516,12 @@
       } else {
         setReelOffset(dialIndex, targetOffset);
       }
-
       values[dialIndex] = value;
-      queueVerify(); // verifica asincrona
+      queueVerify();
     }
-
     function snapToNearest(dialIndex, offset){
       const dial = dialEls[dialIndex];
-      const reel = dial.querySelector('.reel');
+      const reel = dial.querySelector('.lock-reel');
       const dialH = dial.getBoundingClientRect().height;
       const centerY = dialH/2 - CELL_H/2;
       const rawIndex = -(offset - centerY) / CELL_H;
@@ -310,61 +535,42 @@
         setReelOffset(dialIndex, targetOffset);
         setTimeout(() => { reel.style.transition = ''; }, 140);
       });
-
       values[dialIndex] = value;
-      queueVerify(); // verifica asincrona
+      queueVerify();
     }
 
-    // ===============================
-    //  Verifica SHA-256 lato client
-    // ===============================
-    let verifySeq = 0; // per considerare solo l'ultima verifica in corso
-
-    function queueVerify(){
-      const seq = ++verifySeq;
-      verifyCurrentCode().then(ok => {
-        if(seq !== verifySeq) return; // scarta verifiche vecchie
-        chest.classList.toggle('unlocked', ok);
-        statusEl.innerHTML = ok
-          ? 'Stato: <span class="ok">Sbloccato</span>'
-          : 'Stato: <span class="no">Bloccato</span>';
-      });
-    }
-
-    async function verifyCurrentCode(){
-      // Ricostruisco messaggio: pepper | codice | sig
-      const code = values.join('');
-      const msg  = P + '|' + code + '|' + S;
-      const digestB64 = await sha256Base64(msg);
-      return safeEqual(digestB64, H);
-    }
-
+    // Verifica SHA-256 lato client (base64)
     async function sha256Base64(str){
       const enc = new TextEncoder();
       const data = enc.encode(str);
       const buf  = await crypto.subtle.digest('SHA-256', data);
-      // ArrayBuffer -> base64
       const bytes = new Uint8Array(buf);
-      let binary = '';
-      for (let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+      let binary = ''; for (let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
       return btoa(binary);
     }
-
     function safeEqual(a,b){
       if (a.length !== b.length) return false;
-      let r = 0;
-      for (let i=0; i<a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+      let r = 0; for (let i=0; i<a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
       return r === 0;
     }
+    function queueVerify(){
+      const seq = ++verifySeq;
+      verifyCurrentCode().then(ok => {
+        if(seq !== verifySeq) return;
+        lockCard.classList.toggle('unlocked', ok);
+        lockStatus.innerHTML = ok ? 'Stato: <span class="ok">Sbloccato</span>' : 'Stato: <span class="no">Bloccato</span>';
+      });
+    }
+    async function verifyCurrentCode(){
+      const code = values.join('');              // es. "602915"
+      const msg  = LOCK_P + '|' + code + '|' + LOCK_S;
+      const digestB64 = await sha256Base64(msg);
+      return safeEqual(digestB64, LOCK_H);
+    }
 
-    // ===============================
-    //  Util
-    // ===============================
+    // Utils
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
-
-    // prima verifica su stato iniziale
-    queueVerify();
   </script>
 </body>
 </html>
