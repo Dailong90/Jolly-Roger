@@ -35,6 +35,7 @@
     .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
     .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
+    /* Bottone grande */
     .btn--big{
       position: fixed; left:16px; bottom:16px; width:auto; margin:0;
       text-align:center; font-size:18px; padding:12px 16px; z-index:1000;
@@ -87,7 +88,7 @@
     .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
     .modal__close:hover{ background:#2f2f2f; }
 
-    /* ====== CONTENUTO MODALE ====== */
+    /* ====== CONTENUTO MODALE: lucchetto in acciaio ====== */
     .lock-panel{
       position:relative; width:100%; padding:16px; background:#0e1216;
       display:grid; place-items:center; min-height:60vh;
@@ -111,21 +112,37 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 80px rgba(0,0,0,.25);
     }
 
-    .lock-dials{ display:grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap:12px; width:100%; }
+    /* *** SEMPRE UNA SOLA RIGA *** */
+    .lock-dials{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr)); /* 6 colonne fisse */
+      gap:12px;
+      width:100%;
+    }
+
     .lock-dial{
-      position:relative; height:clamp(110px, 20vw, 150px); border-radius:14px;
+      position:relative;
+      height:clamp(110px, 20vw, 150px); /* ⬅️ più compatto su smartphone */
+      border-radius:14px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 6px 14px rgba(0,0,0,.45);
-      overflow:hidden; user-select:none; touch-action:none; min-width:0;
+      overflow:hidden; user-select:none; touch-action:none;
+      min-width:0;
     }
-    .lock-dial::before, .lock-dial::after{ content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; }
+    .lock-dial::before, .lock-dial::after{
+      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    }
     .lock-dial::before{
       background:
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.20), rgba(0,0,0,0) 60%);
       mix-blend-mode: screen; z-index: 1;
     }
-    .lock-dial::after{ background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35)); z-index: 3; }
+    .lock-dial::after{
+      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35));
+      z-index: 3;
+    }
+
     .lock-reel{
       position:absolute; left:0; right:0; top:0; z-index:2; will-change: transform;
       background:
@@ -134,39 +151,29 @@
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
       background-blend-mode: overlay, normal, screen, multiply;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 30px rgba(0,0,0,.25);
     }
     .lock-cell{
-      height:clamp(38px, 6.5vw, 52px); display:grid; place-items:center; font-weight:800; font-variant-numeric: tabular-nums;
-      font-size: clamp(24px, 6.2vw, 34px); color:#0f141a;
+      height:clamp(38px, 6.5vw, 52px); /* ⬅️ leggermente più bassa per stare comoda */
+      display:grid; place-items:center;
+      font-weight:800; font-variant-numeric: tabular-nums;
+      font-size: clamp(24px, 6.2vw, 34px); /* ⬅️ font un filo più flessibile */
+      color:#0f141a;
       text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 2px 2px rgba(0,0,0,.15);
-      border-top: 1px dashed rgba(15,20,26,.22); border-bottom: 1px dashed rgba(15,20,26,.22);
+      border-top: 1px dashed rgba(15,20,26,.22);
+      border-bottom: 1px dashed rgba(15,20,26,.22);
     }
-    .lock-centerline{ position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%); height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4; }
+    .lock-centerline{
+      position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%);
+      height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4;
+    }
 
     .lock-status{ margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb; }
     .lock-status .ok{ color:var(--ok); font-weight:700; }
     .lock-status .no{ color:var(--err); font-weight:700; }
+
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
-
-    /* === MAZE GAME === */
-    .storm-header{ padding:16px 16px 4px; background:#0c1116; border-bottom:1px solid rgba(255,255,255,.06); }
-    .storm-topbar{ display:grid; grid-template-columns: 90px 1fr auto; align-items:center; gap:12px; margin-bottom:10px; }
-    .storm-timer{ font-variant-numeric: tabular-nums; font-weight:800; color:#f5d76e; letter-spacing:.5px; }
-    .storm-progress{ height:8px; background:#1b2430; border-radius:999px; overflow:hidden; }
-    .storm-progress > span{ display:block; height:100%; width:100%; background:linear-gradient(90deg,#22c55e,#eab308); transform-origin:left; }
-
-    .maze-wrap{
-      position:relative; height:min(30vh, 260px); min-height:180px; border-radius:12px; overflow:hidden;
-      background: radial-gradient(120% 100% at 50% 0%, rgba(12,17,22,.35), rgba(0,0,0,.7));
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-      touch-action:none; user-select:none;
-    }
-    .maze-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-    .maze-msg{ margin-top:8px; color:#e5e7eb; font-size:.95rem; text-align:center; min-height:1.4em; }
-
-    .is-locked .lock-dials{ pointer-events:none; opacity:.6; filter: grayscale(.2); }
-    .expired .lock-dials{ pointer-events:none; opacity:.4; }
   </style>
   
 </head>
@@ -180,6 +187,7 @@
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Affronta la tempesta!</h2>
         <div class="head__actions">
+          <!-- Testo aggiornato: Bacheca → Codice -->
           <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Codice</button>
           <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
@@ -197,30 +205,15 @@ in queste situazioni basta non perdere la rotta.
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
+
+      <!-- Campo soluzione rimosso come richiesto -->
     </section>
   </main>
 
-  <!-- Modale con Gioco + Lucchetto -->
+  <!-- Modale con il LUCCCHETTO -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Inserisci il codice" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
-
-      <!-- === MAZE GAME === -->
-      <div id="stormHeader" class="storm-header">
-        <div class="storm-topbar">
-          <div id="stormTimer" class="storm-timer" aria-live="polite">02:00</div>
-          <div class="storm-progress"><span id="stormProgressBar" style="width:100%"></span></div>
-          <div class="storm-actions">
-            <button id="stormRetry" class="btn btn--ghost" style="margin-left:8px; display:none;">Riprova</button>
-          </div>
-        </div>
-
-        <div id="mazeWrap" class="maze-wrap" aria-label="Porta la nave all'uscita entro il tempo">
-          <canvas id="mazeCanvas" class="maze-canvas"></canvas>
-        </div>
-        <div id="stormMsg" class="maze-msg" aria-live="polite">Fai swipe per muovere la nave (una cella alla volta) fino alla stella.</div>
-      </div>
-      <!-- === FINE MAZE GAME === -->
 
       <div class="lock-panel">
         <div id="lockCard" class="lock-card">
@@ -253,7 +246,7 @@ in queste situazioni basta non perdere la rotta.
       modal.classList.add('open');
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
-      initLockOnce(); // rulli
+      initLockOnce(); // inizializza i rulli quando la modale è visibile
     }
     function closeModal(){
       modal.classList.remove('open');
@@ -327,7 +320,9 @@ in queste situazioni basta non perdere la rotta.
     })();
 
     /* ======== MODALE: lucchetto (SHA-256, nessun codice in chiaro) ======== */
+    // Hash target (SHA-256 base64), spezzato e ricomposto:
     const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
+    // Pepper e firma ricostruiti a runtime:
     const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // GALLEON-1492-ROGER
     const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // BLACKPEARL
 
@@ -337,6 +332,7 @@ in queste situazioni basta non perdere la rotta.
     const dialEls    = [];
     let lockInited   = false;
 
+    // Stato rulli
     let values = Array(6).fill(0);
     let CELL_H = 50;
     let verifySeq = 0;
@@ -412,6 +408,7 @@ in queste situazioni basta non perdere la rotta.
         measureCellHeight(); positionAllToCurrent(); queueVerify();
       });
 
+      // 👉 Chiudi modale automaticamente al click su "Prosegui", poi naviga
       btnNext.addEventListener('click', (e) => {
         if(!btnNext.href) return;
         e.preventDefault();
@@ -425,10 +422,11 @@ in queste situazioni basta non perdere la rotta.
       if(any) CELL_H = any.getBoundingClientRect().height || 50;
     }
     function positionAllToCurrent(){ dialEls.forEach((_, i)=>positionReelAtValue(i, values[i] || 0)); }
+
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.lock-reel');
-      const targetIndex = 10 + value;
+      const targetIndex = 10 + value; // fascia centrale
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
       reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
@@ -508,7 +506,7 @@ in queste situazioni basta non perdere la rotta.
       });
     }
     async function verifyCurrentCode(){
-      const code = values.join('');
+      const code = values.join('');              // es. "602915"
       const msg  = LOCK_P + '|' + code + '|' + LOCK_S;
       const digestB64 = await sha256Base64(msg);
       return safeEqual(digestB64, LOCK_H);
@@ -517,281 +515,6 @@ in queste situazioni basta non perdere la rotta.
     // Utils
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
-
-    /* ==================== MAZE GAME (solo touch, no path auto) ==================== */
-    const stormTimerEl = document.getElementById('stormTimer');
-    const stormProgressBar = document.getElementById('stormProgressBar');
-    const stormMsgEl = document.getElementById('stormMsg');
-    const stormRetryBtn = document.getElementById('stormRetry');
-
-    const mazeWrap = document.getElementById('mazeWrap');
-    const mazeCanvas = document.getElementById('mazeCanvas');
-    const mctx = mazeCanvas.getContext('2d');
-
-    const ST_KEY = 'storm_maze_v2_touch::' + location.pathname;
-    const COUNTDOWN_MS = 2 * 60 * 1000;
-
-    let st = null; // { deadline, won }
-    let maze = null; // {cols, rows, cell, start, goal, grid}
-    let player = null; // {c,r}
-    let animId = 0, lastTs = 0;
-    let DPR = 1, W=0, H=0;
-
-    // Maze generation
-    const N=1, S=2, E=4, Ww=8;
-    const DX = {E:1, W:-1, N:0, S:0};
-    const DY = {E:0, W:0, N:-1, S:1};
-    function randInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
-
-    function generateMaze(cols, rows){
-      const grid = new Uint8Array(cols*rows).fill(N|S|E|Ww);
-      const visited = new Uint8Array(cols*rows);
-      function idx(c,r){ return r*cols + c; }
-      const stack = [];
-      let c=0, r=0;
-      visited[idx(c,r)] = 1; stack.push([c,r]);
-      while(stack.length){
-        const [cc,rr] = stack[stack.length-1];
-        const dirs = [];
-        if(rr>0 && !visited[idx(cc,rr-1)]) dirs.push('N');
-        if(rr<rows-1 && !visited[idx(cc,rr+1)]) dirs.push('S');
-        if(cc<cols-1 && !visited[idx(cc+1,rr)]) dirs.push('E');
-        if(cc>0 && !visited[idx(cc-1,rr)]) dirs.push('W');
-        if(dirs.length===0){ stack.pop(); continue; }
-        const dir = dirs[randInt(0,dirs.length-1)];
-        const nc = cc + DX[dir], nr = rr + DY[dir];
-        const curI = idx(cc,rr), nextI = idx(nc,nr);
-        if(dir==='N'){ grid[curI] &= ~N; grid[nextI] &= ~S; }
-        if(dir==='S'){ grid[curI] &= ~S; grid[nextI] &= ~N; }
-        if(dir==='E'){ grid[curI] &= ~E; grid[nextI] &= ~Ww; }
-        if(dir==='W'){ grid[curI] &= ~Ww; grid[nextI] &= ~E; }
-        visited[nextI]=1; stack.push([nc,nr]);
-      }
-      const start = {c:0, r:0};
-      const goal  = {c:cols-1, r:rows-1};
-      return {cols, rows, grid, start, goal};
-    }
-
-    // Timer UI
-    function msToMMSS(ms){
-      const t = Math.max(0, Math.ceil(ms/1000));
-      const m = String(Math.floor(t/60)).padStart(2,'0');
-      const s = String(t%60).padStart(2,'0');
-      return `${m}:${s}`;
-    }
-    function updateTimerUI(){
-      const now = Date.now();
-      const total = COUNTDOWN_MS;
-      const left = Math.max(0, st.deadline - now);
-      stormTimerEl.textContent = msToMMSS(left);
-      stormProgressBar.style.transform = `scaleX(${left/total})`;
-      if(left<=0){ setExpiredUI(true); stopMaze(); }
-      return left;
-    }
-    function setExpiredUI(expired){
-      lockCard.classList.toggle('expired', expired);
-      stormRetryBtn.style.display = expired ? 'inline-block' : 'none';
-      if(expired) stormMsgEl.textContent = 'Tempo scaduto. Riprova!';
-    }
-    function lockDials(locked){ lockCard.classList.toggle('is-locked', locked); }
-
-    // Persistenza
-    function loadState(){
-      try{ const raw = localStorage.getItem(ST_KEY); if(raw) return JSON.parse(raw); }catch{}
-      return { deadline:0, won:false };
-    }
-    function saveState(){ try{ localStorage.setItem(ST_KEY, JSON.stringify(st)); }catch{} }
-
-    // Resize + (ri)costruzione
-    function resizeMaze(){
-      DPR = Math.max(1, Math.min(2, window.devicePixelRatio||1));
-      const rect = mazeWrap.getBoundingClientRect();
-      W = Math.floor(rect.width); H = Math.floor(rect.height);
-      mazeCanvas.width = Math.floor(W*DPR);
-      mazeCanvas.height= Math.floor(H*DPR);
-      mazeCanvas.style.width = W+'px';
-      mazeCanvas.style.height= H+'px';
-      mctx.setTransform(DPR,0,0,DPR,0,0);
-
-      const cell = clamp(Math.floor(Math.min(W,H)/24), 18, 32);
-      const cols = clamp(Math.floor((W-20)/cell), 8, 22);
-      const rows = clamp(Math.floor((H-20)/cell), 8, 22);
-      maze = generateMaze(cols, rows);
-      maze.cell = cell;
-      player = {...maze.start};
-      drawMaze(0);
-    }
-
-    // Disegno
-    function drawPirateShip(x,y,cell){
-      const s = cell*0.6;
-      mctx.save();
-      mctx.translate(x, y);
-      mctx.scale(s/64, s/64);
-      // scafo
-      mctx.fillStyle = '#a16207';
-      mctx.strokeStyle = '#3b2c20'; mctx.lineWidth = 2;
-      mctx.beginPath(); mctx.moveTo(8,44); mctx.lineTo(56,44); mctx.lineTo(50,54); mctx.lineTo(14,54); mctx.closePath(); mctx.fill(); mctx.stroke();
-      // albero
-      mctx.fillStyle = '#3b2c20'; mctx.fillRect(30,10,4,34);
-      // vele
-      const grd = mctx.createLinearGradient(0,0,64,0);
-      grd.addColorStop(0,'#f8fafc'); grd.addColorStop(1,'#e2e8f0');
-      mctx.fillStyle = grd; mctx.strokeStyle = '#a1a1aa'; mctx.lineWidth = 1.4;
-      mctx.beginPath(); mctx.moveTo(32,12); mctx.lineTo(32,34); mctx.lineTo(16,28); mctx.closePath(); mctx.fill(); mctx.stroke();
-      mctx.beginPath(); mctx.moveTo(32,14); mctx.lineTo(32,34); mctx.lineTo(48,26); mctx.closePath(); mctx.fill(); mctx.stroke();
-      mctx.fillStyle = '#facc15'; mctx.beginPath(); mctx.arc(52,48,2,0,Math.PI*2); mctx.fill();
-      mctx.restore();
-    }
-
-    function drawMaze(){
-      if(!maze) return;
-      mctx.clearRect(0,0,W,H);
-      const {cols, rows, cell} = maze;
-      const ox = Math.floor((W - cols*cell)/2);
-      const oy = Math.floor((H - rows*cell)/2);
-
-      const g = mctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,'#0b1220'); g.addColorStop(1,'#111827');
-      mctx.fillStyle = g; mctx.fillRect(0,0,W,H);
-
-      mctx.fillStyle = '#0f172a';
-      mctx.fillRect(ox, oy, cols*cell, rows*cell);
-
-      // goal (stella)
-      const gx = ox + (maze.goal.c+0.5)*cell;
-      const gy = oy + (maze.goal.r+0.5)*cell;
-      mctx.fillStyle = '#22c55e';
-      mctx.beginPath();
-      for(let i=0;i<5;i++){
-        const a = -Math.PI/2 + i*2*Math.PI/5;
-        const r1 = cell*0.22, r2 = cell*0.09;
-        mctx.lineTo(gx + Math.cos(a)*r1, gy + Math.sin(a)*r1);
-        mctx.lineTo(gx + Math.cos(a+Math.PI/5)*r2, gy + Math.sin(a+Math.PI/5)*r2);
-      }
-      mctx.closePath(); mctx.fill();
-
-      // start
-      mctx.fillStyle = '#60a5fa';
-      const sx = ox + (maze.start.c)*cell, sy = oy + (maze.start.r)*cell;
-      mctx.fillRect(sx+cell*0.25, sy+cell*0.25, cell*0.5, cell*0.5);
-
-      // mura
-      mctx.strokeStyle = '#d1be97';
-      mctx.lineWidth = 2;
-      mctx.beginPath();
-      for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-          const v = maze.grid[r*cols+c];
-          const x = ox + c*cell, y = oy + r*cell;
-          if(v & N){ mctx.moveTo(x,y); mctx.lineTo(x+cell,y); }
-          if(v & Ww){ mctx.moveTo(x,y); mctx.lineTo(x,y+cell); }
-          if(r===rows-1 && (v & S)){ mctx.moveTo(x,y+cell); mctx.lineTo(x+cell,y+cell); }
-          if(c===cols-1 && (v & E)){ mctx.moveTo(x+cell,y); mctx.lineTo(x+cell,y+cell); }
-        }
-      }
-      mctx.stroke();
-
-      // nave
-      const px = ox + (player.c+0.5)*cell;
-      const py = oy + (player.r+0.5)*cell;
-      drawPirateShip(px,py,cell);
-    }
-
-    function moveDir(dir){
-      const {cols, rows, grid} = maze;
-      const id = (c,r)=> r*cols+c;
-      const cell = grid[id(player.c,player.r)];
-      if(dir==='U' && !(cell & N)) player.r--;
-      if(dir==='D' && !(cell & S)) player.r++;
-      if(dir==='L' && !(cell & Ww)) player.c--;
-      if(dir==='R' && !(cell & E)) player.c++;
-      checkGoal();
-      drawMaze();
-    }
-
-    function checkGoal(){
-      if(player.c===maze.goal.c && player.r===maze.goal.r){
-        st.won = true; saveState();
-        stormMsgEl.textContent = 'Tempesta superata! Ora puoi inserire la combinazione.';
-        lockDials(false);
-      }
-    }
-
-    // Loop leggero (solo timer)
-    function ensureMaze(){ if(!animId) animId = requestAnimationFrame(loop); }
-    function stopMaze(){ if(animId){ cancelAnimationFrame(animId); animId=0; } lastTs=0; }
-    function loop(ts){
-      if(!modal.classList.contains('open')){ stopMaze(); return; }
-      updateTimerUI();
-      animId = requestAnimationFrame(loop);
-    }
-
-    // === TOUCH: swipe per muovere UNA cella ===
-    let touchStartX=0, touchStartY=0, touchActive=false;
-    const SWIPE_TH = 22; // px minimi per considerare lo swipe
-
-    function handleTouchStart(e){
-      const t = e.changedTouches[0];
-      touchActive = true;
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-    }
-    function handleTouchEnd(e){
-      if(!touchActive) return;
-      touchActive = false;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - touchStartX;
-      const dy = t.clientY - touchStartY;
-      if(Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_TH) return; // ignora tap leggero
-      if(Math.abs(dx) > Math.abs(dy)){
-        moveDir(dx>0 ? 'R' : 'L');
-      }else{
-        moveDir(dy>0 ? 'D' : 'U');
-      }
-    }
-    // blocca lo scroll di pagina dentro l’area di gioco
-    function preventScroll(e){ e.preventDefault(); }
-
-    mazeWrap.addEventListener('touchstart', handleTouchStart, {passive:false});
-    mazeWrap.addEventListener('touchmove', preventScroll, {passive:false});
-    mazeWrap.addEventListener('touchend', handleTouchEnd, {passive:false});
-    mazeWrap.addEventListener('touchcancel', ()=>{ touchActive=false; });
-
-    // NO tastiera, NO click-to-path
-    // (intenzionalmente non registriamo listener key/pointer)
-
-    // Retry
-    stormRetryBtn.addEventListener('click', ()=>{
-      st = { deadline: Date.now() + COUNTDOWN_MS, won:false };
-      saveState();
-      lockDials(true);
-      setExpiredUI(false);
-      stormMsgEl.textContent = 'Fai swipe per muovere la nave fino alla stella.';
-      resizeMaze();
-      ensureMaze();
-    });
-
-    // Boot del gioco all'apertura della modale
-    btnMap.addEventListener('click', ()=>{
-      setTimeout(()=>{
-        st = loadState();
-        resizeMaze();
-        if(!st.deadline || st.deadline <= Date.now()){
-          st = { deadline: Date.now() + COUNTDOWN_MS, won:false };
-          saveState();
-          lockDials(true);
-          setExpiredUI(false);
-        }else{
-          lockDials(!st.won);
-          setExpiredUI(false);
-          stormMsgEl.textContent = st.won ? 'Tempesta superata! Ora puoi inserire la combinazione.' : 'Fai swipe per muovere la nave fino alla stella.';
-        }
-        ensureMaze();
-      },0);
-    });
-
-    window.addEventListener('resize', ()=>{ if(modal.classList.contains('open')){ resizeMaze(); } });
   </script>
 </body>
 </html>
