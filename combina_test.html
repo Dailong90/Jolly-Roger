@@ -35,7 +35,6 @@
     .card.is-hidden{ opacity:0; transform: translateY(10px) scale(.98); pointer-events:none; visibility:hidden; }
     .card:not(.is-hidden){ opacity:1; transform:none; visibility:visible; transition-delay:0s; }
 
-    /* Bottone grande */
     .btn--big{
       position: fixed; left:16px; bottom:16px; width:auto; margin:0;
       text-align:center; font-size:18px; padding:12px 16px; z-index:1000;
@@ -88,7 +87,6 @@
     .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
     .modal__close:hover{ background:#2f2f2f; }
 
-    /* ====== CONTENUTO MODALE: lucchetto in acciaio ====== */
     .lock-panel{
       position:relative; width:100%; padding:16px; background:#0e1216;
       display:grid; place-items:center; min-height:60vh;
@@ -112,14 +110,12 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 80px rgba(0,0,0,.25);
     }
 
-    /* *** SEMPRE UNA SOLA RIGA *** */
     .lock-dials{
       display:grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr)); /* 6 colonne fisse */
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap:12px;
       width:100%;
     }
-
     .lock-dial{
       position:relative;
       height:clamp(110px, 20vw, 150px);
@@ -171,11 +167,10 @@
     .lock-status{ margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb; }
     .lock-status .ok{ color:var(--ok); font-weight:700; }
     .lock-status .no{ color:var(--err); font-weight:700; }
-
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
 
-    /* === STORM GAME: stile (NAVIGAZIONE & FULMINI) === */
+    /* === CANVAS STORM GAME === */
     .storm-header{ padding:16px 16px 4px; background:#0c1116; border-bottom:1px solid rgba(255,255,255,.06); }
     .storm-topbar{ display:grid; grid-template-columns: 90px 1fr auto; align-items:center; gap:12px; margin-bottom:10px; }
     .storm-timer{ font-variant-numeric: tabular-nums; font-weight:800; color:#f5d76e; letter-spacing:.5px; }
@@ -183,58 +178,28 @@
     .storm-progress > span{ display:block; height:100%; width:100%; background:linear-gradient(90deg,#22c55e,#eab308); transform-origin:left; }
 
     .storm-game{
-      position:relative; height:min(26vh, 220px); min-height:160px; border-radius:12px; overflow:hidden;
-      background: radial-gradient(120% 100% at 50% 0%, rgba(12,17,22,.3), rgba(0,0,0,.6));
+      position:relative; height:min(28vh, 240px); min-height:170px; border-radius:12px; overflow:hidden;
+      background: radial-gradient(120% 100% at 50% 0%, rgba(12,17,22,.35), rgba(0,0,0,.7));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-      touch-action:none; user-select:none;
       isolation:isolate;
+      touch-action:none; user-select:none;
     }
-
-    /* Pioggia */
-    .rain{
-      position:absolute; inset:0; pointer-events:none; opacity:.55; z-index:3;
-      background-image:
-        repeating-linear-gradient(120deg, rgba(255,255,255,.06) 0 2px, rgba(255,255,255,0) 2px 10px);
-      animation: rainMove 1.2s linear infinite;
+    .storm-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .storm-overlay{
+      position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:.55;
+      background-image: repeating-linear-gradient(120deg, rgba(255,255,255,.07) 0 2px, rgba(255,255,255,0) 2px 12px);
+      animation: rainShift 1.2s linear infinite;
     }
-    @keyframes rainMove{
-      from{ background-position:0 0; }
-      to{ background-position: -200px 300px; }
-    }
+    @keyframes rainShift{ from{ background-position:0 0 } to{ background-position:-200px 300px } }
 
-    /* Onde (parallasse) */
-    .waves{ position:absolute; left:-10%; width:120%; height:40%; bottom:-4%; pointer-events:none; z-index:4; }
-    .wave{ position:absolute; left:0; right:0; height:45%; border-radius:100% 0 0 0 / 50% 0 0 0; opacity:.25; filter:blur(2px); }
-    .wave.w1{ bottom:0; background:linear-gradient(to top, #0ea5e9 20%, transparent); animation: w1 9s linear infinite; }
-    .wave.w2{ bottom:10%; background:linear-gradient(to top, #38bdf8 20%, transparent); animation: w2 13s linear infinite; opacity:.2; }
-    .wave.w3{ bottom:18%; background:linear-gradient(to top, #7dd3fc 20%, transparent); animation: w3 17s linear infinite; opacity:.15; }
-    @keyframes w1{ from{ transform:translateX(0); } to{ transform:translateX(-10%); } }
-    @keyframes w2{ from{ transform:translateX(0); } to{ transform:translateX(6%); } }
-    @keyframes w3{ from{ transform:translateX(0); } to{ transform:translateX(-4%); } }
-
-    /* Nave */
-    .ship{ position:absolute; bottom:12%; left:50%; width:44px; height:44px; margin-left:-22px; z-index:6; }
-    .ship svg{ width:100%; height:100%; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
-
-    /* Fulmini */
-    .bolt{ position:absolute; top:-120px; width:20px; height:120px; z-index:5; pointer-events:none; }
-    .bolt svg{ width:100%; height:100%; filter: drop-shadow(0 0 6px rgba(250,250,210,.7)); }
-    .bolt.flash::after{
-      content:""; position:absolute; inset:-40vh -40vw; background: radial-gradient(circle at center, rgba(255,255,255,.25), rgba(255,255,255,0) 60%);
-      z-index:1; animation: flash .35s ease-out forwards; pointer-events:none;
-    }
-    @keyframes flash{ from{ opacity:.7; } to{ opacity:0; } }
-
-    /* HUD */
     .storm-msg{ margin-top:8px; color:#e5e7eb; font-size:.95rem; text-align:center; min-height:1.4em; }
     .storm-actions{ text-align:center; }
     .lives{ color:#e5e7eb; font-weight:700; font-variant-numeric: tabular-nums; }
+    .shield{ color:#93c5fd; margin-left:8px; }
 
-    /* Disabilita rulli finché la tempesta non è superata */
     .is-locked .lock-dials{ pointer-events:none; opacity:.6; filter: grayscale(.2); }
     .expired .lock-dials{ pointer-events:none; opacity:.4; }
   </style>
-  
 </head>
 <body>
   <main class="wrap">
@@ -266,55 +231,29 @@ in queste situazioni basta non perdere la rotta.
     </section>
   </main>
 
-  <!-- Modale con il LUCCCHETTO -->
+  <!-- Modale -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Inserisci il codice" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
 
-      <!-- === STORM GAME (NAVIGAZIONE & FULMINI) === -->
+      <!-- === CANVAS STORM GAME === -->
       <div id="stormHeader" class="storm-header">
         <div class="storm-topbar">
           <div id="stormTimer" class="storm-timer" aria-live="polite">02:00</div>
           <div class="storm-progress"><span id="stormProgressBar" style="width:100%"></span></div>
           <div class="storm-actions">
             <span id="stormLives" class="lives">❤️❤️❤️</span>
+            <span id="stormShield" class="shield" style="display:none;">🛡️</span>
             <button id="stormRetry" class="btn btn--ghost" style="margin-left:8px; display:none;">Riprova</button>
           </div>
         </div>
 
         <div id="stormGame" class="storm-game" aria-label="Evita i fulmini e sopravvivi">
-          <div class="rain"></div>
-          <div class="waves">
-            <div class="wave w3"></div>
-            <div class="wave w2"></div>
-            <div class="wave w1"></div>
-          </div>
-          <div id="ship" class="ship" aria-hidden="false">
-            <!-- Nave SVG stilizzata -->
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <defs>
-                <linearGradient id="hull" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0" stop-color="#a16207"/><stop offset="1" stop-color="#7c3e0a"/>
-                </linearGradient>
-                <linearGradient id="sail" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#e2e8f0"/>
-                </linearGradient>
-              </defs>
-              <!-- scafo -->
-              <path d="M8 44 L56 44 L50 54 L14 54 Z" fill="url(#hull)" stroke="#3b2c20" stroke-width="2"/>
-              <!-- alberi -->
-              <rect x="30" y="10" width="4" height="34" rx="2" fill="#3b2c20"/>
-              <!-- vele -->
-              <path d="M32 12 L32 34 L16 28 Z" fill="url(#sail)" stroke="#a1a1aa" stroke-width="1"/>
-              <path d="M32 14 L32 34 L48 26 Z" fill="url(#sail)" stroke="#a1a1aa" stroke-width="1"/>
-              <!-- prua oro -->
-              <circle cx="52" cy="48" r="2" fill="#facc15"/>
-            </svg>
-          </div>
-          <!-- Fulmini generati via JS dentro #stormGame -->
+          <canvas id="stormCanvas" class="storm-canvas"></canvas>
+          <div class="storm-overlay"></div>
         </div>
 
-        <div id="stormMsg" class="storm-msg" aria-live="polite">Evita i fulmini e sopravvivi per sbloccare i rulli.</div>
+        <div id="stormMsg" class="storm-msg" aria-live="polite">Evita i fulmini telegraphati e sopravvivi per sbloccare i rulli.</div>
       </div>
       <!-- === FINE STORM GAME === -->
 
@@ -349,7 +288,7 @@ in queste situazioni basta non perdere la rotta.
       modal.classList.add('open');
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
-      initLockOnce(); // inizializza i rulli quando la modale è visibile
+      initLockOnce();
     }
     function closeModal(){
       modal.classList.remove('open');
@@ -422,10 +361,10 @@ in queste situazioni basta non perdere la rotta.
       init();
     })();
 
-    /* ======== MODALE: lucchetto (SHA-256, nessun codice in chiaro) ======== */
+    /* ======== Lucchetto ======== */
     const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
-    const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // GALLEON-1492-ROGER
-    const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // BLACKPEARL
+    const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))();
+    const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();
 
     const lockCard   = document.getElementById('lockCard');
     const lockStatus = document.getElementById('lockStatus');
@@ -433,7 +372,6 @@ in queste situazioni basta non perdere la rotta.
     const dialEls    = [];
     let lockInited   = false;
 
-    // Stato rulli
     let values = Array(6).fill(0);
     let CELL_H = 50;
     let verifySeq = 0;
@@ -522,11 +460,10 @@ in queste situazioni basta non perdere la rotta.
       if(any) CELL_H = any.getBoundingClientRect().height || 50;
     }
     function positionAllToCurrent(){ dialEls.forEach((_, i)=>positionReelAtValue(i, values[i] || 0)); }
-
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.lock-reel');
-      const targetIndex = 10 + value; // fascia centrale
+      const targetIndex = 10 + value;
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
       reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
@@ -614,36 +551,61 @@ in queste situazioni basta non perdere la rotta.
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
 
-    /* ==================== STORM GAME: NAVIGAZIONE & FULMINI ==================== */
+    /* ==================== CANVAS STORM GAME (accattivante & sfidante) ==================== */
     const stormTimerEl = document.getElementById('stormTimer');
     const stormProgressBar = document.getElementById('stormProgressBar');
     const stormMsgEl = document.getElementById('stormMsg');
     const stormGameEl = document.getElementById('stormGame');
-    const shipEl = document.getElementById('ship');
+    const canvas = document.getElementById('stormCanvas');
+    const ctx = canvas.getContext('2d', { alpha: true });
     const stormRetryBtn = document.getElementById('stormRetry');
     const stormLivesEl = document.getElementById('stormLives');
+    const stormShieldEl = document.getElementById('stormShield');
 
-    const ST_KEY = 'storm_state_v2::' + location.pathname;
+    const ST_KEY = 'storm_state_v3::' + location.pathname;
 
-    // Parametri tweakabili
-    const COUNTDOWN_MS = 2 * 60 * 1000;           // 2 minuti
-    const REQUIRED_SURVIVE_MS = 12 * 1000;        // 12s cumulativi di sopravvivenza
-    const MAX_LIVES = 3;                          // vite
-    const BOLT_SPAWN_EVERY_MS = [600, 1100];      // range spawn
-    const BOLT_SPEED_PX = [240, 380];             // velocità caduta
-    const BOLT_WIDTH_PX = [18, 28];               // larghezza fulmine
-    const BOLT_FLASH_PROB = 0.35;                 // probabilità lampo con bagliore
+    // Parametri
+    const COUNTDOWN_MS = 2 * 60 * 1000;
+    const REQUIRED_SURVIVE_MS = 15 * 1000;
+    const MAX_LIVES = 3;
+    const BASE_SPAWN_EVERY = [650, 1100];
+    const BASE_FALL_SPEED = [260, 400];
+    const ZIGZAG_AMPL = 40;
+    const ZIGZAG_FREQ = 6;
+    const TELEGRAPH_TIME = [380, 700];
+    const WIND_CHANGE_EVERY = 2000;
+    const WIND_MAX = 60;         // px/s di deriva massima
+    const SHIP_ACCEL = 900;      // px/s^2
+    const SHIP_FRICTION = 0.88;  // damping
+    const SHIP_MAX_V = 480;      // px/s
+    const SHIP_Y = 0.82;         // posizione verticale come % altezza
+    const SHIELD_PROB = 0.12;    // probabilità di spawn scudo
+    const SHIELD_DURATION = 8000;
 
-    // Stato
-    let st = null; // { deadline, won, surviveMs, lives }
-    let rafId = null, lastTs = 0;
-    let shipX = 0.5; // [0..1]
-    let bolts = [];  // [{el, xNorm, yPx, speed, w}]
+    // Stato runtime
+    let st = null; // { deadline, won, surviveMs, lives, shieldUntil }
+    let rafId = null, lastRealTs = 0, lastLoop = 0;
+    let w=0, h=0, dpr=1;
+
+    // Nave
+    const ship = { x: 0.5, vx: 0 }; // x normalizzata [0..1]
+    let inputLeft = false, inputRight = false;
+
+    // Vento
+    let wind = 0; // px/s
+    let windTimer = 0;
+
+    // Fulmini
+    const bolts = []; // { kind:'down'|'zigzag'|'tracking', x, y, vx, vy, teleUntil, width, hitbox, targetX }
     let spawnTimer = 0, nextSpawnIn = 800;
+
+    // Shield (power-up)
+    let shieldOrb = null; // {x,y,vy,expires}
+    function hasShield(){ return st.shieldUntil && st.shieldUntil > performance.now(); }
 
     function loadState(){
       try{ const raw = localStorage.getItem(ST_KEY); if(raw) return JSON.parse(raw); }catch{}
-      return { deadline: 0, won:false, surviveMs:0, lives:MAX_LIVES };
+      return { deadline: 0, won:false, surviveMs:0, lives:MAX_LIVES, shieldUntil:0 };
     }
     function saveState(){ try{ localStorage.setItem(ST_KEY, JSON.stringify(st)); }catch{} }
 
@@ -662,13 +624,16 @@ in queste situazioni basta non perdere la rotta.
       return left;
     }
     function setLives(n){
-      const clampLives = clamp(n, 0, MAX_LIVES);
-      st.lives = clampLives;
-      stormLivesEl.textContent = '❤️'.repeat(clampLives) + '🖤'.repeat(MAX_LIVES - clampLives);
-      if(clampLives<=0){
+      const L = clamp(n, 0, MAX_LIVES);
+      st.lives = L;
+      stormLivesEl.textContent = '❤️'.repeat(L) + '🖤'.repeat(MAX_LIVES-L);
+      if(L<=0){
         stormMsgEl.textContent = 'La tempesta ti ha colpito! Riprova.';
         setExpiredUI(true);
       }
+    }
+    function setShieldUI(){
+      stormShieldEl.style.display = hasShield() ? 'inline' : 'none';
     }
     function lockDials(locked){ lockCard.classList.toggle('is-locked', locked); }
     function setExpiredUI(expired){
@@ -676,92 +641,362 @@ in queste situazioni basta non perdere la rotta.
       stormRetryBtn.style.display = expired ? 'inline-block' : 'none';
     }
 
+    function resizeCanvas(){
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const rect = stormGameEl.getBoundingClientRect();
+      w = Math.max(300, Math.floor(rect.width));
+      h = Math.max(160, Math.floor(rect.height));
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w+'px';
+      canvas.style.height = h+'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+
     function resetChallenge(){
-      st = { deadline: Date.now() + COUNTDOWN_MS, won:false, surviveMs:0, lives:MAX_LIVES };
+      st = { deadline: Date.now() + COUNTDOWN_MS, won:false, surviveMs:0, lives:MAX_LIVES, shieldUntil:0 };
       saveState();
       lockDials(true);
       setExpiredUI(false);
       stormMsgEl.textContent = 'Evita i fulmini e sopravvivi per sbloccare i rulli.';
-      shipX = 0.5; bolts.forEach(b=>b.el.remove()); bolts = [];
-      spawnTimer = 0; nextSpawnIn = rand(BOLT_SPAWN_EVERY_MS[0], BOLT_SPAWN_EVERY_MS[1]);
-      lastTs = 0;
+      ship.x = 0.5; ship.vx = 0;
+      wind = 0; windTimer = 0;
+      bolts.length = 0;
+      shieldOrb = null;
+      spawnTimer = 0; nextSpawnIn = rand(BASE_SPAWN_EVERY[0], BASE_SPAWN_EVERY[1]);
+      lastRealTs = 0; lastLoop = 0;
+      setLives(MAX_LIVES);
+      setShieldUI();
+      resizeCanvas();
       ensureLoop();
-      updateTimerUI(); setLives(MAX_LIVES);
+      updateTimerUI();
     }
 
+    /* --- Helpers --- */
     function rand(a,b){ return a + Math.random()*(b-a); }
-    function createBolt(){
-      const el = document.createElement('div');
-      el.className = 'bolt';
-      // SVG fulmine
-      el.innerHTML = `
-        <svg viewBox="0 0 20 120" aria-hidden="true">
-          <polygon points="12,0 2,52 8,52 0,120 18,62 12,62"
-                   fill="#fde68a" stroke="#f59e0b" stroke-width="2"/>
-        </svg>`;
-      if(Math.random() < BOLT_FLASH_PROB) el.classList.add('flash');
-      stormGameEl.appendChild(el);
-      const w = rand(BOLT_WIDTH_PX[0], BOLT_WIDTH_PX[1]);
-      el.style.width = w+'px';
-      const xNorm = Math.random(); // posizione orizzontale normalizzata
-      const speed = rand(BOLT_SPEED_PX[0], BOLT_SPEED_PX[1]);
-      return { el, xNorm, yPx: -130, speed, w };
+    function lerp(a,b,t){ return a+(b-a)*t; }
+    function easeOutExpo(t){ return 1 - Math.pow(2, -8*t); }
+
+    /* --- Spawn --- */
+    function spawnBolt(){
+      const elapsed = st.surviveMs;
+      // Difficoltà crescente: più tempo -> più veloci e spawn più frequenti
+      const diff = clamp(elapsed/15000, 0, 1); // 0..1 entro 15s
+      const fallMin = BASE_FALL_SPEED[0] + 80*diff;
+      const fallMax = BASE_FALL_SPEED[1] + 100*diff;
+
+      const kindPick = Math.random();
+      let kind = 'down';
+      if(kindPick > 0.65) kind = 'zigzag';
+      if(kindPick > 0.85) kind = 'tracking';
+
+      const bw = rand(10, 20) * (1+0.3*diff);
+
+      const teleMs = rand(TELEGRAPH_TIME[0], TELEGRAPH_TIME[1]);
+      let x = Math.random()*w;
+      let targetX = x;
+      if(kind==='tracking'){ targetX = ship.x * w + rand(-30, 30); x = clamp(targetX + rand(-120,120), 12, w-12); }
+
+      bolts.push({
+        kind,
+        x, y: -140,
+        vx: kind==='zigzag' ? rand(-40, 40) : 0,
+        vy: rand(fallMin, fallMax),
+        teleUntil: performance.now() + teleMs,
+        width: bw,
+        spawnAt: performance.now(),
+        targetX
+      });
+    }
+    function maybeSpawnShield(){
+      if(shieldOrb || Math.random() > SHIELD_PROB) return;
+      shieldOrb = { x: Math.random()*w, y: -20, vy: 80, expires: performance.now()+12000 };
     }
 
+    /* --- Disegno --- */
+    function drawBackground(t){
+      // Onde scure + bagliori lontani
+      ctx.save();
+      ctx.fillStyle = '#0b1220';
+      ctx.fillRect(0,0,w,h);
+
+      // mare
+      for(let i=0;i<4;i++){
+        const y = h*0.65 + i*12;
+        ctx.globalAlpha = 0.08 + i*0.04;
+        ctx.fillStyle = '#1f2937';
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        for(let x=0;x<=w; x+=8){
+          const off = Math.sin((x*0.02)+(t*0.001*(0.6+i*0.2)))*4*(1+i*0.4);
+          ctx.lineTo(x, y + off);
+        }
+        ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+    function drawShip(t){
+      const sx = ship.x * w;
+      const sy = h*SHIP_Y;
+
+      // scia
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.ellipse(sx, sy+18, 24, 6, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // scafo stilizzato
+      ctx.save();
+      ctx.translate(sx, sy);
+      const tilt = clamp(ship.vx/SHIP_MAX_V, -0.6, 0.6);
+      ctx.rotate(tilt*0.08);
+      // scafo
+      const grd = ctx.createLinearGradient(0,-12,0,16);
+      grd.addColorStop(0,'#a16207'); grd.addColorStop(1,'#7c3e0a');
+      ctx.fillStyle = grd;
+      ctx.strokeStyle = '#3b2c20';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-18,8); ctx.lineTo(18,8); ctx.lineTo(12,18); ctx.lineTo(-12,18); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // albero
+      ctx.fillStyle = '#3b2c20';
+      ctx.fillRect(-1.5,-18,3,26);
+      // vele
+      const sail = ctx.createLinearGradient(-20,0,20,0);
+      sail.addColorStop(0,'#f8fafc'); sail.addColorStop(1,'#e2e8f0');
+      ctx.fillStyle = sail; ctx.strokeStyle = '#a1a1aa'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,6); ctx.lineTo(-16,0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-14); ctx.lineTo(0,6); ctx.lineTo(16,-2); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // scudo attivo
+      if(hasShield()){
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = '#60a5fa';
+        ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    }
+    function drawTelegraph(b, now){
+      const tLeft = b.teleUntil - now;
+      if(tLeft <= 0) return;
+      const alpha = 0.35 + 0.25*Math.sin((now-b.spawnAt)/80);
+      ctx.save();
+      if(b.kind==='zigzag'){
+        ctx.strokeStyle = `rgba(147,197,253,${alpha})`;
+        ctx.lineWidth = b.width*0.7;
+        ctx.setLineDash([12, 12]);
+        ctx.beginPath();
+        ctx.moveTo(b.x, 0);
+        ctx.lineTo(b.x + 60, h*0.35);
+        ctx.lineTo(b.x - 40, h*0.7);
+        ctx.lineTo(b.x + 20, h);
+        ctx.stroke();
+      }else{
+        const tx = b.kind==='tracking' ? b.targetX : b.x;
+        const grad = ctx.createLinearGradient(tx,0,tx,h);
+        grad.addColorStop(0, `rgba(250,250,210,${alpha})`);
+        grad.addColorStop(1, `rgba(250,250,210,0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(tx - b.width*0.8, 0, b.width*1.6, h);
+      }
+      ctx.restore();
+    }
+    function drawBolt(b){
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,255,200,.7)';
+      ctx.shadowBlur = 16;
+      ctx.strokeStyle = '#fde68a';
+      ctx.lineWidth = b.width;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if(b.kind==='zigzag'){
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x + 60, b.y + 120);
+        ctx.moveTo(b.x + 60, b.y + 120);
+        ctx.lineTo(b.x - 40, b.y + 220);
+        ctx.moveTo(b.x - 40, b.y + 220);
+        ctx.lineTo(b.x + 20, b.y + 320);
+      }else{
+        const tx = b.kind==='tracking' ? b.targetX : b.x;
+        ctx.moveTo(tx, b.y);
+        ctx.lineTo(tx, b.y + 160);
+      }
+      ctx.stroke();
+      // bagliore
+      const g = ctx.createRadialGradient(b.x, b.y+80, 0, b.x, b.y+80, 160);
+      g.addColorStop(0,'rgba(255,255,210,.22)');
+      g.addColorStop(1,'rgba(255,255,210,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(b.x-200, b.y-20, 400, 300);
+      ctx.restore();
+    }
+    function drawShieldOrb(){
+      if(!shieldOrb) return;
+      ctx.save();
+      ctx.shadowColor = '#93c5fd';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = 'rgba(147,197,253,.85)';
+      ctx.beginPath();
+      ctx.arc(shieldOrb.x, shieldOrb.y, 10, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* --- Collisioni --- */
+    function shipBounds(){
+      const sx = ship.x * w;
+      const sy = h*SHIP_Y;
+      return { x:sx-14, y:sy-10, w:28, h:24 };
+    }
+    function rectsOverlap(a,b){
+      return !(a.x+a.w < b.x || b.x+b.w < a.x || a.y+a.h < b.y || b.y+b.h < a.y);
+    }
+
+    /* --- Input --- */
+    function onPointer(e){
+      const rect = canvas.getBoundingClientRect();
+      const xNorm = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      // imposta direzione verso il punto
+      const targetX = xNorm * w;
+      const dx = targetX - ship.x*w;
+      ship.vx += clamp(dx*6, -SHIP_MAX_V, SHIP_MAX_V);
+    }
+    stormGameEl.addEventListener('pointerdown', (e)=>{ stormGameEl.setPointerCapture(e.pointerId); onPointer(e); });
+    stormGameEl.addEventListener('pointermove', (e)=>{ if(e.pressure!==0 || e.buttons>0) onPointer(e); });
+    window.addEventListener('keydown', (e)=>{
+      if(!modal.classList.contains('open')) return;
+      if(e.key==='ArrowLeft' || e.key==='a') inputLeft = true;
+      if(e.key==='ArrowRight'|| e.key==='d') inputRight = true;
+    });
+    window.addEventListener('keyup', (e)=>{
+      if(e.key==='ArrowLeft' || e.key==='a') inputLeft = false;
+      if(e.key==='ArrowRight'|| e.key==='d') inputRight = false;
+    });
+
+    /* --- Loop --- */
     function ensureLoop(){ if(!rafId) rafId = requestAnimationFrame(loop); }
-    function stopLoop(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } lastTs=0; }
+    function stopLoop(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } lastRealTs=0; lastLoop=0; }
 
     function loop(ts){
       if(!modal.classList.contains('open')){ stopLoop(); return; }
-      if(!lastTs) lastTs = ts;
-      const dt = Math.min(100, ts - lastTs); // ms
-      lastTs = ts;
+      if(!lastRealTs){ lastRealTs = ts; lastLoop = ts; }
+      const dt = Math.min(100, ts - lastLoop); // ms
+      lastLoop = ts;
+      const dtSec = dt/1000;
 
-      // Timer
+      // Timer gameplay e UI
       const left = updateTimerUI();
       if(left<=0){ setExpiredUI(true); lockDials(true); stopLoop(); return; }
-      if(st.lives<=0){ stopLoop(); return; }
-      if(st.won){ // Gioco vinto: mantieni timer e lascia i rulli sbloccati
-        saveState(); rafId = requestAnimationFrame(loop); return;
+      if(st.lives<=0){ saveState(); return; } // morto, aspetta retry
+      if(st.won){ saveState(); rafId = requestAnimationFrame(loop); return; }
+
+      // Canvas
+      ctx.clearRect(0,0,w,h);
+      drawBackground(ts);
+
+      // Vento/deriva
+      windTimer += dt;
+      if(windTimer >= WIND_CHANGE_EVERY){
+        windTimer = 0;
+        const target = rand(-WIND_MAX, WIND_MAX);
+        // avvicina lentamente al nuovo vento
+        wind = lerp(wind, target, 0.9);
       }
 
-      const w = stormGameEl.clientWidth, h = stormGameEl.clientHeight;
+      // Input → accelerazione
+      let ax = 0;
+      if(inputLeft) ax -= SHIP_ACCEL;
+      if(inputRight) ax += SHIP_ACCEL;
 
-      // Movimento nave (posizione visuale)
-      shipEl.style.left = (shipX * w) + 'px';
+      // Fisica nave
+      ship.vx += (ax + wind) * dtSec;
+      ship.vx = clamp(ship.vx, -SHIP_MAX_V, SHIP_MAX_V);
+      ship.vx *= Math.pow(SHIP_FRICTION, dtSec*60);
+      ship.x += (ship.vx * dtSec) / w;
+      ship.x = clamp(ship.x, 0.04, 0.96);
+      drawShip(ts);
 
-      // Spawning fulmini
-      spawnTimer += dt;
-      if(spawnTimer >= nextSpawnIn){
-        spawnTimer = 0;
-        nextSpawnIn = rand(BOLT_SPAWN_EVERY_MS[0], BOLT_SPAWN_EVERY_MS[1]);
-        const bolt = createBolt();
-        bolts.push(bolt);
-      }
+      // Spawn scudo casuale
+      if(Math.random()<0.004) maybeSpawnShield();
 
-      // Aggiorna fulmini
-      for(let i=bolts.length-1; i>=0; i--){
-        const b = bolts[i];
-        b.yPx += b.speed * (dt/1000);
-        const xPx = b.xNorm * w;
-        b.el.style.transform = `translate(${xPx}px, ${b.yPx}px)`;
-
-        // Collisione con nave
-        const hit = checkCollisionShip(xPx, b.yPx, b.w, 120, w, h);
-        if(hit){
-          // danno
-          setLives(st.lives - 1);
-          // rimuovi fulmine immediatamente
-          b.el.remove(); bolts.splice(i,1);
-          // piccolo feedback
-          stormGameEl.style.filter = 'brightness(1.2)';
-          setTimeout(()=>{ stormGameEl.style.filter=''; }, 100);
-          if(st.lives<=0) break;
-        }else if(b.yPx > h+130){
-          // fulmine uscito
-          b.el.remove(); bolts.splice(i,1);
+      // Shield orb
+      if(shieldOrb){
+        shieldOrb.y += shieldOrb.vy*dtSec;
+        drawShieldOrb();
+        if(performance.now()>shieldOrb.expires || shieldOrb.y>h+20) shieldOrb=null;
+        else{
+          const s = shipBounds();
+          const orbRect = { x: shieldOrb.x-10, y: shieldOrb.y-10, w:20, h:20 };
+          if(rectsOverlap(s, orbRect)){
+            st.shieldUntil = performance.now()+SHIELD_DURATION;
+            shieldOrb=null; setShieldUI();
+            stormMsgEl.textContent = 'Scudo attivo per 8s!';
+          }
         }
       }
+
+      // Spawn fulmini dinamico con difficoltà
+      spawnTimer += dt;
+      const diff = clamp(st.surviveMs/15000, 0, 1);
+      const spawnEvery = lerp(BASE_SPAWN_EVERY[1], BASE_SPAWN_EVERY[0], diff);
+      if(spawnTimer >= spawnEvery){
+        spawnTimer = 0; nextSpawnIn = spawnEvery;
+        spawnBolt();
+      }
+
+      // Disegna telegraph
+      const now = performance.now();
+      for(const b of bolts) drawTelegraph(b, now);
+
+      // Aggiorna & disegna fulmini
+      const removeIdx = [];
+      for(let i=0;i<bolts.length;i++){
+        const b = bolts[i];
+        if(now < b.teleUntil){
+          // tracking aggiorna target durante telegraph (se kind tracking)
+          if(b.kind==='tracking'){ b.targetX = lerp(b.targetX, ship.x*w, 0.08); }
+          continue;
+        }
+        // caduta
+        b.y += b.vy*dtSec;
+        if(b.kind==='zigzag'){
+          b.x += Math.sin((now - b.spawnAt)/100) * (ZIGZAG_AMPL*dtSec);
+        }else if(b.kind==='down'){
+          // nulla
+        }else if(b.kind==='tracking'){
+          // leggera correzione in discesa
+          b.x = lerp(b.x, b.targetX, 0.04);
+        }
+        drawBolt(b);
+
+        // collisione
+        const s = shipBounds();
+        const boltRect = { x:(b.kind==='tracking'? (b.targetX - b.width*0.6) : (b.x - b.width*0.6)),
+                           y:b.y, w:b.width*1.2, h: (b.kind==='zigzag'? 300 : 160) };
+        if(rectsOverlap(s, boltRect)){
+          if(hasShield()){
+            st.shieldUntil = 0; setShieldUI();
+            // piccolo flash
+            ctx.save(); ctx.globalAlpha = .25; ctx.fillStyle='#93c5fd'; ctx.fillRect(0,0,w,h); ctx.restore();
+          }else{
+            setLives(st.lives - 1);
+            // flash giallo
+            ctx.save(); ctx.globalAlpha = .18; ctx.fillStyle='#fde68a'; ctx.fillRect(0,0,w,h); ctx.restore();
+          }
+          removeIdx.push(i);
+        }else if(b.y > h+200){
+          removeIdx.push(i);
+        }
+      }
+      // rimozione
+      for(let i=removeIdx.length-1;i>=0;i--) bolts.splice(removeIdx[i],1);
 
       // Sopravvivenza cumulativa
       st.surviveMs += dt;
@@ -778,41 +1013,11 @@ in queste situazioni basta non perdere la rotta.
       rafId = requestAnimationFrame(loop);
     }
 
-    function checkCollisionShip(bx, by, bw, bh, gw, gh){
-      // bounding nave
-      const shipRect = shipEl.getBoundingClientRect();
-      const gameRect = stormGameEl.getBoundingClientRect();
-      const sx = shipRect.left - gameRect.left;
-      const sy = shipRect.top - gameRect.top;
-      const sw = shipRect.width;
-      const sh = shipRect.height;
-
-      // bounding fulmine
-      const fx = bx;
-      const fy = by;
-      const fw = bw;
-      const fh = bh;
-
-      // padding per non essere troppo punitivi
-      const pad = 6;
-      return !(fx+fw < sx+pad || fx > sx+sw-pad || fy+fh < sy+pad || fy > sy+sh-pad);
+    function setExpiredUI(expired){
+      lockCard.classList.toggle('expired', expired);
+      stormRetryBtn.style.display = expired ? 'inline-block' : 'none';
+      if(expired) stormMsgEl.textContent = 'Tempo o vite finite. Riprova!';
     }
-
-    // Controllo nave
-    function setShipByEvent(e){
-      const rect = stormGameEl.getBoundingClientRect();
-      const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
-      shipX = x;
-    }
-    stormGameEl.addEventListener('pointerdown', (e)=>{ stormGameEl.setPointerCapture(e.pointerId); setShipByEvent(e); });
-    stormGameEl.addEventListener('pointermove', (e)=>{ if(e.pressure!==0 || e.buttons>0) setShipByEvent(e); });
-    stormGameEl.addEventListener('click', setShipByEvent);
-    window.addEventListener('keydown', (e)=>{
-      if(!modal.classList.contains('open')) return;
-      const step = 0.04;
-      if(e.key==='ArrowLeft'){ shipX = clamp(shipX - step, 0, 1); }
-      if(e.key==='ArrowRight'){ shipX = clamp(shipX + step, 0, 1); }
-    });
 
     // Retry
     stormRetryBtn.addEventListener('click', ()=>{
@@ -823,16 +1028,15 @@ in queste situazioni basta non perdere la rotta.
     // Boot del gioco all'apertura modale
     btnMap.addEventListener('click', ()=>{
       setTimeout(()=>{
+        resizeCanvas();
         st = loadState();
-        // se scaduto o inesistente → reset
         if(!st.deadline || st.deadline <= Date.now()){
           resetChallenge();
         }else{
-          // ripristina UI
           updateTimerUI();
-          setExpiredUI(false);
           lockDials(!st.won);
           setLives(st.lives ?? MAX_LIVES);
+          setShieldUI();
           stormMsgEl.textContent = st.won ? 'Tempesta superata! Ora puoi inserire la combinazione.' : 'Evita i fulmini e sopravvivi per sbloccare i rulli.';
           ensureLoop();
         }
@@ -840,7 +1044,7 @@ in queste situazioni basta non perdere la rotta.
     });
 
     window.addEventListener('resize', ()=>{
-      if(modal.classList.contains('open')) ensureLoop();
+      if(modal.classList.contains('open')){ resizeCanvas(); ensureLoop(); }
     });
   </script>
 </body>
