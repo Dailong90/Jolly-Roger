@@ -174,7 +174,10 @@
 
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
+
+    #btnHide { display:none; }
   </style>
+  
 </head>
 <body>
   <main class="wrap">
@@ -270,7 +273,7 @@ Rimetti i fogli al loro posto secondo queste indicazioni:
 
     /* ===== Reveal/Hide card ===== */
     (function(){
-      const REVEAL_KEY = 'card_revealed_v1';
+      const REVEAL_KEY = 'card_revealed_v1::' + location.pathname;
       const btnReveal = document.getElementById('btnReveal');
       const card = document.getElementById('contentCard');
       const btnHide = document.getElementById('btnHide');
