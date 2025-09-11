@@ -174,6 +174,35 @@
 
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
+
+    /* === STORM GAME: stile === */
+    .storm-header{ padding:16px 16px 4px; background:#0c1116; border-bottom:1px solid rgba(255,255,255,.06); }
+    .storm-topbar{ display:grid; grid-template-columns: 80px 1fr auto; align-items:center; gap:12px; margin-bottom:10px; }
+    .storm-timer{ font-variant-numeric: tabular-nums; font-weight:800; color:#f5d76e; letter-spacing:.5px; }
+    .storm-progress{ height:8px; background:#1b2430; border-radius:999px; overflow:hidden; }
+    .storm-progress > span{ display:block; height:100%; width:100%; background:linear-gradient(90deg,#22c55e,#eab308); transform-origin:left; }
+
+    .storm-game{ position:relative; height:min(24vh, 200px); min-height:140px; border-radius:12px; overflow:hidden;
+      background: radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.04), rgba(0,0,0,.2));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+      touch-action:none; user-select:none;
+    }
+    .storm-track{ position:absolute; inset:0; }
+    .storm-corridor{ position:absolute; top:20%; height:60%; left:0; width:40%;
+      background: rgba(59,130,246,.15); border:1px dashed rgba(147,197,253,.5); border-radius:10px;
+      filter: drop-shadow(0 0 10px rgba(59,130,246,.25));
+    }
+    .storm-ship{ position:absolute; bottom:6%; left:50%; width:26px; height:26px; margin-left:-13px;
+      border-radius:50%; background:#f59e0b; box-shadow:0 0 12px rgba(245,158,11,.55), inset 0 -2px 4px rgba(0,0,0,.25);
+      outline:2px solid rgba(0,0,0,.25);
+    }
+    .storm-msg{ margin-top:8px; color:#e5e7eb; font-size:.95rem; text-align:center; min-height:1.4em; }
+    .storm-actions{ margin-top:10px; text-align:center; }
+
+    /* Disabilita rulli finché la tempesta non è superata */
+    .is-locked .lock-dials{ pointer-events:none; opacity:.6; filter: grayscale(.2); }
+    .expired .lock-dials{ pointer-events:none; opacity:.4; }
+
   </style>
   
 </head>
@@ -214,6 +243,24 @@ in queste situazioni basta non perdere la rotta.
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Inserisci il codice" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
+
+      <!-- === STORM GAME: header con timer + gioco + messaggi (AGGIUNTO) === -->
+      <div id="stormHeader" class="storm-header">
+        <div class="storm-topbar">
+          <div id="stormTimer" class="storm-timer" aria-live="polite">02:00</div>
+          <div class="storm-progress"><span id="stormProgressBar" style="width:100%"></span></div>
+          <div class="storm-actions">
+            <button id="stormRetry" class="btn btn--ghost" style="display:none;">Riprova</button>
+          </div>
+        </div>
+        <div id="stormGame" class="storm-game" aria-label="Tieni la rotta">
+          <div class="storm-track"></div>
+          <div id="stormCorridor" class="storm-corridor"></div>
+          <div id="stormShip" class="storm-ship"></div>
+        </div>
+        <div id="stormMsg" class="storm-msg" aria-live="polite">Supera la tempesta per sbloccare i rulli.</div>
+      </div>
+      <!-- === FINE STORM GAME === -->
 
       <div class="lock-panel">
         <div id="lockCard" class="lock-card">
@@ -515,6 +562,186 @@ in queste situazioni basta non perdere la rotta.
     // Utils
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
+
+    /* ==================== STORM GAME: logica timer + gioco ==================== */
+    const stormTimerEl = document.getElementById('stormTimer');
+    const stormProgressBar = document.getElementById('stormProgressBar');
+    const stormMsgEl = document.getElementById('stormMsg');
+    const stormGameEl = document.getElementById('stormGame');
+    const corridorEl = document.getElementById('stormCorridor');
+    const shipEl = document.getElementById('stormShip');
+    const stormRetryBtn = document.getElementById('stormRetry');
+
+    // Chiavi/stato in storage (univoche per pagina)
+    const ST_KEY = 'storm_state::' + location.pathname;
+
+    // Parametri tweakabili
+    const COUNTDOWN_MS = 2 * 60 * 1000;           // 2 minuti
+    const REQUIRED_ON_TARGET_MS = 10 * 1000;      // 10 secondi in corridoio
+    const CORRIDOR_MIN_W = 0.35;                  // larghezza minima (% width) del corridoio
+    const CORRIDOR_MAX_W = 0.55;                  // larghezza massima
+    const CORRIDOR_SPEED = 0.6;                   // velocità oscillazione (Hz)
+
+    // Stato runtime
+    let st = null;            // { deadline:number, won:boolean, onTargetMs:number }
+    let rafId = null;
+    let lastTs = 0;
+    let shipX = 0.5;          // posizione normalizzata [0..1]
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(ST_KEY);
+        if(raw) return JSON.parse(raw);
+      }catch{}
+      return { deadline: 0, won:false, onTargetMs:0 };
+    }
+    function saveState(){
+      try{ localStorage.setItem(ST_KEY, JSON.stringify(st)); }catch{}
+    }
+    function msToMMSS(ms){
+      const t = Math.max(0, Math.ceil(ms/1000));
+      const m = String(Math.floor(t/60)).padStart(2,'0');
+      const s = String(t%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimerUI(){
+      const now = Date.now();
+      const total = COUNTDOWN_MS;
+      const left = Math.max(0, st.deadline - now);
+      stormTimerEl.textContent = msToMMSS(left);
+      const ratio = left / total;
+      stormProgressBar.style.transform = `scaleX(${ratio})`;
+      return left;
+    }
+
+    function lockDials(locked){
+      lockCard.classList.toggle('is-locked', locked);
+    }
+    function setExpiredUI(expired){
+      lockCard.classList.toggle('expired', expired);
+      stormRetryBtn.style.display = expired ? 'inline-block' : 'none';
+      if(expired){
+        stormMsgEl.textContent = 'Tempo scaduto. Riprova per affrontare di nuovo la tempesta.';
+      }
+    }
+
+    function resetChallenge(){
+      st = { deadline: Date.now() + COUNTDOWN_MS, won:false, onTargetMs:0 };
+      saveState();
+      lockDials(true);
+      setExpiredUI(false);
+      stormMsgEl.textContent = 'Supera la tempesta per sbloccare i rulli.';
+      lastTs = 0;
+      ensureLoop();
+    }
+
+    function ensureLoop(){
+      if(rafId) return;
+      rafId = requestAnimationFrame(loop);
+    }
+    function stopLoop(){
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+      lastTs = 0;
+    }
+
+    function loop(ts){
+      if(!modal.classList.contains('open')){ stopLoop(); return; } // pausa quando modale chiusa
+      if(!lastTs) lastTs = ts;
+      const dt = Math.min(100, ts - lastTs); // cappa delta per stabilità
+      lastTs = ts;
+
+      // Timer
+      const left = updateTimerUI();
+      if(left <= 0){
+        setExpiredUI(true);
+        lockDials(true);
+        stopLoop();
+        return;
+      }
+
+      // Oscillazione corridoio
+      const w = stormGameEl.clientWidth;
+      const h = stormGameEl.clientHeight;
+      const t = (Date.now() / 1000) * CORRIDOR_SPEED * 2*Math.PI;
+      const widthRatio = (CORRIDOR_MIN_W + CORRIDOR_MAX_W)/2 + ((CORRIDOR_MAX_W - CORRIDOR_MIN_W)/2) * Math.sin(t*0.8);
+      const corridorW = widthRatio * w;
+      const centerX = (w * (0.5 + 0.35 * Math.sin(t))); // centro che oscilla
+      const x0 = clamp(centerX - corridorW/2, 0, w - corridorW);
+      corridorEl.style.width = corridorW + 'px';
+      corridorEl.style.left = x0 + 'px';
+
+      // Nave: aggiorna posizione visiva
+      const shipPx = shipX * w;
+      shipEl.style.left = shipPx + 'px';
+
+      // Check se dentro corridoio
+      const inside = shipPx >= x0 && shipPx <= x0 + corridorW;
+      if(inside && !st.won){
+        st.onTargetMs += dt;
+        if(st.onTargetMs >= REQUIRED_ON_TARGET_MS){
+          st.won = true;
+          stormMsgEl.textContent = 'Tempesta superata! Ora puoi inserire la combinazione.';
+          lockDials(false);
+          saveState();
+        }else{
+          const remain = Math.max(0, REQUIRED_ON_TARGET_MS - st.onTargetMs);
+          stormMsgEl.textContent = `Mantieni la rotta ancora ${ (remain/1000).toFixed(1) }s…`;
+        }
+      }
+      if(!inside && !st.won){
+        stormMsgEl.textContent = 'Resta nel corridoio luminoso per domare la tempesta.';
+      }
+
+      saveState();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    // Controllo nave: pointer e tastiera
+    function setShipByEvent(e){
+      const rect = stormGameEl.getBoundingClientRect();
+      const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      shipX = x;
+    }
+    stormGameEl.addEventListener('pointerdown', (e)=>{ stormGameEl.setPointerCapture(e.pointerId); setShipByEvent(e); });
+    stormGameEl.addEventListener('pointermove', (e)=>{ if(e.pressure!==0 || e.buttons>0) setShipByEvent(e); });
+    stormGameEl.addEventListener('click', setShipByEvent);
+    window.addEventListener('keydown', (e)=>{
+      if(!modal.classList.contains('open')) return;
+      const step = 0.03;
+      if(e.key === 'ArrowLeft'){ shipX = clamp(shipX - step, 0, 1); }
+      if(e.key === 'ArrowRight'){ shipX = clamp(shipX + step, 0, 1); }
+    });
+
+    // Retry
+    stormRetryBtn.addEventListener('click', ()=>{
+      resetChallenge();
+      ensureLoop();
+    });
+
+    // Avvio quando si apre la modale (senza modificare openModal: aggiungo un listener extra)
+    btnMap.addEventListener('click', ()=>{
+      // avvia/ricostruisci stato dopo l'apertura
+      setTimeout(()=>{
+        st = loadState();
+        const now = Date.now();
+        if(st.deadline <= now){ // nessuna deadline o scaduta → reset
+          resetChallenge();
+        }else{
+          // stato valido: ripristina UI
+          updateTimerUI();
+          setExpiredUI(false);
+          lockDials(!st.won);
+          stormMsgEl.textContent = st.won ? 'Tempesta superata! Ora puoi inserire la combinazione.' : 'Supera la tempesta per sbloccare i rulli.';
+          ensureLoop();
+        }
+      },0);
+    });
+
+    // Se chiudi la modale, il loop si ferma (già gestito in loop). Al resize, ricalcolo continua naturale.
+    window.addEventListener('resize', ()=>{
+      if(modal.classList.contains('open')) ensureLoop();
+    });
   </script>
 </body>
 </html>
