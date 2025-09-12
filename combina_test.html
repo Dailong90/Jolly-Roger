@@ -88,11 +88,36 @@
     .modal__close{ position:absolute; top:8px; right:8px; border:none; padding:8px 12px; line-height:1; background:#222; color:#f5d76e; font-weight:700; border-radius:8px; cursor:pointer; z-index:20; }
     .modal__close:hover{ background:#2f2f2f; }
 
-    /* ====== CONTENUTO MODALE: lucchetto in acciaio ====== */
+    /* ====== CONTENUTO MODALE ====== */
     .lock-panel{
       position:relative; width:100%; padding:16px; background:#0e1216;
-      display:grid; place-items:center; min-height:60vh;
+      display:grid; gap:16px; place-items:center; min-height:60vh;
     }
+
+    /* === Timone (gate) === */
+    .helm-gate{
+      width:min(760px,92%); border-radius:16px; padding:12px 12px 10px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.20));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.45);
+      color:#e5e7eb;
+    }
+    .helm-wrap{ position:relative; width:100%; display:grid; place-items:center; padding:8px 8px 4px; }
+    .helm-box{ position:relative; width:min(440px, 82vw); aspect-ratio:1/1; touch-action:none; }
+    .helm-svg{ position:absolute; inset:0; width:100%; height:100%; }
+    .helm-wheel{ transform-origin:50% 50%; transition:transform .1s ease-out; }
+    .helm-arrow{
+      position:absolute; left:50%; top:-10px; transform:translateX(-50%);
+      width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:20px solid #ef4444;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+    }
+    .helm-label{ margin-top:6px; text-align:center; font-size:14px; opacity:.9; }
+    .helm-progress{ margin-top:8px; display:grid; grid-template-columns:repeat(8,1fr); gap:6px; }
+    .helm-progress span{
+      display:block; height:8px; border-radius:999px; background:#374151; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .helm-progress span.on{ background:#10b981; box-shadow:0 0 10px rgba(16,185,129,.5), inset 0 0 0 1px rgba(255,255,255,.06); }
+
+    /* === Card acciaio con rulli === */
     .lock-card{
       width:min(760px,92%); border-radius:20px; padding:12px; background:
         linear-gradient(180deg, #4b525b, #2f353d),
@@ -102,6 +127,7 @@
       background-blend-mode: overlay, normal, screen, multiply;
       box-shadow: 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
       outline: 1px solid rgba(255,255,255,.08);
+      position:relative;
     }
     .lock-card.unlocked{
       box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(16,185,129,.28), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
@@ -110,39 +136,33 @@
     .lock-card__inner{
       border-radius:16px; padding:16px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 80px rgba(0,0,0,.25);
+      position:relative;
     }
 
     /* *** SEMPRE UNA SOLA RIGA *** */
     .lock-dials{
       display:grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr)); /* 6 colonne fisse */
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap:12px;
       width:100%;
     }
-
     .lock-dial{
       position:relative;
-      height:clamp(110px, 20vw, 150px); /* ⬅️ più compatto su smartphone */
+      height:clamp(110px, 20vw, 150px);
       border-radius:14px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 6px 14px rgba(0,0,0,.45);
       overflow:hidden; user-select:none; touch-action:none;
       min-width:0;
     }
-    .lock-dial::before, .lock-dial::after{
-      content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
-    }
+    .lock-dial::before, .lock-dial::after{ content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; }
     .lock-dial::before{
       background:
         radial-gradient(120% 100% at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
         radial-gradient(120% 100% at 50% 70%, rgba(0,0,0,.20), rgba(0,0,0,0) 60%);
       mix-blend-mode: screen; z-index: 1;
     }
-    .lock-dial::after{
-      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35));
-      z-index: 3;
-    }
-
+    .lock-dial::after{ background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,.35)); z-index: 3; }
     .lock-reel{
       position:absolute; left:0; right:0; top:0; z-index:2; will-change: transform;
       background:
@@ -154,26 +174,30 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 30px rgba(0,0,0,.25);
     }
     .lock-cell{
-      height:clamp(38px, 6.5vw, 52px); /* ⬅️ leggermente più bassa per stare comoda */
+      height:clamp(38px, 6.5vw, 52px);
       display:grid; place-items:center;
       font-weight:800; font-variant-numeric: tabular-nums;
-      font-size: clamp(24px, 6.2vw, 34px); /* ⬅️ font un filo più flessibile */
+      font-size: clamp(24px, 6.2vw, 34px);
       color:#0f141a;
       text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 2px 2px rgba(0,0,0,.15);
       border-top: 1px dashed rgba(15,20,26,.22);
       border-bottom: 1px dashed rgba(15,20,26,.22);
     }
-    .lock-centerline{
-      position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%);
-      height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4;
-    }
-
+    .lock-centerline{ position:absolute; left:8px; right:8px; top:50%; transform:translateY(-50%); height:0; border-top:1px dashed rgba(230,233,237,.45); z-index:4; }
     .lock-status{ margin-top:12px; text-align:center; font-size:.95rem; color:#e5e7eb; }
     .lock-status .ok{ color:var(--ok); font-weight:700; }
     .lock-status .no{ color:var(--err); font-weight:700; }
-
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
+
+    /* === Gate mask sui rulli finché il timone non è completo === */
+    .is-gated .lock-dials{ pointer-events:none; filter: blur(1.4px) grayscale(.4); }
+    .lock-gate-mask{
+      position:absolute; inset:0; display:grid; place-items:center; padding:16px; text-align:center;
+      color:#e5e7eb; font-size:.95rem; background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.35));
+      border-radius:16px; z-index:10; opacity:.95;
+    }
+    .gate-hidden .lock-gate-mask{ display:none; }
   </style>
   
 </head>
@@ -187,7 +211,6 @@
       <div class="card__head">
         <h2 id="titolo-regole" class="card__title">Affronta la tempesta!</h2>
         <div class="head__actions">
-          <!-- Testo aggiornato: Bacheca → Codice -->
           <button id="btnMap" type="button" class="btn" aria-haspopup="dialog" aria-controls="modalMap">Codice</button>
           <button id="btnHide" type="button" class="btn btn--ghost" aria-controls="contentCard">Nascondi</button>
         </div>
@@ -205,19 +228,62 @@ in queste situazioni basta non perdere la rotta.
         <div class="riddle__fade" aria-hidden="true"></div>
         <div class="riddle__indicator" aria-hidden="true"><i class="bi bi-caret-down-fill"></i></div>
       </div>
-
-      <!-- Campo soluzione rimosso come richiesto -->
     </section>
   </main>
 
-  <!-- Modale con il LUCCCHETTO -->
+  <!-- Modale -->
   <div id="modalMap" class="modal" role="dialog" aria-modal="true" aria-label="Inserisci il codice" aria-hidden="true">
     <div class="modal__inner">
       <button class="modal__close" type="button" id="btnClose" aria-label="Chiudi (Esc)">Chiudi ✕</button>
 
       <div class="lock-panel">
+        <!-- === TIMONE (gate) === -->
+        <section class="helm-gate" id="helmGate">
+          <div class="helm-wrap">
+            <div class="helm-box" id="helmBox" aria-label="Timone della nave">
+              <div class="helm-arrow" aria-hidden="true"></div>
+              <!-- SVG timone -->
+              <svg class="helm-svg" viewBox="0 0 100 100">
+                <!-- disco interno -->
+                <g id="helmWheel" class="helm-wheel">
+                  <circle cx="50" cy="50" r="18" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.2"/>
+                  <circle cx="50" cy="50" r="25" fill="#7a4d22" stroke="#3a2715" stroke-width="1.2"/>
+                  <!-- 8 manici -->
+                  <g fill="#7a4d22" stroke="#3a2715" stroke-width="1">
+                    <!-- Generati a 45°: N, NE, E, SE, S, SW, W, NW -->
+                    <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(45 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(90 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(135 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(180 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(225 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                  </g>
+                  <!-- ghiera -->
+                  <circle cx="50" cy="50" r="34" fill="none" stroke="#2a1b0d" stroke-width="4"/>
+                  <circle cx="50" cy="50" r="30" fill="none" stroke="#b07a3c" stroke-width="2"/>
+                  <circle cx="50" cy="50" r="12" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.4"/>
+                </g>
+              </svg>
+            </div>
+            <div class="helm-label" id="helmLabel">Allinea il timone seguendo la sequenza annunciata (fermati ~1s su ogni direzione).</div>
+            <div class="helm-progress" id="helmProgress" aria-live="polite">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- === CARD RULLI === -->
         <div id="lockCard" class="lock-card">
           <div class="lock-card__inner">
+            <div class="lock-gate-mask" id="lockGateMask">
+              <div>
+                <div style="font-weight:700; margin-bottom:6px;">Timone non allineato</div>
+                <div>Completa la sequenza con il timone per sbloccare i cilindri.</div>
+              </div>
+            </div>
+
             <div id="lockDials" class="lock-dials">
               <div class="lock-dial" data-index="0"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
               <div class="lock-dial" data-index="1"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
@@ -226,6 +292,7 @@ in queste situazioni basta non perdere la rotta.
               <div class="lock-dial" data-index="4"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
               <div class="lock-dial" data-index="5"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
             </div>
+
             <div id="lockStatus" class="lock-status" aria-live="polite">Stato: <span class="no">Bloccato</span></div>
             <div class="lock-actions">
               <a id="btnNext" class="btn" href="luc58e.html" style="display:none;">Prosegui</a>
@@ -246,7 +313,8 @@ in queste situazioni basta non perdere la rotta.
       modal.classList.add('open');
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
-      initLockOnce(); // inizializza i rulli quando la modale è visibile
+      initHelmOnce();  // ⬅️ inizializza timone
+      initLockOnce();  // ⬅️ inizializza rulli
     }
     function closeModal(){
       modal.classList.remove('open');
@@ -300,17 +368,11 @@ in queste situazioni basta non perdere la rotta.
       function init(){
         const wasRevealed = (()=>{ try{ return localStorage.getItem(REVEAL_KEY)==='1'; }catch{ return false; }})();
         if(wasRevealed){
-          card.classList.remove('is-hidden');
-          card.setAttribute('aria-hidden','false');
-          btnReveal.style.display = 'none';
-          btnReveal.setAttribute('aria-expanded','true');
-          btnHide.style.display = '';
+          card.classList.remove('is-hidden'); card.setAttribute('aria-hidden','false');
+          btnReveal.style.display = 'none'; btnReveal.setAttribute('aria-expanded','true'); btnHide.style.display = '';
         }else{
-          card.classList.add('is-hidden');
-          card.setAttribute('aria-hidden','true');
-          btnReveal.style.display = 'block';
-          btnReveal.setAttribute('aria-expanded','false');
-          btnHide.style.display = 'none';
+          card.classList.add('is-hidden'); card.setAttribute('aria-hidden','true');
+          btnReveal.style.display = 'block'; btnReveal.setAttribute('aria-expanded','false'); btnHide.style.display = 'none';
         }
         btnReveal.addEventListener('click', reveal);
         btnReveal.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); reveal(); } });
@@ -319,14 +381,196 @@ in queste situazioni basta non perdere la rotta.
       init();
     })();
 
-    /* ======== MODALE: lucchetto (SHA-256, nessun codice in chiaro) ======== */
-    // Hash target (SHA-256 base64), spezzato e ricomposto:
-    const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
+    /* ===================== TIMONE – Gate ===================== */
+    // Hash target (SHA-256 base64) della SEQUENZA del timone (non in chiaro), spezzato:
+    const HELM_H = (() => ['tKIY','bmim','KZuo','2Evs','0mAl','/JTC','QLva','MXec','9z11','Ado3','3Fw='].join(''))();
     // Pepper e firma ricostruiti a runtime:
+    const HELM_P = (() => ['GAL','-','RO','TA','-','8'].join(''))(); // GAL-ROTA-8
+    const HELM_S = (() => ['HE','LM'].join(''))();                   // HELM
+
+    // Direzioni canoniche (mappa indicizzata per settore 45°)
+    const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
+
+    const helmBox = document.getElementById('helmBox');
+    const helmWheel = document.getElementById('helmWheel');
+    const helmProgress = document.getElementById('helmProgress');
+    const helmLabel = document.getElementById('helmLabel');
+    const lockCard = document.getElementById('lockCard');
+    const lockGateMask = document.getElementById('lockGateMask');
+
+    let helmInited = false;
+    let helmUnlocked = false;
+    let holdTimer = null;
+    let currentSector = null;     // indice 0..7
+    let seqSoFar = [];            // lista di label es.: ['N','S','E', ...]
+    const HOLD_MS = 1000;
+    const MOVE_TOL_SECTOR = 0;    // cambiare settore = reset timer (snap)
+
+    function initHelmOnce(){
+      if(helmInited){ return; }
+      // Gating iniziale
+      lockCard.classList.add('is-gated');
+      lockCard.classList.remove('gate-hidden');
+
+      // Progress UI: reset
+      [...helmProgress.children].forEach(el => el.classList.remove('on'));
+
+      // Pointer handling (solo smartphone: touch, ma pointer va bene)
+      let dragging = false;
+
+      const getCenter = () => {
+        const r = helmBox.getBoundingClientRect();
+        return { cx: r.left + r.width/2, cy: r.top + r.height/2 };
+      };
+      const toDeg = (rad) => rad * 180 / Math.PI;
+      // 0° = N (su), aumenta in senso orario
+      function angleFromCenter(x, y){
+        const {cx, cy} = getCenter();
+        const a = Math.atan2(y - cy, x - cx); // 0= +X (E), π/2=+Y (S)
+        let deg = (toDeg(a) + 90);            // ruota così che 0° punti a N
+        deg = (deg + 360) % 360;
+        return deg;
+      }
+      function sectorFromAngle(deg){
+        return Math.round(deg / 45) % 8; // 0..7
+      }
+      function snapRotationForSector(sector){
+        const deg = sector * 45;
+        helmWheel.style.transform = `rotate(${deg}deg)`;
+      }
+
+      function handleNewSector(sector){
+        if(sector === currentSector) return;
+        currentSector = sector;
+        // Snap grafico
+        snapRotationForSector(sector);
+        // reset hold
+        if(holdTimer) clearTimeout(holdTimer);
+        holdTimer = setTimeout(onHoldStable, HOLD_MS, sector);
+      }
+
+      async function onHoldStable(stableSector){
+        // Conferma una "posa" se il settore non è cambiato
+        if(stableSector !== currentSector) return;
+        const label = DIRS[stableSector];
+        seqSoFar.push(label);
+        feedbackStep(seqSoFar.length);
+        // Verifica progress con hash (nessuna sequenza in chiaro)
+        const ok = await verifyHelmSequence(seqSoFar);
+        if(ok === 'progress'){
+          // continua
+          helmLabel.textContent = `Buono! (${seqSoFar.length} step) Continua…`;
+          try { navigator.vibrate?.(20); } catch {}
+        }else if(ok === true){
+          // sequenza completa → sblocca rulli
+          helmUnlocked = true;
+          lockCard.classList.remove('is-gated');
+          lockCard.classList.add('gate-hidden');
+          lockGateMask.style.display = 'none';
+          helmLabel.textContent = 'Timone allineato. Inserisci il codice.';
+          try { navigator.vibrate?.([20,40,20]); } catch {}
+        }else{
+          // errore: reset duro
+          seqSoFar = [];
+          feedbackStep(0, true);
+          helmLabel.textContent = 'Sequenza errata. Ricomincia.';
+          try { navigator.vibrate?.(60); } catch {}
+        }
+      }
+
+      function feedbackStep(n, reset=false){
+        const bars = [...helmProgress.children];
+        bars.forEach((el,i)=>{
+          if(reset){ el.classList.remove('on'); return; }
+          if(i < n) el.classList.add('on'); else el.classList.remove('on');
+        });
+      }
+
+      helmBox.addEventListener('pointerdown', (e)=>{
+        e.preventDefault();
+        dragging = true;
+        helmBox.setPointerCapture?.(e.pointerId);
+        // cancella eventuale hold in corso
+        if(holdTimer) { clearTimeout(holdTimer); holdTimer=null; }
+        const deg = angleFromCenter(e.clientX, e.clientY);
+        handleNewSector(sectorFromAngle(deg));
+      });
+      helmBox.addEventListener('pointermove', (e)=>{
+        if(!dragging) return;
+        const deg = angleFromCenter(e.clientX, e.clientY);
+        handleNewSector(sectorFromAngle(deg));
+      });
+      const endDrag = ()=>{
+        if(!dragging) return;
+        dragging = false;
+        // se il dito si stacca, parte l'hold sul settore corrente (se non già partito)
+        if(holdTimer) { /* già in corso */ }
+        else if(currentSector!=null){ holdTimer = setTimeout(onHoldStable, HOLD_MS, currentSector); }
+      };
+      helmBox.addEventListener('pointerup', endDrag);
+      helmBox.addEventListener('pointercancel', endDrag);
+      helmBox.addEventListener('pointerleave', endDrag);
+
+      helmInited = true;
+    }
+
+    // Verifica progressiva della sequenza del timone:
+    // - Ritorna 'progress' se il prefisso è corretto ma non completo
+    // - Ritorna true se la sequenza è completa
+    // - Ritorna false se mismatch
+    async function verifyHelmSequence(seqArray){
+      // Controllo in 2 fasi: (1) prefisso valido? (2) completo?
+      // Per evitare mettere la sequenza in chiaro:
+      // costruisco hash in base64 per ogni prefisso e confronto con hash "guardiano" calcolato allo stesso modo lato nostro.
+      // In pratica: HELM_P + '|' + (direzioni separate da virgola) + '|' + HELM_S
+      const s = seqArray.join(',');
+      const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
+
+      // Il trucco: confrontiamo contro l'hash finale per capire se "completo",
+      // e contro un set di hash di prefisso derivati al volo usando un "oracolo" deterministico.
+      // Per evitare di memorizzare i prefissi in chiaro, usiamo una regola:
+      // - Il prefisso è valido se e solo se l'hash del prefisso è un prefisso dell'hash finale in base64 dopo XOR mascherato.
+      //   (Implementazione semplice: verifichiamo che i primi N caratteri coincidano dopo una maschera ripetibile).
+      // Nota: è una protezione "di scena" per non esporre la sequenza; non è crittografia forte, ma basta per non spoilerare.
+
+      // Maschera ripetibile dal pepper:
+      const mask = xorMaskFrom(HELM_P);
+      const maskedDigest = xorB64(digest, mask);
+      const maskedFinal  = xorB64(HELM_H, mask);
+
+      if (maskedFinal.startsWith(maskedDigest)) {
+        // prefisso corretto
+        if (digest.length === HELM_H.length && safeEqual(digest, HELM_H)) {
+          return true; // sequenza completa
+        }
+        return 'progress';
+      }
+      return false; // mismatch
+    }
+
+    // XOR "di scena" su base64 per non rivelare pattern immediati
+    function xorB64(b64, mask){
+      let out = '';
+      for(let i=0;i<b64.length;i++){
+        const c = b64.charCodeAt(i) ^ mask.charCodeAt(i % mask.length);
+        out += String.fromCharCode(c);
+      }
+      return out;
+    }
+    function xorMaskFrom(seed){
+      // Semplice maschera da seed
+      let v = 0;
+      for(let i=0;i<seed.length;i++) v = (v*131 + seed.charCodeAt(i)) >>> 0;
+      const chars = [];
+      for(let i=0;i<16;i++){ v = (v*1103515245 + 12345) >>> 0; chars.push( (33 + (v % 90)) ); }
+      return String.fromCharCode(...chars);
+    }
+
+    // ======== RULLI: lucchetto (SHA-256, nessun codice in chiaro) ========
+    const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
     const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // GALLEON-1492-ROGER
     const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // BLACKPEARL
 
-    const lockCard   = document.getElementById('lockCard');
     const lockStatus = document.getElementById('lockStatus');
     const btnNext    = document.getElementById('btnNext');
     const dialEls    = [];
@@ -363,14 +607,19 @@ in queste situazioni basta non perdere la rotta.
         const reel = dial.querySelector('.lock-reel');
         let startY=0, startOffset=0, lastY=0, lastTime=0, velocity=0, dragging=false;
 
-        dial.addEventListener('pointerdown', (e) => {
+        const gatedGuard = (fn) => (e)=> {
+          if(lockCard.classList.contains('is-gated')){ e.preventDefault(); return; }
+          fn(e);
+        };
+
+        dial.addEventListener('pointerdown', gatedGuard((e) => {
           e.preventDefault();
           dial.setPointerCapture(e.pointerId);
           dragging = true;
           startY = e.clientY;
           startOffset = Number(reel.dataset.offset || 0);
           lastY = startY; lastTime = performance.now(); velocity = 0;
-        });
+        }));
         dial.addEventListener('pointermove', (e) => {
           if(!dragging) return;
           const y = e.clientY;
@@ -390,9 +639,13 @@ in queste situazioni basta non perdere la rotta.
           if(!dragging) return; dragging = false;
           snapToNearest(idx, Number(reel.dataset.offset || 0));
         });
-        dial.addEventListener('wheel', (e) => { e.preventDefault(); nudge(idx, Math.sign(e.deltaY)); }, {passive:false});
+        dial.addEventListener('wheel', (e) => {
+          if(lockCard.classList.contains('is-gated')){ e.preventDefault(); return; }
+          e.preventDefault(); nudge(idx, Math.sign(e.deltaY));
+        }, {passive:false});
         dial.tabIndex = 0;
         dial.addEventListener('keydown', (e) => {
+          if(lockCard.classList.contains('is-gated')){ e.preventDefault(); return; }
           if(e.key==='ArrowUp'){ e.preventDefault(); nudge(idx,-1); }
           if(e.key==='ArrowDown'){ e.preventDefault(); nudge(idx,+1); }
           if(e.key==='Home'){ e.preventDefault(); setValue(idx,0,true); }
@@ -408,7 +661,6 @@ in queste situazioni basta non perdere la rotta.
         measureCellHeight(); positionAllToCurrent(); queueVerify();
       });
 
-      // 👉 Chiudi modale automaticamente al click su "Prosegui", poi naviga
       btnNext.addEventListener('click', (e) => {
         if(!btnNext.href) return;
         e.preventDefault();
@@ -500,13 +752,15 @@ in queste situazioni basta non perdere la rotta.
       const seq = ++verifySeq;
       verifyCurrentCode().then(ok => {
         if(seq !== verifySeq) return;
-        lockCard.classList.toggle('unlocked', ok);
-        lockStatus.innerHTML = ok ? 'Stato: <span class="ok">Sbloccato</span>' : 'Stato: <span class="no">Bloccato</span>';
-        btnNext.style.display = ok ? 'inline-block' : 'none';
+        // Se il timone non è ancora completato, rimani "Bloccato" a prescindere
+        const effectiveOk = ok && !lockCard.classList.contains('is-gated');
+        lockCard.classList.toggle('unlocked', effectiveOk);
+        lockStatus.innerHTML = effectiveOk ? 'Stato: <span class="ok">Sbloccato</span>' : 'Stato: <span class="no">Bloccato</span>';
+        btnNext.style.display = effectiveOk ? 'inline-block' : 'none';
       });
     }
     async function verifyCurrentCode(){
-      const code = values.join('');              // es. "602915"
+      const code = values.join('');
       const msg  = LOCK_P + '|' + code + '|' + LOCK_S;
       const digestB64 = await sha256Base64(msg);
       return safeEqual(digestB64, LOCK_H);
@@ -515,6 +769,19 @@ in queste situazioni basta non perdere la rotta.
     // Utils
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
+
+    /* ===== Utility DEV (facoltativa) per rigenerare l'hash del TIMONE =====
+       In console privata (NON in pagina pubblica) puoi fare:
+       window._deriveHelmHash(['N','S','E','NE','W','SW'], 'GAL-ROTA-8', 'HELM')
+       e sostituire HELM_H con il valore stampato (spezzandolo in chunk come sopra).
+       Le stringhe direzione valide sono: N, NE, E, SE, S, SW, W, NW.
+    ---------------------------------------------------------------------- */
+    window._deriveHelmHash = async function(list, pepper, sig){
+      const s = (pepper||HELM_P) + '|' + list.join(',') + '|' + (sig||HELM_S);
+      const h = await sha256Base64(s);
+      console.log('HelmHash base64:', h);
+      return h;
+    };
   </script>
 </body>
 </html>
