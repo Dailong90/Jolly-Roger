@@ -6,7 +6,7 @@
   <title>Enigma – Combinazione</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
-    :root { --bg-url: url('assets/temp_o2.png'); --ok:#10b981; --err:#ef4444; }
+    :root { --bg-url: url('assets/temp_o2.png'); --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body { margin:0; padding:0; height:100%; overflow:hidden; }
@@ -100,20 +100,19 @@
       background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.20));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.45);
       color:#e5e7eb;
-      margin:0 auto; /* centrato */
+      margin:0 auto;
     }
     .helm-wrap{
       position:relative; width:100%;
-      display:grid; place-items:center; justify-items:center; /* centratura orizzontale */
+      display:grid; place-items:center; justify-items:center;
       padding:8px 8px 4px;
     }
-    /* ⬇️ Timone più piccolo e centrato */
     .helm-box{
       position:relative;
-      width:min(340px, 72vw);  /* ridotto */
+      width:min(340px, 72vw);
       aspect-ratio:1/1;
       touch-action:none;
-      margin:0 auto;           /* centrato */
+      margin:0 auto;
     }
     .helm-svg{ position:absolute; inset:0; width:100%; height:100%; }
     .helm-wheel{ transform-origin:50% 50%; transition:transform .1s ease-out; }
@@ -123,11 +122,16 @@
       filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
     }
     .helm-label{ margin-top:6px; text-align:center; font-size:14px; opacity:.9; }
-    .helm-progress{ margin-top:8px; display:grid; grid-template-columns:repeat(8,1fr); gap:6px; }
+
+    /* Progress pallini (6 step) */
+    .helm-progress{ margin-top:8px; display:grid; grid-template-columns:repeat(6,1fr); gap:6px; width:min(360px, 82%); }
     .helm-progress span{
-      display:block; height:8px; border-radius:999px; background:#374151; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+      display:block; height:10px; border-radius:999px; background:#374151;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+      transition:background .18s ease, box-shadow .18s ease;
     }
-    .helm-progress span.on{ background:#10b981; box-shadow:0 0 10px rgba(16,185,129,.5), inset 0 0 0 1px rgba(255,255,255,.06); }
+    .helm-progress span.on    { background:var(--warn); box-shadow:0 0 8px rgba(245,158,11,.45), inset 0 0 0 1px rgba(255,255,255,.08); }
+    .helm-progress span.success{ background:var(--ok);   box-shadow:0 0 10px rgba(16,185,129,.55), inset 0 0 0 1px rgba(255,255,255,.08); }
 
     /* === Card acciaio con rulli === */
     .lock-card{
@@ -140,7 +144,7 @@
       box-shadow: 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
       outline: 1px solid rgba(255,255,255,.08);
       position:relative;
-      margin:0 auto; /* centrata */
+      margin:0 auto;
     }
     .lock-card.unlocked{
       box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(16,185,129,.28), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
@@ -152,7 +156,7 @@
       position:relative;
     }
 
-    /* *** SEMPRE UNA SOLA RIGA *** */
+    /* Rulli: sempre una riga */
     .lock-dials{
       display:grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -203,7 +207,7 @@
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
 
-    /* === Gate mask sui rulli finché il timone non è completo === */
+    /* Gate: rulli bloccati finché il timone non è completo */
     .is-gated .lock-dials{ pointer-events:none; filter: blur(1.4px) grayscale(.4); }
     .lock-gate-mask{
       position:absolute; inset:0; display:grid; place-items:center; padding:16px; text-align:center;
@@ -255,13 +259,13 @@ in queste situazioni basta non perdere la rotta.
           <div class="helm-wrap">
             <div class="helm-box" id="helmBox" aria-label="Timone della nave">
               <div class="helm-arrow" aria-hidden="true"></div>
-              <!-- SVG timone con etichette che RUOTANO con i bracci -->
+
+              <!-- SVG timone: bracci + lettere che ruotano insieme -->
               <svg class="helm-svg" viewBox="0 0 100 100" aria-hidden="false">
                 <g id="helmWheel" class="helm-wheel">
-                  <!-- disco interno -->
+                  <!-- dischi -->
                   <circle cx="50" cy="50" r="18" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.2"/>
                   <circle cx="50" cy="50" r="25" fill="#7a4d22" stroke="#3a2715" stroke-width="1.2"/>
-              
                   <!-- 8 manici -->
                   <g fill="#7a4d22" stroke="#3a2715" stroke-width="1">
                     <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>   <!-- N -->
@@ -273,19 +277,17 @@ in queste situazioni basta non perdere la rotta.
                     <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- W -->
                     <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- NW -->
                   </g>
-              
                   <!-- ghiera -->
                   <circle cx="50" cy="50" r="34" fill="none" stroke="#2a1b0d" stroke-width="4"/>
                   <circle cx="50" cy="50" r="30" fill="none" stroke="#b07a3c" stroke-width="2"/>
                   <circle cx="50" cy="50" r="12" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.4"/>
-              
-                  <!-- Etichette legate ai bracci (ruotano insieme al timone) -->
+
+                  <!-- Etichette legate ai bracci -->
                   <defs>
                     <filter id="labelShadow2" x="-50%" y="-50%" width="200%" height="200%">
                       <feDropShadow dx="0" dy="0" stdDeviation="0.6" flood-color="#000" flood-opacity="0.55"/>
                     </filter>
                   </defs>
-                  <!-- r = 40 circa; ogni label è su un gruppo ruotato come il braccio -->
                   <g font-size="6.5" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#f8f4ec" filter="url(#labelShadow2)">
                     <g transform="rotate(0 50 50) translate(50 10)"><text>N</text></g>
                     <g transform="rotate(45 50 50) translate(50 10)"><text>NE</text></g>
@@ -299,9 +301,12 @@ in queste situazioni basta non perdere la rotta.
                 </g>
               </svg>
             </div>
+
             <div class="helm-label" id="helmLabel">Allinea il timone seguendo la sequenza annunciata (fermati ~1s su ogni direzione).</div>
+
+            <!-- Progress a 6 pallini -->
             <div class="helm-progress" id="helmProgress" aria-live="polite">
-              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
         </section>
@@ -345,8 +350,8 @@ in queste situazioni basta non perdere la rotta.
       modal.classList.add('open');
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
-      initHelmOnce();  // ⬅️ timone
-      initLockOnce();  // ⬅️ rulli
+      initHelmOnce();  // timone
+      initLockOnce();  // rulli
     }
     function closeModal(){
       modal.classList.remove('open');
@@ -413,14 +418,13 @@ in queste situazioni basta non perdere la rotta.
       init();
     })();
 
-    /* ===================== TIMONE – Gate ===================== */
-    // Hash target (SHA-256 base64) della SEQUENZA del timone (non in chiaro)
-    const HELM_H = (() => ['tKIY','bmim','KZuo','2Evs','0mAl','/JTC','QLva','MXec','9z11','Ado3','3Fw='].join(''))();
-    // Pepper e firma ricostruiti a runtime:
-    const HELM_P = (() => ['GAL','-','RO','TA','-','8'].join(''))(); // GAL-ROTA-8
-    const HELM_S = (() => ['HE','LM'].join(''))();                   // HELM
+    /* ===================== TIMONE – Gate (6 step) ===================== */
+    // Sequenza target (SE, NE, W, S, SW, N) PROTETTA: SHA-256 base64 spezzato
+    const HELM_H = (() => ['DV/J','wFCo','8sTe','OV7v','rCD8','vmRe','huTK','DSqq','QRx9','l0eT','vkY='].join(''))();
+    const HELM_P = (() => ['GAL','-','RO','TA','-','8'].join(''))(); // Pepper
+    const HELM_S = (() => ['HE','LM'].join(''))();                   // Signature
+    const HELM_LEN = 6;
 
-    // Direzioni canoniche (settori da 0° a 315° – senso orario)
     const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
 
     const helmBox = document.getElementById('helmBox');
@@ -431,18 +435,21 @@ in queste situazioni basta non perdere la rotta.
     const lockGateMask = document.getElementById('lockGateMask');
 
     let helmInited = false;
-    let helmUnlocked = false;
     let holdTimer = null;
-    let currentSector = null;     // indice 0..7
-    let seqSoFar = [];            // es.: ['N','S','E', ...]
+    let currentSector = null;   // 0..7
+    let seqSoFar = [];          // array di label
     const HOLD_MS = 1000;
 
     function initHelmOnce(){
       if(helmInited){ return; }
+      // Gating iniziale
       lockCard.classList.add('is-gated');
       lockCard.classList.remove('gate-hidden');
-      [...helmProgress.children].forEach(el => el.classList.remove('on'));
+      lockGateMask.style.display = ''; // visibile
+      // Reset progress
+      resetProgress();
 
+      // Pointer handling
       let dragging = false;
 
       const getCenter = () => {
@@ -451,11 +458,11 @@ in queste situazioni basta non perdere la rotta.
       };
       const toDeg = (rad) => rad * 180 / Math.PI;
 
-      // 0° = N; aumenta in senso orario
+      // 0° = N; senso orario
       function angleFromCenter(x, y){
         const {cx, cy} = getCenter();
         const a = Math.atan2(y - cy, x - cx); // 0=E
-        let deg = (toDeg(a) + 90);            // orientato a N
+        let deg = (toDeg(a) + 90);
         deg = (deg + 360) % 360;
         return deg;
       }
@@ -476,32 +483,48 @@ in queste situazioni basta non perdere la rotta.
       async function onHoldStable(stableSector){
         if(stableSector !== currentSector) return;
         const label = DIRS[stableSector];
+
+        // 1) Aggiungi step alla sequenza e feedback GIALLO
         seqSoFar.push(label);
-        feedbackStep(seqSoFar.length);
-        const ok = await verifyHelmSequence(seqSoFar);
-        if(ok === 'progress'){
-          helmLabel.textContent = `Buono! (${seqSoFar.length} step) Continua…`;
-          try { navigator.vibrate?.(20); } catch {}
-        }else if(ok === true){
-          helmUnlocked = true;
-          lockCard.classList.remove('is-gated');
-          lockCard.classList.add('gate-hidden');
-          lockGateMask.style.display = 'none';
-          helmLabel.textContent = 'Timone allineato. Inserisci il codice.';
-          try { navigator.vibrate?.([20,40,20]); } catch {}
-        }else{
-          seqSoFar = [];
-          feedbackStep(0, true);
-          helmLabel.textContent = 'Sequenza errata. Ricomincia.';
-          try { navigator.vibrate?.(60); } catch {}
+        setProgress(seqSoFar.length, 'on');
+        helmLabel.textContent = `Passo ${seqSoFar.length}/${HELM_LEN} registrato…`;
+        try { navigator.vibrate?.(18); } catch {}
+
+        // 2) Se raggiunti 6 step → verifica hash
+        if(seqSoFar.length >= HELM_LEN){
+          const ok = await verifyHelmFinal(seqSoFar);
+          if(ok){
+            // Verde + sblocco rulli
+            markProgressSuccess();
+            lockCard.classList.remove('is-gated');
+            lockCard.classList.add('gate-hidden');
+            lockGateMask.style.display = 'none';
+            helmLabel.textContent = 'Timone allineato. Inserisci il codice.';
+            try { navigator.vibrate?.([20,40,20]); } catch {}
+          }else{
+            // Reset (spegnere tutto)
+            try { navigator.vibrate?.(60); } catch {}
+            helmLabel.textContent = 'Sequenza errata. Ricomincia.';
+            seqSoFar = [];
+            // Piccola pausa per far vedere i 6 gialli, poi spegne
+            setTimeout(resetProgress, 280);
+          }
         }
       }
 
-      function feedbackStep(n, reset=false){
+      function resetProgress(){
         const bars = [...helmProgress.children];
-        bars.forEach((el,i)=>{
-          if(reset){ el.classList.remove('on'); return; }
-          if(i < n) el.classList.add('on'); else el.classList.remove('on');
+        bars.forEach(el=>{ el.classList.remove('on','success'); });
+      }
+      function setProgress(n, cls){
+        const bars = [...helmProgress.children];
+        bars.forEach((el, i)=>{ if(i < n){ el.classList.add(cls); } });
+      }
+      function markProgressSuccess(){
+        const bars = [...helmProgress.children];
+        bars.forEach(el=>{
+          el.classList.remove('on');
+          el.classList.add('success');
         });
       }
 
@@ -531,37 +554,11 @@ in queste situazioni basta non perdere la rotta.
       helmInited = true;
     }
 
-    // Verifica progressiva della sequenza (nessuna sequenza in chiaro)
-    async function verifyHelmSequence(seqArray){
-      const s = seqArray.join(',');
+    // Verifica FINALE della sequenza (nessuna info durante i passi)
+    async function verifyHelmFinal(seqArray){
+      const s = seqArray.join(','); // es: "SE,NE,W,S,SW,N"
       const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
-
-      // Maschera XOR "di scena" per confronti prefisso → evita pattern banali
-      const mask = xorMaskFrom(HELM_P);
-      const maskedDigest = xorB64(digest, mask);
-      const maskedFinal  = xorB64(HELM_H, mask);
-
-      if (maskedFinal.startsWith(maskedDigest)) {
-        if (digest.length === HELM_H.length && safeEqual(digest, HELM_H)) return true;
-        return 'progress';
-      }
-      return false;
-    }
-
-    function xorB64(b64, mask){
-      let out = '';
-      for(let i=0;i<b64.length;i++){
-        const c = b64.charCodeAt(i) ^ mask.charCodeAt(i % mask.length);
-        out += String.fromCharCode(c);
-      }
-      return out;
-    }
-    function xorMaskFrom(seed){
-      let v = 0;
-      for(let i=0;i<seed.length;i++) v = (v*131 + seed.charCodeAt(i)) >>> 0;
-      const chars = [];
-      for(let i=0;i<16;i++){ v = (v*1103515245 + 12345) >>> 0; chars.push( (33 + (v % 90)) ); }
-      return String.fromCharCode(...chars);
+      return safeEqual(digest, HELM_H); // true se sequenza esatta
     }
 
     /* ===================== RULLI (immutati) ===================== */
@@ -731,7 +728,7 @@ in queste situazioni basta non perdere la rotta.
       queueVerify();
     }
 
-    // SHA-256 base64
+    // === Util comuni ===
     async function sha256Base64(str){
       const enc = new TextEncoder();
       const data = enc.encode(str);
@@ -766,7 +763,10 @@ in queste situazioni basta non perdere la rotta.
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
 
-    // Utility DEV per rigenerare hash del timone (non pubblica)
+    /* ===== Utility privata per rigenerare l'hash del TIMONE (se servisse) =====
+       In console: window._deriveHelmHash(['SE','NE','W','S','SW','N'], 'GAL-ROTA-8', 'HELM')
+       Sostituisci HELM_H con il risultato (spezzato in chunk).
+    -------------------------------------------------------------------------- */
     window._deriveHelmHash = async function(list, pepper, sig){
       const s = (pepper||HELM_P) + '|' + list.join(',') + '|' + (sig||HELM_S);
       const h = await sha256Base64(s);
