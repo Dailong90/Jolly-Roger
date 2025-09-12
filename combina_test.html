@@ -174,46 +174,6 @@
 
     .lock-actions{ margin-top:12px; text-align:center; }
     .lock-actions .btn{ min-width: 160px; }
-
-    /* ======= AGGIUNTE: Pannello prelock bussola ======= */
-    .lock-card.prelocked .lock-dials{ opacity:.35; pointer-events:none; filter:grayscale(.6); }
-    .prelock{ margin-bottom:12px; color:#e5e7eb; }
-    .prelock__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
-    .seq{ display:flex; flex-wrap:wrap; gap:6px; font-weight:700; }
-    .seq__item{
-      padding:4px 8px; border-radius:999px; background:#1c2330; border:1px solid rgba(255,255,255,.1); opacity:.85;
-    }
-    .seq__item.--current{ background:#273247; border-color:#6ca4ff; box-shadow:0 0 0 2px rgba(108,164,255,.15) inset; }
-    .seq__item.--done{ background:#0f3a2f; border-color:#1fa97a; }
-    .countdown{ font-variant-numeric:tabular-nums; font-weight:800; padding:4px 10px; border-radius:8px; background:#1b2130; border:1px solid rgba(255,255,255,.08); }
-    .status{ font-size:.9rem; opacity:.9; margin:6px 0 10px; min-height:1.2em; }
-    .compass{
-      position:relative; width:min(76vw,340px); aspect-ratio:1/1; margin:0 auto 4px;
-      border-radius:50%; background:radial-gradient(120% 100% at 50% 35%, rgba(255,255,255,.06), rgba(0,0,0,.15));
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 50px rgba(0,0,0,.3);
-      touch-action:none; user-select:none;
-    }
-    .ring{ position:absolute; inset:6%; border-radius:50%; }
-    .ring__labels{ position:absolute; inset:0; display:grid; place-items:center; }
-    .ring__labels span{
-      position:absolute; transform:translate(-50%,-50%);
-      font-weight:800; color:#cbd5e1; text-shadow:0 1px 0 rgba(0,0,0,.8);
-    }
-    .ring__labels .tgt{ color:#93c5fd; text-shadow:0 0 8px rgba(147,197,253,.45); }
-    .needle{
-      position:absolute; inset:14%; border-radius:50%;
-      display:grid; place-items:center;
-    }
-    .needle::before{
-      content:""; width:6px; height:40%; background:linear-gradient(180deg,#ff5858,#a80000);
-      border-radius:999px; box-shadow:0 0 8px rgba(255,88,88,.35);
-      transform-origin:50% 90%;
-    }
-    .tick-north{
-      position:absolute; left:50%; top:3%; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:10px solid #9fb3c8; transform:translateX(-50%);
-      filter:drop-shadow(0 1px 0 rgba(0,0,0,.6));
-    }
-    .glow-ok{ box-shadow:0 0 0 3px rgba(16,185,129,.28), 0 0 24px rgba(16,185,129,.25); }
   </style>
   
 </head>
@@ -258,7 +218,6 @@ in queste situazioni basta non perdere la rotta.
       <div class="lock-panel">
         <div id="lockCard" class="lock-card">
           <div class="lock-card__inner">
-            <!-- ⤵️ Il pannello prelock verrà inserito qui via JS (sopra i rulli) -->
             <div id="lockDials" class="lock-dials">
               <div class="lock-dial" data-index="0"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
               <div class="lock-dial" data-index="1"><div class="lock-reel"></div><div class="lock-centerline"></div></div>
@@ -288,14 +247,11 @@ in queste situazioni basta non perdere la rotta.
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
       initLockOnce(); // inizializza i rulli quando la modale è visibile
-      // ⤵️ avvia/continua il loop bussola (se presente)
-      startCompassLoop();
     }
     function closeModal(){
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden','true');
       btnMap && btnMap.focus();
-      // Il tempo continua a scorrere anche a modale chiusa (voluto)
     }
     btnMap.addEventListener('click', openModal);
     btnClose?.addEventListener('click', closeModal);
@@ -459,10 +415,6 @@ in queste situazioni basta non perdere la rotta.
         closeModal();
         setTimeout(()=>{ window.location.href = btnNext.href; }, 220);
       });
-
-      // ⤵️ attiva stato prelock (dials disabilitati finché non completi la sequenza)
-      lockCard.classList.add('prelocked');
-      ensureCompassPrelock();
     }
 
     function measureCellHeight(){
@@ -563,281 +515,6 @@ in queste situazioni basta non perdere la rotta.
     // Utils
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
-
-    /* ======== AGGIUNTA: Bussola a sequenza con 8 direzioni ======== */
-    // Direzioni in italiano: N, NE, E, SE, S, SO, O, NO (8 step casuali)
-    const DIRS = ['N','NE','E','SE','S','SO','O','NO'];
-    const DIR_ANGLE = { N:0, NE:45, E:90, SE:135, S:180, SO:225, O:270, NO:315 };
-
-    // Parametri (puoi affinare)
-    const COMPASS_TOL_DEG = 10;      // tolleranza angolare per "in finestra"
-    const COMPASS_HOLD_MS = 650;     // quanto restare dentro per validare lo step
-    const WIND_BASE_DPS = 14;        // gradi/secondo di drift base dell'anello esterno
-    const WIND_GUST_DPS = 55;        // picco durante le raffiche
-    const WIND_GUST_EVERY = [1800, 3200]; // intervallo ms tra raffiche
-    const WIND_GUST_LEN = [260, 520];     // durata ms di una raffica
-    const GAME_DURATION_MS = 60000;  // 60s: il timer del minigioco (persiste anche a modale chiusa)
-
-    // Storage keys (scopo pagina)
-    const SKEY = (s)=> `compass_seq_v1::${s}::${location.pathname}`;
-    const KEY_SEQ   = SKEY('seq');       // JSON array di 8 voci
-    const KEY_STEP  = SKEY('step');      // indice corrente (0..8)
-    const KEY_DEADL = SKEY('deadline');  // timestamp ms
-    const KEY_DONE  = SKEY('done');      // '1' se completato -> sblocca dials
-
-    // Stato runtime
-    let seq = null, step = 0, deadline = 0, done = false;
-    let compassEl, needleEl, ringEl, labelsEl, seqWrap, statusEl, countdownEl, prelockEl;
-    let dragActive=false, center=[0,0], needleAngle=0, smoothedAngle=0;
-    let ringAngle=0, lastTs=0, rafId=null;
-    let gustUntil=0, nextGustAt=0;
-    let holdStart=null;
-
-    function ensureCompassPrelock(){
-      // Se già completato in una precedente apertura, abilita subito i rulli
-      try{
-        done = localStorage.getItem(KEY_DONE) === '1';
-      }catch{}
-      if(done){
-        unlockKeypad();
-        return;
-      }
-      // Crea DOM del prelock sopra i rulli
-      const inner = document.querySelector('.lock-card__inner');
-      const dials = document.getElementById('lockDials');
-      if(!inner || !dials) return;
-
-      prelockEl = document.createElement('div');
-      prelockEl.className = 'prelock';
-      prelockEl.innerHTML = `
-        <div class="prelock__top">
-          <div class="seq" id="seqWrap" aria-live="polite"></div>
-          <div class="countdown" id="compassCountdown">--:--</div>
-        </div>
-        <div class="status" id="compassStatus">Ruota l'ago verso la direzione evidenziata e mantieni la rotta…</div>
-        <div class="compass" id="compass">
-          <div class="tick-north"></div>
-          <div class="ring" id="ring"></div>
-          <div class="ring__labels" id="ringLabels"></div>
-          <div class="needle" id="needle"></div>
-        </div>
-      `;
-      inner.insertBefore(prelockEl, dials);
-
-      // Riferimenti
-      compassEl   = document.getElementById('compass');
-      needleEl    = document.getElementById('needle');
-      ringEl      = document.getElementById('ring');
-      labelsEl    = document.getElementById('ringLabels');
-      seqWrap     = document.getElementById('seqWrap');
-      statusEl    = document.getElementById('compassStatus');
-      countdownEl = document.getElementById('compassCountdown');
-
-      // Stato persistente o nuovo
-      try{
-        const s = localStorage.getItem(KEY_SEQ);
-        const st = localStorage.getItem(KEY_STEP);
-        const dl = localStorage.getItem(KEY_DEADL);
-        if(s && st && dl){
-          seq = JSON.parse(s);
-          step = parseInt(st,10) || 0;
-          deadline = parseInt(dl,10) || 0;
-        }
-      }catch{}
-      if(!seq){
-        // genera 8 simboli a caso tra le 8 direzioni (ripetizioni ammesse)
-        seq = Array.from({length:8}, ()=> DIRS[Math.floor(Math.random()*DIRS.length)]);
-        step = 0;
-        deadline = Date.now() + GAME_DURATION_MS;
-        try{
-          localStorage.setItem(KEY_SEQ, JSON.stringify(seq));
-          localStorage.setItem(KEY_STEP, String(step));
-          localStorage.setItem(KEY_DEADL, String(deadline));
-        }catch{}
-      }
-
-      // Render labels NESO sull’anello esterno
-      labelsEl.innerHTML = DIRS.map(d=>{
-        const a = DIR_ANGLE[d];
-        const r = 46; // raggio percentuale
-        const x = 50 + r * Math.cos((a-90)*Math.PI/180);
-        const y = 50 + r * Math.sin((a-90)*Math.PI/180);
-        return `<span data-dir="${d}" style="left:${x}%;top:${y}%;">${d}</span>`;
-      }).join('');
-
-      // Interazione ago (drag attorno al centro)
-      const recomputeCenter = ()=> {
-        const bb = compassEl.getBoundingClientRect();
-        center = [bb.left + bb.width/2, bb.top + bb.height/2];
-      };
-      recomputeCenter();
-      window.addEventListener('resize', recomputeCenter);
-      const getAngleFromEvent = (e)=>{
-        const x = (e.clientX ?? (e.touches?.[0]?.clientX)) - center[0];
-        const y = (e.clientY ?? (e.touches?.[0]?.clientY)) - center[1];
-        return (Math.atan2(y, x) * 180/Math.PI + 360 + 90) % 360; // 0° = Nord
-      };
-
-      compassEl.addEventListener('pointerdown', (e)=>{
-        e.preventDefault(); compassEl.setPointerCapture(e.pointerId);
-        dragActive = true;
-        needleAngle = getAngleFromEvent(e);
-      });
-      compassEl.addEventListener('pointermove', (e)=>{
-        if(!dragActive) return;
-        needleAngle = getAngleFromEvent(e);
-      });
-      const endDrag = ()=>{ dragActive = false; };
-      compassEl.addEventListener('pointerup', endDrag);
-      compassEl.addEventListener('pointercancel', endDrag);
-
-      // Avvia drift del ring (loop parte quando apri modale)
-      planNextGust();
-      renderSequencePills();
-      updateCountdown();
-      lockCard.classList.add('prelocked');
-    }
-
-    function renderSequencePills(){
-      if(!seqWrap) return;
-      seqWrap.innerHTML = seq.map((d,i)=>{
-        const cls = i<step ? 'seq__item --done' : (i===step? 'seq__item --current' : 'seq__item');
-        return `<span class="${cls}">${d}</span>`;
-      }).join('');
-    }
-
-    function planNextGust(){
-      const now = performance.now();
-      const inMs = randIn(WIND_GUST_EVERY[0], WIND_GUST_EVERY[1]);
-      nextGustAt = now + inMs;
-    }
-
-    function randIn(a,b){ return a + Math.random()*(b-a); }
-    function shortestDiff(a,b){
-      let d = (a-b+540)%360 - 180;
-      return d;
-    }
-    function setTransform(el, deg){ el.style.transform = `rotate(${deg}deg)`; }
-
-    function stepLogic(dtMs, nowReal){
-      // Drift dell’anello esterno
-      const now = performance.now();
-      let dps = WIND_BASE_DPS;
-      if(now >= nextGustAt){
-        if(gustUntil === 0) gustUntil = now + randIn(WIND_GUST_LEN[0], WIND_GUST_LEN[1]);
-      }
-      if(gustUntil && now < gustUntil){ dps = WIND_GUST_DPS; }
-      if(gustUntil && now >= gustUntil){ gustUntil = 0; planNextGust(); }
-
-      ringAngle = (ringAngle + dps * (dtMs/1000)) % 360;
-      setTransform(ringEl, ringAngle);
-
-      // Smoothed needle visual (un po' di inerzia visiva)
-      const alpha = 0.25;
-      smoothedAngle = (smoothedAngle*(1-alpha) + needleAngle*alpha) % 360;
-      // ruota l'ago (l'elemento ::before è disegnato verso Nord)
-      setTransform(needleEl, smoothedAngle);
-
-      // Validazione step
-      const targetDir = seq[step];
-      const targetA = (DIR_ANGLE[targetDir] + ringAngle) % 360;
-      const err = Math.abs(shortestDiff(smoothedAngle, targetA));
-      const inWindow = err <= COMPASS_TOL_DEG;
-
-      // Evidenzia il target
-      labelsEl.querySelectorAll('span').forEach(s=> s.classList.remove('tgt'));
-      const tgtEl = labelsEl.querySelector(`span[data-dir="${targetDir}"]`);
-      if(tgtEl) tgtEl.classList.add('tgt');
-
-      // Stato testo + alone green al successo temporaneo
-      if(inWindow){
-        prelockEl.classList.add('glow-ok');
-        statusEl.textContent = `Bersaglio: ${targetDir} – Mantieni la rotta…`;
-        if(holdStart===null) holdStart = nowReal;
-        if(nowReal - holdStart >= COMPASS_HOLD_MS){
-          // Step completato
-          step++;
-          try{ localStorage.setItem(KEY_STEP, String(step)); }catch{}
-          holdStart = null;
-          renderSequencePills();
-          prelockEl.classList.remove('glow-ok');
-          if(step >= seq.length){
-            // Sequenza completata → sblocca
-            done = true;
-            try{ localStorage.setItem(KEY_DONE,'1'); }catch{}
-            statusEl.textContent = 'Rotta stabilita! Inserisci il codice.';
-            unlockKeypad();
-          }else{
-            statusEl.textContent = `Ben fatto. Prossimo: ${seq[step]}`;
-          }
-        }
-      }else{
-        prelockEl.classList.remove('glow-ok');
-        statusEl.textContent = `Bersaglio: ${targetDir}`;
-        holdStart = null;
-      }
-
-      // Countdown e fail
-      const remain = Math.max(0, deadline - Date.now());
-      if(countdownEl) countdownEl.textContent = msToClock(remain);
-      if(remain === 0 && !done){
-        // Tempo scaduto → reset sequenza (ma lascia i rulli bloccati)
-        statusEl.textContent = 'Tempo scaduto. Riprova.';
-        // rigenera nuova partita
-        seq = Array.from({length:8}, ()=> DIRS[Math.floor(Math.random()*DIRS.length)]);
-        step = 0; done = false;
-        deadline = Date.now() + GAME_DURATION_MS;
-        try{
-          localStorage.setItem(KEY_SEQ, JSON.stringify(seq));
-          localStorage.setItem(KEY_STEP, String(step));
-          localStorage.setItem(KEY_DEADL, String(deadline));
-          localStorage.removeItem(KEY_DONE);
-        }catch{}
-        renderSequencePills();
-      }
-    }
-
-    function msToClock(ms){
-      const s = Math.floor(ms/1000);
-      const mm = String(Math.floor(s/60)).padStart(2,'0');
-      const ss = String(s%60).padStart(2,'0');
-      return `${mm}:${ss}`;
-    }
-
-    function startCompassLoop(){
-      if(!prelockEl || done) return; // se già sbloccato, niente loop necessario
-      if(rafId) return; // già in esecuzione
-      lastTs = performance.now();
-      const loop = (t)=>{
-        const dt = t - lastTs; lastTs = t;
-        stepLogic(dt, t);
-        rafId = requestAnimationFrame(loop);
-      };
-      rafId = requestAnimationFrame(loop);
-    }
-
-    function stopCompassLoop(){
-      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-    }
-
-    function updateCountdown(){
-      if(!countdownEl) return;
-      const remain = Math.max(0, (deadline||0) - Date.now());
-      countdownEl.textContent = msToClock(remain);
-    }
-
-    function unlockKeypad(){
-      lockCard.classList.remove('prelocked');
-      if(prelockEl){ prelockEl.style.display = 'none'; }
-      stopCompassLoop();
-    }
-
-    // Avvia loop se la modale è già aperta (edge) o si apre poi
-    document.addEventListener('visibilitychange', ()=>{
-      // non fermiamo il tempo: solo evitiamo loop in tab nascosta
-      if(document.hidden){ stopCompassLoop(); }
-      else if(modal.classList.contains('open')){ startCompassLoop(); }
-    });
   </script>
 </body>
 </html>
