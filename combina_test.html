@@ -96,13 +96,25 @@
 
     /* === Timone (gate) === */
     .helm-gate{
-      width:min(760px,92%); border-radius:16px; padding:12px 12px 10px;
+      width:min(720px,92%); border-radius:16px; padding:12px 12px 10px;
       background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.20));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.45);
       color:#e5e7eb;
+      margin:0 auto; /* centrato */
     }
-    .helm-wrap{ position:relative; width:100%; display:grid; place-items:center; padding:8px 8px 4px; }
-    .helm-box{ position:relative; width:min(440px, 82vw); aspect-ratio:1/1; touch-action:none; }
+    .helm-wrap{
+      position:relative; width:100%;
+      display:grid; place-items:center; justify-items:center; /* centratura orizzontale */
+      padding:8px 8px 4px;
+    }
+    /* ⬇️ Timone più piccolo e centrato */
+    .helm-box{
+      position:relative;
+      width:min(340px, 72vw);  /* ridotto */
+      aspect-ratio:1/1;
+      touch-action:none;
+      margin:0 auto;           /* centrato */
+    }
     .helm-svg{ position:absolute; inset:0; width:100%; height:100%; }
     .helm-wheel{ transform-origin:50% 50%; transition:transform .1s ease-out; }
     .helm-arrow{
@@ -128,6 +140,7 @@
       box-shadow: 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
       outline: 1px solid rgba(255,255,255,.08);
       position:relative;
+      margin:0 auto; /* centrata */
     }
     .lock-card.unlocked{
       box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(16,185,129,.28), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.25);
@@ -242,28 +255,46 @@ in queste situazioni basta non perdere la rotta.
           <div class="helm-wrap">
             <div class="helm-box" id="helmBox" aria-label="Timone della nave">
               <div class="helm-arrow" aria-hidden="true"></div>
-              <!-- SVG timone -->
-              <svg class="helm-svg" viewBox="0 0 100 100">
+              <!-- SVG timone con etichette direzionali -->
+              <svg class="helm-svg" viewBox="0 0 100 100" aria-hidden="false">
                 <!-- disco interno -->
                 <g id="helmWheel" class="helm-wheel">
                   <circle cx="50" cy="50" r="18" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.2"/>
                   <circle cx="50" cy="50" r="25" fill="#7a4d22" stroke="#3a2715" stroke-width="1.2"/>
                   <!-- 8 manici -->
                   <g fill="#7a4d22" stroke="#3a2715" stroke-width="1">
-                    <!-- Generati a 45°: N, NE, E, SE, S, SW, W, NW -->
-                    <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(45 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(90 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(135 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(180 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(225 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
-                    <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>
+                    <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>   <!-- N -->
+                    <g transform="rotate(45 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>  <!-- NE -->
+                    <g transform="rotate(90 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>  <!-- E -->
+                    <g transform="rotate(135 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- SE -->
+                    <g transform="rotate(180 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- S -->
+                    <g transform="rotate(225 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- SW -->
+                    <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- W -->
+                    <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- NW -->
                   </g>
                   <!-- ghiera -->
                   <circle cx="50" cy="50" r="34" fill="none" stroke="#2a1b0d" stroke-width="4"/>
                   <circle cx="50" cy="50" r="30" fill="none" stroke="#b07a3c" stroke-width="2"/>
                   <circle cx="50" cy="50" r="12" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.4"/>
+                </g>
+
+                <!-- Etichette direzionali (sopra la ghiera, allineate ai bracci) -->
+                <g font-size="6.5" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+                  <!-- contorno sottile per leggibilità -->
+                  <defs>
+                    <filter id="labelShadow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="0.6" flood-color="#000" flood-opacity="0.55"/>
+                    </filter>
+                  </defs>
+                  <!-- raggio posizionamento etichette ~40 -->
+                  <text x="50"    y="10"    fill="#f8f4ec" filter="url(#labelShadow)">N</text>
+                  <text x="78.3"  y="21.7"  fill="#f8f4ec" filter="url(#labelShadow)">NE</text>
+                  <text x="90"    y="50"    fill="#f8f4ec" filter="url(#labelShadow)">E</text>
+                  <text x="78.3"  y="78.3"  fill="#f8f4ec" filter="url(#labelShadow)">SE</text>
+                  <text x="50"    y="90"    fill="#f8f4ec" filter="url(#labelShadow)">S</text>
+                  <text x="21.7"  y="78.3"  fill="#f8f4ec" filter="url(#labelShadow)">SW</text>
+                  <text x="10"    y="50"    fill="#f8f4ec" filter="url(#labelShadow)">W</text>
+                  <text x="21.7"  y="21.7"  fill="#f8f4ec" filter="url(#labelShadow)">NW</text>
                 </g>
               </svg>
             </div>
@@ -313,8 +344,8 @@ in queste situazioni basta non perdere la rotta.
       modal.classList.add('open');
       modal.setAttribute('aria-hidden','false');
       btnClose && btnClose.focus();
-      initHelmOnce();  // ⬅️ inizializza timone
-      initLockOnce();  // ⬅️ inizializza rulli
+      initHelmOnce();  // ⬅️ timone
+      initLockOnce();  // ⬅️ rulli
     }
     function closeModal(){
       modal.classList.remove('open');
@@ -382,13 +413,13 @@ in queste situazioni basta non perdere la rotta.
     })();
 
     /* ===================== TIMONE – Gate ===================== */
-    // Hash target (SHA-256 base64) della SEQUENZA del timone (non in chiaro), spezzato:
+    // Hash target (SHA-256 base64) della SEQUENZA del timone (non in chiaro)
     const HELM_H = (() => ['tKIY','bmim','KZuo','2Evs','0mAl','/JTC','QLva','MXec','9z11','Ado3','3Fw='].join(''))();
     // Pepper e firma ricostruiti a runtime:
     const HELM_P = (() => ['GAL','-','RO','TA','-','8'].join(''))(); // GAL-ROTA-8
     const HELM_S = (() => ['HE','LM'].join(''))();                   // HELM
 
-    // Direzioni canoniche (mappa indicizzata per settore 45°)
+    // Direzioni canoniche (settori da 0° a 315° – senso orario)
     const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
 
     const helmBox = document.getElementById('helmBox');
@@ -402,20 +433,15 @@ in queste situazioni basta non perdere la rotta.
     let helmUnlocked = false;
     let holdTimer = null;
     let currentSector = null;     // indice 0..7
-    let seqSoFar = [];            // lista di label es.: ['N','S','E', ...]
+    let seqSoFar = [];            // es.: ['N','S','E', ...]
     const HOLD_MS = 1000;
-    const MOVE_TOL_SECTOR = 0;    // cambiare settore = reset timer (snap)
 
     function initHelmOnce(){
       if(helmInited){ return; }
-      // Gating iniziale
       lockCard.classList.add('is-gated');
       lockCard.classList.remove('gate-hidden');
-
-      // Progress UI: reset
       [...helmProgress.children].forEach(el => el.classList.remove('on'));
 
-      // Pointer handling (solo smartphone: touch, ma pointer va bene)
       let dragging = false;
 
       const getCenter = () => {
@@ -423,17 +449,16 @@ in queste situazioni basta non perdere la rotta.
         return { cx: r.left + r.width/2, cy: r.top + r.height/2 };
       };
       const toDeg = (rad) => rad * 180 / Math.PI;
-      // 0° = N (su), aumenta in senso orario
+
+      // 0° = N; aumenta in senso orario
       function angleFromCenter(x, y){
         const {cx, cy} = getCenter();
-        const a = Math.atan2(y - cy, x - cx); // 0= +X (E), π/2=+Y (S)
-        let deg = (toDeg(a) + 90);            // ruota così che 0° punti a N
+        const a = Math.atan2(y - cy, x - cx); // 0=E
+        let deg = (toDeg(a) + 90);            // orientato a N
         deg = (deg + 360) % 360;
         return deg;
       }
-      function sectorFromAngle(deg){
-        return Math.round(deg / 45) % 8; // 0..7
-      }
+      function sectorFromAngle(deg){ return Math.round(deg / 45) % 8; }
       function snapRotationForSector(sector){
         const deg = sector * 45;
         helmWheel.style.transform = `rotate(${deg}deg)`;
@@ -442,27 +467,21 @@ in queste situazioni basta non perdere la rotta.
       function handleNewSector(sector){
         if(sector === currentSector) return;
         currentSector = sector;
-        // Snap grafico
         snapRotationForSector(sector);
-        // reset hold
         if(holdTimer) clearTimeout(holdTimer);
         holdTimer = setTimeout(onHoldStable, HOLD_MS, sector);
       }
 
       async function onHoldStable(stableSector){
-        // Conferma una "posa" se il settore non è cambiato
         if(stableSector !== currentSector) return;
         const label = DIRS[stableSector];
         seqSoFar.push(label);
         feedbackStep(seqSoFar.length);
-        // Verifica progress con hash (nessuna sequenza in chiaro)
         const ok = await verifyHelmSequence(seqSoFar);
         if(ok === 'progress'){
-          // continua
           helmLabel.textContent = `Buono! (${seqSoFar.length} step) Continua…`;
           try { navigator.vibrate?.(20); } catch {}
         }else if(ok === true){
-          // sequenza completa → sblocca rulli
           helmUnlocked = true;
           lockCard.classList.remove('is-gated');
           lockCard.classList.add('gate-hidden');
@@ -470,7 +489,6 @@ in queste situazioni basta non perdere la rotta.
           helmLabel.textContent = 'Timone allineato. Inserisci il codice.';
           try { navigator.vibrate?.([20,40,20]); } catch {}
         }else{
-          // errore: reset duro
           seqSoFar = [];
           feedbackStep(0, true);
           helmLabel.textContent = 'Sequenza errata. Ricomincia.';
@@ -490,7 +508,6 @@ in queste situazioni basta non perdere la rotta.
         e.preventDefault();
         dragging = true;
         helmBox.setPointerCapture?.(e.pointerId);
-        // cancella eventuale hold in corso
         if(holdTimer) { clearTimeout(holdTimer); holdTimer=null; }
         const deg = angleFromCenter(e.clientX, e.clientY);
         handleNewSector(sectorFromAngle(deg));
@@ -503,7 +520,6 @@ in queste situazioni basta non perdere la rotta.
       const endDrag = ()=>{
         if(!dragging) return;
         dragging = false;
-        // se il dito si stacca, parte l'hold sul settore corrente (se non già partito)
         if(holdTimer) { /* già in corso */ }
         else if(currentSector!=null){ holdTimer = setTimeout(onHoldStable, HOLD_MS, currentSector); }
       };
@@ -514,41 +530,23 @@ in queste situazioni basta non perdere la rotta.
       helmInited = true;
     }
 
-    // Verifica progressiva della sequenza del timone:
-    // - Ritorna 'progress' se il prefisso è corretto ma non completo
-    // - Ritorna true se la sequenza è completa
-    // - Ritorna false se mismatch
+    // Verifica progressiva della sequenza (nessuna sequenza in chiaro)
     async function verifyHelmSequence(seqArray){
-      // Controllo in 2 fasi: (1) prefisso valido? (2) completo?
-      // Per evitare mettere la sequenza in chiaro:
-      // costruisco hash in base64 per ogni prefisso e confronto con hash "guardiano" calcolato allo stesso modo lato nostro.
-      // In pratica: HELM_P + '|' + (direzioni separate da virgola) + '|' + HELM_S
       const s = seqArray.join(',');
       const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
 
-      // Il trucco: confrontiamo contro l'hash finale per capire se "completo",
-      // e contro un set di hash di prefisso derivati al volo usando un "oracolo" deterministico.
-      // Per evitare di memorizzare i prefissi in chiaro, usiamo una regola:
-      // - Il prefisso è valido se e solo se l'hash del prefisso è un prefisso dell'hash finale in base64 dopo XOR mascherato.
-      //   (Implementazione semplice: verifichiamo che i primi N caratteri coincidano dopo una maschera ripetibile).
-      // Nota: è una protezione "di scena" per non esporre la sequenza; non è crittografia forte, ma basta per non spoilerare.
-
-      // Maschera ripetibile dal pepper:
+      // Maschera XOR "di scena" per confronti prefisso → evita pattern banali
       const mask = xorMaskFrom(HELM_P);
       const maskedDigest = xorB64(digest, mask);
       const maskedFinal  = xorB64(HELM_H, mask);
 
       if (maskedFinal.startsWith(maskedDigest)) {
-        // prefisso corretto
-        if (digest.length === HELM_H.length && safeEqual(digest, HELM_H)) {
-          return true; // sequenza completa
-        }
+        if (digest.length === HELM_H.length && safeEqual(digest, HELM_H)) return true;
         return 'progress';
       }
-      return false; // mismatch
+      return false;
     }
 
-    // XOR "di scena" su base64 per non rivelare pattern immediati
     function xorB64(b64, mask){
       let out = '';
       for(let i=0;i<b64.length;i++){
@@ -558,7 +556,6 @@ in queste situazioni basta non perdere la rotta.
       return out;
     }
     function xorMaskFrom(seed){
-      // Semplice maschera da seed
       let v = 0;
       for(let i=0;i<seed.length;i++) v = (v*131 + seed.charCodeAt(i)) >>> 0;
       const chars = [];
@@ -566,7 +563,7 @@ in queste situazioni basta non perdere la rotta.
       return String.fromCharCode(...chars);
     }
 
-    // ======== RULLI: lucchetto (SHA-256, nessun codice in chiaro) ========
+    /* ===================== RULLI (immutati) ===================== */
     const LOCK_H = (() => ['YfAr','gnE9','eUom','egxQ','F9uL','pudk','E2rA','63WW','/W1U','ksHf','dlQ='].join(''))();
     const LOCK_P = (() => ['GAL','LEON','-','14','92','-','RO','GER'].join(''))(); // GALLEON-1492-ROGER
     const LOCK_S = (() => ['BLA','CK','PE','AR','L'].join(''))();                // BLACKPEARL
@@ -576,7 +573,6 @@ in queste situazioni basta non perdere la rotta.
     const dialEls    = [];
     let lockInited   = false;
 
-    // Stato rulli
     let values = Array(6).fill(0);
     let CELL_H = 50;
     let verifySeq = 0;
@@ -678,7 +674,7 @@ in queste situazioni basta non perdere la rotta.
     function positionReelAtValue(dialIndex, value){
       const dial = dialEls[dialIndex];
       const reel = dial.querySelector('.lock-reel');
-      const targetIndex = 10 + value; // fascia centrale
+      const targetIndex = 10 + value;
       const translateY = -targetIndex * CELL_H + dial.getBoundingClientRect().height/2 - CELL_H/2;
       reel.style.transform = `translateY(${translateY}px)`;
       reel.dataset.offset = translateY;
@@ -734,7 +730,7 @@ in queste situazioni basta non perdere la rotta.
       queueVerify();
     }
 
-    // Verifica SHA-256 lato client (base64)
+    // SHA-256 base64
     async function sha256Base64(str){
       const enc = new TextEncoder();
       const data = enc.encode(str);
@@ -752,7 +748,6 @@ in queste situazioni basta non perdere la rotta.
       const seq = ++verifySeq;
       verifyCurrentCode().then(ok => {
         if(seq !== verifySeq) return;
-        // Se il timone non è ancora completato, rimani "Bloccato" a prescindere
         const effectiveOk = ok && !lockCard.classList.contains('is-gated');
         lockCard.classList.toggle('unlocked', effectiveOk);
         lockStatus.innerHTML = effectiveOk ? 'Stato: <span class="ok">Sbloccato</span>' : 'Stato: <span class="no">Bloccato</span>';
@@ -770,12 +765,7 @@ in queste situazioni basta non perdere la rotta.
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
 
-    /* ===== Utility DEV (facoltativa) per rigenerare l'hash del TIMONE =====
-       In console privata (NON in pagina pubblica) puoi fare:
-       window._deriveHelmHash(['N','S','E','NE','W','SW'], 'GAL-ROTA-8', 'HELM')
-       e sostituire HELM_H con il valore stampato (spezzandolo in chunk come sopra).
-       Le stringhe direzione valide sono: N, NE, E, SE, S, SW, W, NW.
-    ---------------------------------------------------------------------- */
+    // Utility DEV per rigenerare hash del timone (non pubblica)
     window._deriveHelmHash = async function(list, pepper, sig){
       const s = (pepper||HELM_P) + '|' + list.join(',') + '|' + (sig||HELM_S);
       const h = await sha256Base64(s);
