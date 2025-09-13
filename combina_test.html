@@ -449,7 +449,10 @@ in queste situazioni basta non perdere la rotta.
         return deg;
       }
       const sectorFromAngle = (deg)=> Math.round(deg / 45) % 8;
-      const snapRotationForSector = (sector)=> helmWheel.style.transform = `rotate(${sector*45}deg)`;
+      const snapRotationForSector = (sector)=> {
+        // porta il SETTORE scelto sotto la freccia in alto
+        helmWheel.style.transform = `rotate(${-sector*45}deg)`; // FIX: verso rotazione
+      };
 
       function handleNewSector(sector){
         if(currentSector === null){
@@ -484,11 +487,11 @@ in queste situazioni basta non perdere la rotta.
         if(!hasMovedFromStart) return;          // non contare l'orientamento iniziale
         if(countedInThisSector) return;         // già contato in questo settore
 
-        const label = DIRS[stableSector];
+        const label = DIRS[stableSector];       // ⬅️ braccio sotto la freccia
 
-        // Registra il passo (solo feedback, nessuna verifica finché non raggiungo 6)
+        // Registra il passo (solo feedback, verifica alla fine)
         seqSoFar.push(label);
-        countedInThisSector = true;             // per evitare doppio conteggio
+        countedInThisSector = true;
         setProgress(seqSoFar.length, 'on');
         helmLabel.textContent = `Passo ${seqSoFar.length}/${HELM_LEN} registrato…`;
         updateHelmDebug(false);
@@ -548,7 +551,6 @@ in queste situazioni basta non perdere la rotta.
       helmBox.addEventListener('pointerdown', (e)=>{
         e.preventDefault();
         helmBox.setPointerCapture?.(e.pointerId);
-        // NON avvio il timer qui: partirà solo dopo un cambio settore valido
         const deg = angleFromCenter(e.clientX, e.clientY);
         const sec = sectorFromAngle(deg);
         if(currentSector === null){
@@ -564,7 +566,6 @@ in queste situazioni basta non perdere la rotta.
         handleNewSector(sectorFromAngle(deg));
       });
       const endDrag = ()=>{
-        // Se il dito si alza e ci siamo già mossi dal settore iniziale, riavvio un timer sulla posizione attuale
         if(hasMovedFromStart && currentSector!=null){
           if(holdTimer) clearTimeout(holdTimer);
           holdTimer = setTimeout(onHoldStable, HOLD_MS, currentSector);
@@ -577,9 +578,9 @@ in queste situazioni basta non perdere la rotta.
       helmInited = true;
     }
 
-    // Verifica finale (tutta la sequenza, nessun check parziale)
+    // Verifica finale (tutta la sequenza)
     async function verifyHelmFinal(seqArray){
-      const s = seqArray.join(',');                 // es. "SE,NE,W,S,SW,N"
+      const s = seqArray.join(',');                 // "SE,NE,W,S,SW,N"
       const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
       return safeEqual(digest, HELM_H);
     }
@@ -666,7 +667,7 @@ in queste situazioni basta non perdere la rotta.
           if(e.key==='ArrowUp'){ e.preventDefault(); nudge(idx,-1); }
           if(e.key==='ArrowDown'){ e.preventDefault(); nudge(idx,+1); }
           if(e.key==='Home'){ e.preventDefault(); setValue(idx,0,true); }
-          if(e.key==='End'){  e.preventDefault(); setValue(idx,9,true); }
+          if(e.key==='End'){  e.preventPreventDefault(); setValue(idx,9,true); }
         });
       });
 
