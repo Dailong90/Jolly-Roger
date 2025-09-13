@@ -98,14 +98,8 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.45);
       color:#e5e7eb; margin:0 auto;
     }
-    .helm-wrap{
-      position:relative; width:100%;
-      display:grid; place-items:center; justify-items:center;
-      padding:8px 8px 4px;
-    }
-    .helm-box{
-      position:relative; width:min(340px, 72vw); aspect-ratio:1/1; touch-action:none; margin:0 auto;
-    }
+    .helm-wrap{ position:relative; width:100%; display:grid; place-items:center; justify-items:center; padding:8px 8px 4px; }
+    .helm-box{ position:relative; width:min(340px, 72vw); aspect-ratio:1/1; touch-action:none; margin:0 auto; }
     .helm-svg{ position:absolute; inset:0; width:100%; height:100%; }
     .helm-wheel{ transform-origin:50% 50%; transition:transform .1s ease-out; }
     .helm-arrow{
@@ -244,10 +238,8 @@ in queste situazioni basta non perdere la rotta.
               <!-- SVG timone: bracci + lettere che ruotano insieme -->
               <svg class="helm-svg" viewBox="0 0 100 100" aria-hidden="false">
                 <g id="helmWheel" class="helm-wheel">
-                  <!-- dischi -->
                   <circle cx="50" cy="50" r="18" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.2"/>
                   <circle cx="50" cy="50" r="25" fill="#7a4d22" stroke="#3a2715" stroke-width="1.2"/>
-                  <!-- 8 manici -->
                   <g fill="#7a4d22" stroke="#3a2715" stroke-width="1">
                     <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>   <!-- N -->
                     <g transform="rotate(45 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>  <!-- NE -->
@@ -258,7 +250,6 @@ in queste situazioni basta non perdere la rotta.
                     <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- W -->
                     <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- NW -->
                   </g>
-                  <!-- ghiera -->
                   <circle cx="50" cy="50" r="34" fill="none" stroke="#2a1b0d" stroke-width="4"/>
                   <circle cx="50" cy="50" r="30" fill="none" stroke="#b07a3c" stroke-width="2"/>
                   <circle cx="50" cy="50" r="12" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.4"/>
@@ -283,7 +274,7 @@ in queste situazioni basta non perdere la rotta.
               </svg>
             </div>
 
-            <div class="helm-label" id="helmLabel">Sosta ~2s su ogni direzione della sequenza.</div>
+            <div class="helm-label" id="helmLabel">Tieni fermo ~2s su ogni direzione. Gli spostamenti non contano.</div>
 
             <!-- Progress a 6 pallini -->
             <div class="helm-progress" id="helmProgress" aria-live="polite">
@@ -417,9 +408,12 @@ in queste situazioni basta non perdere la rotta.
 
     let helmInited = false;
     let holdTimer = null;
-    let currentSector = null;     // 0..7
-    let seqSoFar = [];            // es. ['SE','NE', ...]
-    const HOLD_MS = 2000;         // 2 secondi di sosta
+    let currentSector = null;       // 0..7
+    let seqSoFar = [];              // es. ['SE','NE', ...]
+    let hasMovedFromStart = false;  // ⬅️ conta solo dopo il primo movimento
+    let startSector = null;         // settore iniziale quando si apre la modale
+    let countedInThisSector = false;// evita doppi conteggi senza spostarsi
+    const HOLD_MS = 2000;           // 2 secondi di sosta
 
     function initHelmOnce(){
       if(helmInited){ return; }
@@ -429,6 +423,9 @@ in queste situazioni basta non perdere la rotta.
       lockCard.classList.remove('gate-hidden');
       lockGateMask.style.display = '';
       resetProgress(); seqSoFar = [];
+      hasMovedFromStart = false;
+      startSector = null;
+      countedInThisSector = false;
 
       let dragging = false;
 
@@ -450,35 +447,48 @@ in queste situazioni basta non perdere la rotta.
       const snapRotationForSector = (sector)=> helmWheel.style.transform = `rotate(${sector*45}deg)`;
 
       function handleNewSector(sector){
+        if(currentSector === null){
+          currentSector = sector;
+          if(startSector === null) startSector = sector;
+          snapRotationForSector(sector);
+          // ⛔ niente timer finché non ci si è mossi almeno una volta
+          return;
+        }
         if(sector === currentSector) return;
+
+        // Cambio settore
         currentSector = sector;
         snapRotationForSector(sector);
+        countedInThisSector = false;    // posso contare di nuovo dopo il cambio
         if(holdTimer) clearTimeout(holdTimer);
-        holdTimer = setTimeout(onHoldStable, HOLD_MS, sector); // parte timer 2s
+
+        // Attiva "ha mosso" se lascia il settore iniziale
+        if(!hasMovedFromStart && startSector !== null && sector !== startSector){
+          hasMovedFromStart = true;
+        }
+
+        // Avvia il timer SOLO se c'è stato almeno un movimento dal settore iniziale
+        if(hasMovedFromStart){
+          holdTimer = setTimeout(onHoldStable, HOLD_MS, sector);
+        }
       }
 
       async function onHoldStable(stableSector){
-        if(stableSector !== currentSector) return; // si è mosso
+        // Deve essere ancora nello stesso settore
+        if(stableSector !== currentSector) return;
+        if(!hasMovedFromStart) return;          // non contare l'orientamento iniziale
+        if(countedInThisSector) return;         // già contato in questo settore
+
         const label = DIRS[stableSector];
-        const tentative = [...seqSoFar, label];
 
-        // Verifica prefisso (senza rivelare la sequenza). Se sbagli → reset immediato
-        const verdict = await verifyHelmPrefix(tentative);
-        if(verdict === 'mismatch'){
-          try { navigator.vibrate?.(60); } catch {}
-          helmLabel.textContent = 'Sequenza errata. Ricomincia.';
-          seqSoFar = [];
-          resetProgress();
-          return;
-        }
-
-        // Step valido → accendi pallino giallo
-        seqSoFar = tentative;
+        // Registra il passo (solo feedback, nessuna verifica finché non raggiungo 6)
+        seqSoFar.push(label);
+        countedInThisSector = true;             // per evitare doppio conteggio
         setProgress(seqSoFar.length, 'on');
         helmLabel.textContent = `Passo ${seqSoFar.length}/${HELM_LEN} registrato…`;
         try { navigator.vibrate?.(18); } catch {}
 
-        // Se abbiamo 6 step, verifica finale e sblocca
+        // Completati 6 tentativi → verifica unica
         if(seqSoFar.length === HELM_LEN){
           const ok = await verifyHelmFinal(seqSoFar);
           if(ok){
@@ -489,12 +499,21 @@ in queste situazioni basta non perdere la rotta.
             helmLabel.textContent = 'Timone allineato. Inserisci il codice.';
             try { navigator.vibrate?.([20,40,20]); } catch {}
           }else{
-            // fallback: reset
             try { navigator.vibrate?.(60); } catch {}
             helmLabel.textContent = 'Sequenza errata. Ricomincia.';
-            seqSoFar = [];
-            setTimeout(resetProgress, 220);
+            // piccola pausa per far vedere i 6 gialli, poi reset
+            setTimeout(()=>{
+              seqSoFar = [];
+              resetProgress();
+              countedInThisSector = false;
+              // dopo un errore, si riparte richiedendo di nuovo un movimento (non contare la posizione corrente)
+              hasMovedFromStart = false;
+              startSector = currentSector;
+            }, 500);
           }
+        }else{
+          // passo intermedio: per contare il prossimo devo muovermi e fermarmi 2s in un altro settore
+          // parte un nuovo timer solo dopo un cambio settore (vedi handleNewSector)
         }
       }
 
@@ -510,21 +529,33 @@ in queste situazioni basta non perdere la rotta.
         bars.forEach(el=>{ el.classList.remove('on'); el.classList.add('success'); });
       }
 
+      // Interazioni touch
       helmBox.addEventListener('pointerdown', (e)=>{
         e.preventDefault();
         dragging = true;
         helmBox.setPointerCapture?.(e.pointerId);
-        if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; }
-        handleNewSector(sectorFromAngle(angleFromCenter(e.clientX, e.clientY)));
+        // NON avvio il timer qui: partirà solo dopo un cambio settore valido
+        const deg = angleFromCenter(e.clientX, e.clientY);
+        const sec = sectorFromAngle(deg);
+        if(currentSector === null){
+          currentSector = sec;
+          if(startSector === null) startSector = sec;
+          snapRotationForSector(sec);
+        }else if(sec !== currentSector){
+          handleNewSector(sec);
+        }
       });
       helmBox.addEventListener('pointermove', (e)=>{
         if(!dragging) return;
-        handleNewSector(sectorFromAngle(angleFromCenter(e.clientX, e.clientY)));
+        const deg = angleFromCenter(e.clientX, e.clientY);
+        handleNewSector(sectorFromAngle(deg));
       });
       const endDrag = ()=>{
         if(!dragging) return;
         dragging = false;
-        if(!holdTimer && currentSector!=null){
+        // Se il dito si alza e ci siamo già mossi dal settore iniziale, riavvio un timer sulla posizione attuale
+        if(hasMovedFromStart && currentSector!=null){
+          if(holdTimer) clearTimeout(holdTimer);
           holdTimer = setTimeout(onHoldStable, HOLD_MS, currentSector);
         }
       };
@@ -535,40 +566,11 @@ in queste situazioni basta non perdere la rotta.
       helmInited = true;
     }
 
-    // ===== Verifica prefisso senza rivelare la sequenza =====
-    async function verifyHelmPrefix(seqArray){
-      const s = seqArray.join(',');
-      const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
-      const mask = xorMaskFrom(HELM_P);
-      const maskedDigest = xorB64(digest, mask);
-      const maskedFinal  = xorB64(HELM_H, mask);
-      if (maskedFinal.startsWith(maskedDigest)) {
-        return (seqArray.length === HELM_LEN) ? 'complete' : 'progress';
-      }
-      return 'mismatch';
-    }
-
-    // Verifica finale (tutta la sequenza)
+    // Verifica finale (tutta la sequenza, nessun check parziale)
     async function verifyHelmFinal(seqArray){
-      const s = seqArray.join(',');
+      const s = seqArray.join(',');                 // es. "SE,NE,W,S,SW,N"
       const digest = await sha256Base64(HELM_P + '|' + s + '|' + HELM_S);
       return safeEqual(digest, HELM_H);
-    }
-
-    // XOR “di scena” su base64
-    function xorB64(b64, mask){
-      let out = '';
-      for(let i=0;i<b64.length;i++){
-        out += String.fromCharCode( b64.charCodeAt(i) ^ mask.charCodeAt(i % mask.length) );
-      }
-      return out;
-    }
-    function xorMaskFrom(seed){
-      let v = 0;
-      for(let i=0;i<seed.length;i++) v = (v*131 + seed.charCodeAt(i)) >>> 0;
-      const chars = [];
-      for(let i=0;i<16;i++){ v = (v*1103515245 + 12345) >>> 0; chars.push(33 + (v % 90)); }
-      return String.fromCharCode(...chars);
     }
 
     /* ===================== RULLI (immutati) ===================== */
