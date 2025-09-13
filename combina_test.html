@@ -450,8 +450,8 @@ in queste situazioni basta non perdere la rotta.
       }
       const sectorFromAngle = (deg)=> Math.round(deg / 45) % 8;
       const snapRotationForSector = (sector)=> {
-        // porta il SETTORE scelto sotto la freccia in alto
-        helmWheel.style.transform = `rotate(${-sector*45}deg)`; // FIX: verso rotazione
+        // Ruota nel verso del dito
+        helmWheel.style.transform = `rotate(${sector*45}deg)`;
       };
 
       function handleNewSector(sector){
@@ -487,7 +487,8 @@ in queste situazioni basta non perdere la rotta.
         if(!hasMovedFromStart) return;          // non contare l'orientamento iniziale
         if(countedInThisSector) return;         // già contato in questo settore
 
-        const label = DIRS[stableSector];       // ⬅️ braccio sotto la freccia
+        const activeIndex = (8 - stableSector) % 8;  // braccio che finisce sotto la freccia con rotate(+)
+        const label = DIRS[activeIndex];
 
         // Registra il passo (solo feedback, verifica alla fine)
         seqSoFar.push(label);
