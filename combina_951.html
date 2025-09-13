@@ -273,7 +273,7 @@ in queste situazioni basta non perdere la rotta.
               </svg>
             </div>
 
-            <div class="helm-label" id="helmLabel">Tieni fermo ~2s su ogni direzione. Gli spostamenti non contano.</div>
+<!--             <div class="helm-label" id="helmLabel">Tieni fermo ~2s su ogni direzione. Gli spostamenti non contano.</div> -->
 
             <!-- Progress a 6 pallini -->
             <div class="helm-progress" id="helmProgress" aria-live="polite">
@@ -788,10 +788,7 @@ in queste situazioni basta non perdere la rotta.
     function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
     function mod(n,m){ return ((n % m) + m) % m; }
 
-    /* ===== Utility privata per rigenerare l'hash del TIMONE (se servisse) =====
-       In console: window._deriveHelmHash(['SE','NE','W','S','SW','N'], 'GAL-ROTA-8', 'HELM')
-       Sostituisci HELM_H con il risultato (puoi spezzarlo in chunk come qui).
-    -------------------------------------------------------------------------- */
+   
     window._deriveHelmHash = async function(list, pepper, sig){
       const s = (pepper||HELM_P) + '|' + list.join(',') + '|' + (sig||HELM_S);
       const h = await sha256Base64(s);
