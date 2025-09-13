@@ -74,9 +74,7 @@
       font-size:26px; color:#6b5b4b; z-index:3; pointer-events:none; animation:bounce 1.2s infinite; opacity:1; transition:opacity .2s ease;
     }
     @keyframes bounce { 0%,100%{ transform:translateY(-10px); } 50%{ transform:translateY(-4px); } }
-    .riddle.--no-scroll .riddle__fade,
-    .riddle.--no-scroll .riddle__indicator,
-    .riddle.--at-bottom .riddle__indicator { opacity:0; }
+    .riddle.--no-scroll .riddle__indicator { opacity:0; }
 
     /* ===== Modale ===== */
     .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:4vw; z-index:999; }
@@ -142,9 +140,7 @@
     }
 
     /* Rulli: una riga */
-    .lock-dials{
-      display:grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap:12px; width:100%;
-    }
+    .lock-dials{ display:grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap:12px; width:100%; }
     .lock-dial{
       position:relative; height:clamp(110px, 20vw, 150px); border-radius:14px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
@@ -238,8 +234,10 @@ in queste situazioni basta non perdere la rotta.
               <!-- SVG timone: bracci + lettere che ruotano insieme -->
               <svg class="helm-svg" viewBox="0 0 100 100" aria-hidden="false">
                 <g id="helmWheel" class="helm-wheel">
+                  <!-- dischi -->
                   <circle cx="50" cy="50" r="18" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.2"/>
                   <circle cx="50" cy="50" r="25" fill="#7a4d22" stroke="#3a2715" stroke-width="1.2"/>
+                  <!-- 8 manici -->
                   <g fill="#7a4d22" stroke="#3a2715" stroke-width="1">
                     <g transform="rotate(0 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>   <!-- N -->
                     <g transform="rotate(45 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g>  <!-- NE -->
@@ -250,6 +248,7 @@ in queste situazioni basta non perdere la rotta.
                     <g transform="rotate(270 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- W -->
                     <g transform="rotate(315 50 50)"><rect x="48.6" y="4" width="2.8" height="18" rx="1.4"/></g> <!-- NW -->
                   </g>
+                  <!-- ghiera -->
                   <circle cx="50" cy="50" r="34" fill="none" stroke="#2a1b0d" stroke-width="4"/>
                   <circle cx="50" cy="50" r="30" fill="none" stroke="#b07a3c" stroke-width="2"/>
                   <circle cx="50" cy="50" r="12" fill="#5b3b1a" stroke="#3a2715" stroke-width="1.4"/>
@@ -280,6 +279,10 @@ in queste situazioni basta non perdere la rotta.
             <div class="helm-progress" id="helmProgress" aria-live="polite">
               <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
+
+            <!-- ▼▼ DEBUG (rimuovi in produzione) ▼▼ -->
+            <div id="helmDebug" style="margin-top:6px;font-size:12px;color:#9ca3af;text-align:center"></div>
+            <!-- ▲▲ DEBUG ▲▲ -->
           </div>
         </section>
 
@@ -390,7 +393,7 @@ in queste situazioni basta non perdere la rotta.
       init();
     })();
 
-    /* ===================== TIMONE – Gate (6 step) ===================== */
+    /* ===================== TIMONE – Gate (6 step, solo pause da 2s) ===================== */
     // Sequenza target SE,NE,W,S,SW,N protetta (SHA-256 base64 spezzato)
     const HELM_H = (() => ['DV/J','wFCo','8sTe','OV7v','rCD8','vmRe','huTK','DSqq','QRx9','l0eT','vkY='].join(''))();
     const HELM_P = (() => ['GAL','-','RO','TA','-','8'].join(''))(); // Pepper
@@ -403,6 +406,7 @@ in queste situazioni basta non perdere la rotta.
     const helmWheel = document.getElementById('helmWheel');
     const helmProgress = document.getElementById('helmProgress');
     const helmLabel = document.getElementById('helmLabel');
+    const helmDebug = document.getElementById('helmDebug');
     const lockCard = document.getElementById('lockCard');
     const lockGateMask = document.getElementById('lockGateMask');
 
@@ -410,13 +414,13 @@ in queste situazioni basta non perdere la rotta.
     let holdTimer = null;
     let currentSector = null;       // 0..7
     let seqSoFar = [];              // es. ['SE','NE', ...]
-    let hasMovedFromStart = false;  // ⬅️ conta solo dopo il primo movimento
+    let hasMovedFromStart = false;  // conta solo dopo prima uscita dal settore iniziale
     let startSector = null;         // settore iniziale quando si apre la modale
-    let countedInThisSector = false;// evita doppi conteggi senza spostarsi
+    let countedInThisSector = false;// evita doppio conteggio senza spostarsi
     const HOLD_MS = 2000;           // 2 secondi di sosta
 
     function initHelmOnce(){
-      if(helmInited){ return; }
+      if(helmInited){ updateHelmDebug(false); return; }
 
       // blocca i rulli
       lockCard.classList.add('is-gated');
@@ -426,6 +430,7 @@ in queste situazioni basta non perdere la rotta.
       hasMovedFromStart = false;
       startSector = null;
       countedInThisSector = false;
+      updateHelmDebug(false);
 
       let dragging = false;
 
@@ -451,7 +456,7 @@ in queste situazioni basta non perdere la rotta.
           currentSector = sector;
           if(startSector === null) startSector = sector;
           snapRotationForSector(sector);
-          // ⛔ niente timer finché non ci si è mossi almeno una volta
+          // niente timer finché non ci si è mossi almeno una volta
           return;
         }
         if(sector === currentSector) return;
@@ -486,10 +491,14 @@ in queste situazioni basta non perdere la rotta.
         countedInThisSector = true;             // per evitare doppio conteggio
         setProgress(seqSoFar.length, 'on');
         helmLabel.textContent = `Passo ${seqSoFar.length}/${HELM_LEN} registrato…`;
+        updateHelmDebug(false);
+        console.log('[HELM step]', seqSoFar.join(','));
         try { navigator.vibrate?.(18); } catch {}
 
         // Completati 6 tentativi → verifica unica
         if(seqSoFar.length === HELM_LEN){
+          updateHelmDebug(true);
+          console.log('[HELM final]', seqSoFar.join(','));
           const ok = await verifyHelmFinal(seqSoFar);
           if(ok){
             markProgressSuccess();
@@ -506,15 +515,21 @@ in queste situazioni basta non perdere la rotta.
               seqSoFar = [];
               resetProgress();
               countedInThisSector = false;
-              // dopo un errore, si riparte richiedendo di nuovo un movimento (non contare la posizione corrente)
-              hasMovedFromStart = false;
-              startSector = currentSector;
+              hasMovedFromStart = false;          // chiedo di nuovo un movimento
+              startSector = currentSector;        // l'attuale diventa "iniziale"
+              updateHelmDebug(false);
+              console.log('[HELM reset]');
             }, 500);
           }
-        }else{
-          // passo intermedio: per contare il prossimo devo muovermi e fermarmi 2s in un altro settore
-          // parte un nuovo timer solo dopo un cambio settore (vedi handleNewSector)
         }
+      }
+
+      function updateHelmDebug(done=false){
+        if(!helmDebug) return;
+        const txt = seqSoFar.length
+          ? `Inserito: ${seqSoFar.join(' , ')}${done ? ' (fine)' : ''}`
+          : 'Inserito: —';
+        helmDebug.textContent = txt;
       }
 
       function resetProgress(){
@@ -529,10 +544,9 @@ in queste situazioni basta non perdere la rotta.
         bars.forEach(el=>{ el.classList.remove('on'); el.classList.add('success'); });
       }
 
-      // Interazioni touch
+      // Interazioni touch/pointer
       helmBox.addEventListener('pointerdown', (e)=>{
         e.preventDefault();
-        dragging = true;
         helmBox.setPointerCapture?.(e.pointerId);
         // NON avvio il timer qui: partirà solo dopo un cambio settore valido
         const deg = angleFromCenter(e.clientX, e.clientY);
@@ -546,13 +560,10 @@ in queste situazioni basta non perdere la rotta.
         }
       });
       helmBox.addEventListener('pointermove', (e)=>{
-        if(!dragging) return;
         const deg = angleFromCenter(e.clientX, e.clientY);
         handleNewSector(sectorFromAngle(deg));
       });
       const endDrag = ()=>{
-        if(!dragging) return;
-        dragging = false;
         // Se il dito si alza e ci siamo già mossi dal settore iniziale, riavvio un timer sulla posizione attuale
         if(hasMovedFromStart && currentSector!=null){
           if(holdTimer) clearTimeout(holdTimer);
